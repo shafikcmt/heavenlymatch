@@ -20,7 +20,7 @@ background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat c
         <p class="lead mb-4">Join our Matrimony website today and connect with your life partner easily.</p>
 
         <!-- Registration Form -->
-        <form action="" method="POST" class="row g-2 justify-content-center bg-dark bg-opacity-50 p-4 rounded">
+        <form action="{{ route('register.show') }}" method="GET" class="row g-2 justify-content-center bg-dark bg-opacity-50 p-4 rounded">
             @csrf
 
             <!-- Looking For -->
