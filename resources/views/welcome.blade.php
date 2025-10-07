@@ -50,7 +50,7 @@ background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat c
 
             <!-- Register Button -->
             <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-danger"><a href="{{route('register')}}">Register</a></button>
+                <button type="submit" class="btn btn-danger">Register</button>
             </div>
         </form>
     </div>
