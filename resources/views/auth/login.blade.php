@@ -4,47 +4,80 @@
 
 @push('styles')
 <style>
+  /* Set background image for the body */
   body {
-    background: #f0f2f5;
+    background: url('https://heavenlymatch.net/public/images/login_page_backgrond_banner.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
   }
+
+  /* Add a semi-transparent overlay to improve readability */
+  .body-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* background: rgba(0,0,0,0.5); */
+    z-index: -1; /* behind content */
+  }
+
+  /* Login card styling */
   .login-card {
     max-width: 400px;
-    margin: auto;
-    margin-top: 80px;
+    margin: 100px auto;
     padding: 30px;
     border-radius: 15px;
-    background: #fff;
+    background: #fff; /* keep login card white for readability */
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     animation: fadeIn 0.5s ease-in-out;
   }
+
   .login-card h3 {
     text-align: center;
     margin-bottom: 20px;
     font-weight: bold;
   }
+
   .login-card .btn-google {
     background-color: #DB4437;
     color: #fff;
   }
+
   .login-card .text-center a {
     text-decoration: none;
     color: #0d6efd;
   }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+  input.form-control {
+    background-color: #fff;
+    color: #000;
   }
+
+  input.form-control::placeholder {
+    color: #555;
+  }
+
   .btn-primary {
     transition: all 0.3s ease;
   }
+
   .btn-primary:hover {
     background-color: #0b5ed7;
     transform: scale(1.05);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 @endpush
 
 @section('content')
+
+<div class="body-overlay"></div> <!-- optional overlay for readability -->
+
 <div class="login-card">
     <h3>Log In to Your Account</h3>
 

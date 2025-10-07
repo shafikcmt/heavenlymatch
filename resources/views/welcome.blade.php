@@ -5,7 +5,7 @@
 @push('styles')
 <style>
 .hero-section{
-background: url('{{ asset('images/hero-bg.jpg') }}') no-repeat center center fixed; 
+background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat center center fixed; 
                 background-size: cover; height: 100vh;
 }
 </style>
@@ -50,7 +50,7 @@ background: url('{{ asset('images/hero-bg.jpg') }}') no-repeat center center fix
 
             <!-- Register Button -->
             <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-danger">Register</button>
+                <button type="submit" class="btn btn-danger"><a href="{{route('register')}}">Register</a></button>
             </div>
         </form>
     </div>
