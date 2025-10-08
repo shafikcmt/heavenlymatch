@@ -90,8 +90,16 @@
       <li class="px-3 py-3 border-bottom text-center">
         <img height="50px" src="https://hips.hearstapps.com/hmg-prod/images/index3-3-1651581277.jpg?crop=0.5xw:1xh;center,top&resize=640:*" class="rounded-circle mb-3" alt="Avatar">
         
+        @php
+            $hasBiodata = auth()->user()->biodata()->exists();
+        @endphp
+
         <div>
-          <a href="{{route('biodata.create')}}" class="btn btn-primary btn-sm mb-2">Create Biodata</a>
+            @if ($hasBiodata)
+                <a href="{{ route('biodata.create') }}" class="btn btn-success btn-sm mb-2">View Biodata</a>
+            @else
+                <a href="{{ route('biodata.create') }}" class="btn btn-primary btn-sm mb-2">Create Biodata</a>
+            @endif
         </div>
         
         <div class="small text-white px-2 py-1 rounded mb-1" style="background-color: #ff6b6b;">

@@ -213,27 +213,31 @@ class BiodataController extends Controller
 
 
         // Final Step Save to DB
-        if ($step == $maxStep && !$request->has('next')) {
-    // Merge all step data into one array
-    $allData = array_merge(...array_values($biodata));
+            if ($step == $maxStep && !$request->has('next')) {
+                // Merge all step data into one array
+                $allData = array_merge(...array_values($biodata));
 
-    // ✅ Convert array fields to comma-separated string
-    foreach ($allData as $key => $value) {
-        if (is_array($value)) {
-            $allData[$key] = implode(',', $value);
-        }
-    }
+                // ✅ Convert array fields to comma-separated string
+                foreach ($allData as $key => $value) {
+                    if (is_array($value)) {
+                        $allData[$key] = implode(',', $value);
+                    }
+                }
 
-    // Create a new Biodata record
-    $biodataRecord = Biodata::create($allData);
+                // ✅ Attach logged-in user's registration ID
+               $allData['registration_id'] = auth()->user()->registration_id;
+                // or use: $allData['registration_id'] = auth()->user()->id;
 
-    // Clear biodata session
-    $request->session()->forget('biodata');
+                // Create a new Biodata record
+                $biodataRecord = Biodata::create($allData);
 
-    return redirect()
-        ->route('biodata.create')
-        ->with('success', 'Biodata saved successfully!');
-}
+                // Clear biodata session
+                $request->session()->forget('biodata');
+
+                return redirect()
+                    ->route('biodata.create')
+                    ->with('success', 'Biodata saved successfully!');
+            }
 
 
         // Navigate Steps

@@ -7,10 +7,13 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('biodatas', function (Blueprint $table) {
-            $table->id();  
-            // Foreign key to registrations
-            $table->unsignedBigInteger('registration_id')->nullable();
-            $table->foreign('registration_id')->references('id')->on('registrations')->onDelete('cascade');
+            $table->id(); 
+            $table->string('registration_id')->unique(); 
+           // Optional: add foreign key to registrations.registration_id
+            $table->foreign('registration_id')
+                ->references('registration_id')
+                ->on('registrations')
+                ->onDelete('cascade');
 
             // Step 1: General Info
             $table->string('marital_status')->nullable();

@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('registrations', function (Blueprint $table) {
             $table->id();
 
+            // ✅ Custom Registration ID
+            $table->string('registration_id')->unique();
+
             // Step 1 fields
             $table->string('name');
             $table->enum('gender', ['male', 'female'])->nullable();
@@ -21,8 +24,10 @@ return new class extends Migration
             // Step 2 fields (Email Verification)
             $table->string('email')->unique();
             $table->string('email_verification_code')->nullable();
+            $table->string('email_verification_token', 100)->nullable()->unique(); // For verification link
+            $table->timestamp('email_verification_sent_at')->nullable(); // Track resend timer
             $table->boolean('is_email_verified')->default(false);
-            $table->timestamp('email_verified_at')->nullable(); // ✅ new field added
+            $table->timestamp('email_verified_at')->nullable();
 
             // Step 3 fields (Mobile Verification)
             $table->string('country_code', 10)->nullable();

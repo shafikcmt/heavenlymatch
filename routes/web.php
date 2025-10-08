@@ -14,14 +14,24 @@ use App\Http\Controllers\PhoneVerificationController;
 
 Route::middleware('guest')->group(function () {
 
-    // Registration
+    // ✅ Registration
     Route::get('/register', [RegistrationController::class, 'showForm'])->name('register.show');
     Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
 
+    // ✅ Email Verification Notice Page
     Route::get('/verify-email', [EmailVerificationController::class, 'showVerifyForm'])->name('email.verify.notice');
-    Route::post('/send-verification-code', [EmailVerificationController::class, 'sendCode'])->name('email.send.code');
+
+    // ✅ Verify by code
     Route::post('/verify-email-code', [EmailVerificationController::class, 'verifyCode'])->name('email.verify.code');
+
+    // ✅ Send or Resend verification code
+    Route::post('/send-verification-code', [EmailVerificationController::class, 'sendCode'])->name('email.send.code');
+
+    // ✅ Verify by clickable link
+    Route::get('/verify-email/{token}', [EmailVerificationController::class, 'verifyLink'])->name('email.verify.link');
 });
+
+
 
 
 // Protected dashboard routes

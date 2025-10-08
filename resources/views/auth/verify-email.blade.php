@@ -20,48 +20,73 @@
         </form>
 
         <!-- Resend Code Form -->
-        <form method="POST" action="{{ route('email.send.code') }}">
+        <form method="POST" action="{{ route('email.send.code') }}" id="resendForm">
             @csrf
             <input type="hidden" name="email" value="{{ $email }}">
-            <button type="submit" class="btn btn-outline-primary w-100">🔄 Resend Code</button>
+            <button type="submit" id="resendBtn" class="btn btn-outline-primary w-100">🔄 Resend Code</button>
         </form>
+
+        <p id="timerText" class="text-center mt-2 text-muted"></p>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-// Function to show animated alert
+// Show animated alert
 function showAlert(type, message) {
     const alertBox = document.getElementById('alertBox');
     alertBox.className = `alert alert-${type} animate__animated animate__fadeInDown`;
     alertBox.textContent = message;
     alertBox.classList.remove('d-none');
-
-    // Auto-hide after 4 seconds with fade out
     setTimeout(() => {
         alertBox.classList.replace('animate__fadeInDown', 'animate__fadeOutUp');
     }, 4000);
-    setTimeout(() => {
-        alertBox.classList.add('d-none');
-    }, 5000);
+    setTimeout(() => alertBox.classList.add('d-none'), 5000);
 }
 
-// Show server-side flash messages
+// Flash messages
 @php
-    $success = session('success');
-    $error = session('error');
+$success = session('success');
+$error = session('error');
+$lastSent = auth()->user()->email_verification_sent_at ?? now();
 @endphp
 
 @if($success)
-    showAlert('success', '{{ $success }}');
+showAlert('success', '{{ $success }}');
 @endif
 
 @if($error)
-    showAlert('danger', '{{ $error }}');
+showAlert('danger', '{{ $error }}');
 @endif
+
+// Resend timer
+const resendBtn = document.getElementById('resendBtn');
+const timerText = document.getElementById('timerText');
+
+let remaining = @json(max(0, 120 - now()->diffInSeconds($lastSent)));
+
+function startTimer(seconds) {
+    if(seconds <= 0) return;
+    resendBtn.disabled = true;
+    resendBtn.style.pointerEvents = 'none';
+
+    const interval = setInterval(() => {
+        let minutes = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        timerText.textContent = `You can resend code in ${minutes}:${secs < 10 ? '0'+secs : secs}`;
+        seconds--;
+        if(seconds < 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            resendBtn.style.pointerEvents = 'auto';
+            timerText.textContent = '';
+        }
+    }, 1000);
+}
+
+startTimer(remaining);
 </script>
 
-<!-- Include Animate.css CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 @endpush
