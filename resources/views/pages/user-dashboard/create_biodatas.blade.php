@@ -1330,8 +1330,7 @@ $step = $step ?? 1; // if $step is not set, use 1
 {{-- JS --}}
 <script>
    
-
-    document.addEventListener("DOMContentLoaded", function() {
+   /* document.addEventListener("DOMContentLoaded", function() {
         const stepButtons = document.querySelectorAll(".step-btn");
         const stepInput = document.getElementById("currentStep");
         const form = document.querySelector("form");
@@ -1349,6 +1348,43 @@ $step = $step ?? 1; // if $step is not set, use 1
             });
         });
     });
+*/
+
+document.addEventListener("DOMContentLoaded", function () {
+    const steps = document.querySelectorAll(".step");
+    const stepButtons = document.querySelectorAll(".step-btn");
+    const stepInput = document.getElementById("currentStep");
+    const form = document.querySelector("form");
+
+    if (!form || !stepInput || steps.length === 0) {
+        console.warn("Step form or buttons not found in DOM.");
+        return;
+    }
+
+    // Function to set active step
+    function setActiveStep(stepNumber) {
+        steps.forEach(step => {
+            step.classList.remove("active");
+            if (parseInt(step.dataset.step) <= stepNumber) {
+                step.classList.add("active");
+            }
+        });
+    }
+
+    // Initialize stepper on page load
+    const currentStep = parseInt(stepInput.value) || 1;
+    setActiveStep(currentStep);
+
+    // Step buttons click
+    stepButtons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const newStep = parseInt(this.dataset.step);
+            stepInput.value = newStep;
+            setActiveStep(newStep); // update active step visually
+            form.submit();
+        });
+    });
+});
 
 
     // Address data

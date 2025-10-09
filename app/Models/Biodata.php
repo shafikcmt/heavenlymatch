@@ -113,6 +113,7 @@ class Biodata extends Model
         'guardian_mobile',
         'guardian_relationship',
         'guardian_email',
+        'is_completed',
     ];
 
     /**

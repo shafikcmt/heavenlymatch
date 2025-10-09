@@ -12,18 +12,19 @@ class CheckBiodataCompletion
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next)
-    {
-        $user = Auth::user();
+        {
+            $user = Auth::user();
 
-        // ✅ Check if user has completed biodata
-        if (!$user->biodata || !$user->biodata->is_completed) {
-            // Allow only biodata creation routes
-            if (!$request->is('biodata/create*') && !$request->is('biodata/store*')) {
-                return redirect()->route('biodata.create')
-                    ->with('warning', '📝 Please complete your biodata before continuing.');
+            $biodata = $user->biodata()->first(); // fetch fresh from DB
+
+            if (!$biodata || !$biodata->is_completed) {
+                // allow only biodata creation
+                if (!$request->is('biodata/create*') && !$request->is('biodata/store*')) {
+                    return redirect()->route('biodata.create')
+                        ->with('warning', '📝 Please complete your biodata before continuing.');
+                }
             }
-        }
 
-        return $next($request);
+            return $next($request);
+        }
     }
-}
