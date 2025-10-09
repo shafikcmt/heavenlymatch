@@ -115,6 +115,8 @@ return new class extends Migration {
             $table->string('guardian_mobile')->nullable();
             $table->string('guardian_relationship')->nullable();
             $table->string('guardian_email')->nullable();
+            $table->boolean('is_completed')->default(false);
+
 
             $table->timestamps();
         });

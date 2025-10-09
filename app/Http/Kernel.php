@@ -65,5 +65,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'verified.user' => \App\Http\Middleware\EnsureUserIsVerified::class,
         'guest.frontend' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
+        'check.biodata' => \App\Http\Middleware\CheckBiodataCompletion::class,
+
     ];
 }

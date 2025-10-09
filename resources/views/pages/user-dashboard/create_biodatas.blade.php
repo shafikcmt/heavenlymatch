@@ -1329,32 +1329,7 @@ $step = $step ?? 1; // if $step is not set, use 1
 
 {{-- JS --}}
 <script>
-    // Controll steps
-    /*document.addEventListener('DOMContentLoaded', function () {
-        const steps = document.querySelectorAll('.step');
-        const contents = document.querySelectorAll('.step-content');
-        let current = 1;
-
-        function showStep(step) {
-            steps.forEach(s => s.classList.remove('active'));
-            contents.forEach(c => c.classList.remove('active'));
-            document.querySelector('.step[data-step="'+step+'"]').classList.add('active');
-            document.querySelector('.step-content[data-step="'+step+'"]').classList.add('active');
-            current = step;
-        }
-
-        document.querySelectorAll('.next').forEach(btn => {
-            btn.addEventListener('click', () => { if (current < 10) showStep(current + 1); });
-        });
-        document.querySelectorAll('.prev').forEach(btn => {
-            btn.addEventListener('click', () => { if (current > 1) showStep(current - 1); });
-        });
-        steps.forEach(step => {
-            step.addEventListener('click', () => { showStep(parseInt(step.getAttribute('data-step'))); });
-        });
-
-        showStep(1);
-    }); */
+   
 
     document.addEventListener("DOMContentLoaded", function() {
         const stepButtons = document.querySelectorAll(".step-btn");

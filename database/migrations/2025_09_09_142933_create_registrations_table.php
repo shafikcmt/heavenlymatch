@@ -38,6 +38,9 @@ return new class extends Migration
             // Step 4 fields (Password)
             $table->string('password');
 
+            // ✅ Required for "Remember Me" functionality
+            $table->rememberToken();
+
             $table->timestamps();
         });
     }
