@@ -1,9 +1,22 @@
+---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/heavwzih/public_html
-    - /usr/local/bin/composer install --no-dev --optimize-autoloader
+    # Set deployment directory
+    - export DEPLOY_DIR=/home/heavwzih/public_html
+
+    # Navigate to deployment directory
+    - cd $DEPLOY_DIR
+
+    # Install PHP dependencies
+    - composer install --no-dev --optimize-autoloader
+
+    # Run migrations (force to avoid prompt)
     - php artisan migrate --force
+
+    # Cache configuration, routes, and views for performance
     - php artisan config:cache
     - php artisan route:cache
-    - php artisan storage:link
-    - chmod -R 775 storage bootstrap/cache
+    - php artisan view:cache
+
+    # Optional: clear old cache
+    - php artisan cache:clear
