@@ -119,8 +119,8 @@ class Biodata extends Model
     /**
      * Relationship: Biodata belongs to one Registration
      */
-    public function registration()
-    {
-        return $this->belongsTo(Registration::class, 'registration_id');
-    }
+        public function registration()
+        {
+            return $this->belongsTo(Registration::class, 'registration_id', 'registration_id');
+        }
 }

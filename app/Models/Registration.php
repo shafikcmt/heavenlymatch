@@ -39,7 +39,7 @@ class Registration extends Authenticatable implements MustVerifyEmail
     ];
 
     // ✅ One-to-One relationship with Biodata
-        public function biodata()
+     public function biodata()
         {
             return $this->hasOne(Biodata::class, 'registration_id', 'registration_id');
         }

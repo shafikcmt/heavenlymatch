@@ -9,6 +9,9 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BiodataController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\PhoneVerificationController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\DemoController;
+
 
 // --------------------------------------------------------
 // Guest Routes (Accessible only if not logged in)
@@ -48,8 +51,38 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
     // ------------------------
     Route::middleware('check.biodata')->group(function () {
         Route::get('/myhome', fn() => view('pages.user-dashboard.myhome'))->name('myhome');
-        Route::get('/demo', fn() => view('pages.user-dashboard.demo'))->name('demo');
-        Route::get('/profiledetail', fn() => view('pages.user-dashboard.profiledetail'))->name('profiledetail');
+        Route::get('/profiledetail', [UserProfileController::class, 'showProfile'])
+        ->middleware(['auth', 'check.biodata'])
+        ->name('profiledetail');
+        Route::put('/biodata/update-general-info/{id}', [BiodataController::class, 'updateGeneralInfo'])
+    ->name('biodata.updateGeneralInfo');
+    Route::put('/biodata/update-address/{id}', [BiodataController::class, 'updateAddress'])->name('biodata.updateAddress');
+    Route::put('/biodata/update-education/{id}', [App\Http\Controllers\BiodataController::class, 'updateEducation'])
+    ->name('biodata.update.education');
+    Route::put('/biodata/update-family/{id}', [App\Http\Controllers\BiodataController::class, 'updateFamily'])
+    ->name('biodata.update.family');
+   Route::put('/biodata/personal/{id}', [BiodataController::class, 'updatePersonal'])
+    ->name('biodata.update.personal');
+    Route::put('/biodata/occupation/{id}', [BiodataController::class, 'updateOccupation'])
+    ->name('biodata.update.occupation');
+    Route::put('/biodata/marriage/{id}', [BiodataController::class, 'updateMarriage'])
+    ->name('biodata.update.marriage');
+    Route::put('/biodata/{id}/update-partner', [BiodataController::class, 'updatePartner'])->name('biodata.update.partner');
+Route::put('/biodata/{id}/update-pledge', [BiodataController::class, 'updatePledge'])->name('biodata.update.pledge');
+Route::put('/biodata/update/contact/{id}', [BiodataController::class, 'updateContact'])->name('biodata.update.contact');
+
+Route::get('/biodata/download/{id}', [BiodataController::class, 'downloadPdf'])->name('biodata.download');
+
+
+
+
+
+
+
+        Route::middleware(['auth', 'check.biodata'])->group(function () {
+   
+});
+
         Route::get('/matches', fn() => view('pages.user-dashboard.matches'))->name('matches');
         Route::get('/inbox', fn() => view('pages.user-dashboard.inbox'))->name('inbox');
         Route::get('/sent', fn() => view('pages.user-dashboard.sent'))->name('sent');
@@ -59,6 +92,7 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 
     // Logout
     Route::post('/logout', [CustomLoginController::class, 'logout'])->name('logout');
+    Route::get('/demo', [DemoController::class, 'index'])->name('demo');
 });
 
 // --------------------------------------------------------

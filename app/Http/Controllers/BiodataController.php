@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Registration;
 use App\Models\Biodata;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class BiodataController extends Controller
 {
@@ -261,4 +263,228 @@ class BiodataController extends Controller
             'maxStep' => $maxStep, // <-- pass here too
         ]);
     }
+
+        public function updateGeneralInfo(Request $request, $id)
+    {
+        $biodata = Biodata::findOrFail($id);
+
+        $validated = $request->validate([
+            'marital_status' => 'nullable|string|max:50',
+            'birth_date' => 'nullable|date',
+            'height' => 'nullable|string|max:50',
+            'complexion' => 'nullable|string|max:50',
+            'weight' => 'nullable|string|max:50',
+            'blood_group' => 'nullable|string|max:10',
+            'nationality' => 'nullable|string|max:50',
+        ]);
+
+        $biodata->update($validated);
+
+        return redirect()->back()->with('success', 'General information updated successfully.');
+    }
+
+    public function updateAddress(Request $request, $id)
+    {
+        $biodata = Biodata::findOrFail($id);
+        $biodata->update([
+            'present_address'   => $request->present_address,
+            'village_area'      => $request->village_area,
+            'permanent_address' => $request->permanent_address,
+            'grew_up'           => $request->grew_up,
+        ]);
+
+        return redirect()->back()->with('success', 'Address updated successfully!');
+    }
+
+    public function updateEducation(Request $request, $id)
+{
+    $biodata = Biodata::findOrFail($id);
+
+    $biodata->update($request->only([
+        'education_method',
+        'highest_qualification',
+        'other_education',
+        'ssc_year',
+        'ssc_group',
+        'diploma_subject',
+        'diploma_medium',
+        'diploma_institution',
+        'diploma_year',
+        'graduation_subject',
+        'graduation_institution',
+        'graduation_year',
+        'postgraduation_subject',
+        'postgraduation_institution',
+        'postgraduation_year',
+        'islamic_titles',
+        'islamic_institution',
+        'islamic_year',
+    ]));
+
+    return back()->with('success', 'Educational qualifications updated successfully!');
+}
+
+public function updateFamily(Request $request, $id)
+{
+    $biodata = Biodata::findOrFail($id);
+
+    $biodata->update($request->only([
+        'father_name',
+        'father_alive',
+        'father_profession',
+        'mother_name',
+        'mother_alive',
+        'mother_profession',
+        'brothers',
+        'sisters',
+        'uncle_profession',
+        'family_financial_status',
+        'family_details',
+        'family_religious_condition',
+    ]));
+
+    return back()->with('success', 'Family information updated successfully!');
+}
+
+public function updatePersonal(Request $request, $id)
+{
+    // Validate inputs
+    $request->validate([
+        'clothing_style' => 'nullable|string|max:255',
+        'beard_info' => 'nullable|string|max:255',
+        'clothes_above_ankles' => 'nullable|string|max:255',
+        'prayers_info' => 'nullable|string|max:255',
+        'mahram_nonmahram' => 'nullable|string|max:255',
+        'quran_recitation' => 'nullable|string|max:255',
+        'fiqh' => 'nullable|string|max:255',
+        'watch_entertainment' => 'nullable|string|max:255',
+        'diseases' => 'nullable|string|max:255',
+        'beliefs_on_mazar' => 'nullable|string|max:255',
+        'books_read' => 'nullable|string|max:255',
+        'special_category' => 'nullable|string|max:255',
+        'hobbies' => 'nullable|string|max:255',
+        'groom_mobile' => 'nullable|string|max:20',
+    ]);
+
+    $biodata = Biodata::findOrFail($id);
+
+    // Update fields
+    $biodata->update($request->all());
+
+    return redirect()->back()->with('success', 'Personal Information updated successfully.');
+}
+
+public function updateOccupation(Request $request, $id)
+    {
+        $request->validate([
+            'occupation' => 'nullable|string|max:255',
+            'profession_details' => 'nullable|string|max:255',
+            'monthly_income' => 'nullable|string|max:255',
+        ]);
+
+        $biodata = Biodata::findOrFail($id);
+
+        $biodata->occupation = $request->occupation;
+        $biodata->profession_details = $request->profession_details;
+        $biodata->monthly_income = $request->monthly_income;
+        $biodata->save();
+
+        return redirect()->back()->with('success', 'Occupational information updated successfully!');
+    }
+
+    // Update Marriage & Future Plans Information
+    public function updateMarriage(Request $request, $id)
+    {
+        $request->validate([
+            'guardian_agree' => 'nullable|string|max:255',
+            'wife_in_veil' => 'nullable|string|max:255',
+            'wife_study_allowed' => 'nullable|string|max:255',
+            'wife_job_allowed' => 'nullable|string|max:255',
+            'residence_after_marriage' => 'nullable|string|max:255',
+            'expect_gift_from_bride' => 'nullable|string|max:255',
+        ]);
+
+        $biodata = Biodata::findOrFail($id);
+
+        $biodata->guardian_agree = $request->guardian_agree;
+        $biodata->wife_in_veil = $request->wife_in_veil;
+        $biodata->wife_study_allowed = $request->wife_study_allowed;
+        $biodata->wife_job_allowed = $request->wife_job_allowed;
+        $biodata->residence_after_marriage = $request->residence_after_marriage;
+        $biodata->expect_gift_from_bride = $request->expect_gift_from_bride;
+
+        $biodata->save();
+
+        return redirect()->back()->with('success', 'Marriage & future plan information updated successfully!');
+    }
+
+    public function updatePartner(Request $request, $id)
+{
+    $biodata = Biodata::findOrFail($id);
+
+    $biodata->update([
+        'partner_age' => $request->partner_age,
+        'partner_complexion' => $request->partner_complexion,
+        'partner_height' => $request->partner_height,
+        'partner_education' => $request->partner_education,
+        'partner_district' => $request->partner_district,
+        'partner_marital_status' => $request->partner_marital_status,
+        'partner_profession' => $request->partner_profession,
+        'partner_financial_condition' => $request->partner_financial_condition,
+        'partner_expectations' => $request->partner_expectations,
+    ]);
+
+    return redirect()->back()->with('success', 'Expected Life Partner details updated successfully.');
+}
+
+public function updatePledge(Request $request, $id)
+{
+    $biodata = Biodata::findOrFail($id);
+
+    $biodata->update([
+        'parents_know' => $request->parents_know,
+        'truth_testify' => $request->truth_testify,
+        'responsibility' => $request->responsibility,
+    ]);
+
+    return redirect()->back()->with('success', 'Pledge information updated successfully.');
+}
+
+public function updateContact(Request $request, $id)
+{
+    $request->validate([
+        'groom_name' => 'nullable|string|max:255',
+        'guardian_mobile' => 'nullable|string|max:20',
+        'guardian_relationship' => 'nullable|string|max:100',
+        'guardian_email' => 'nullable|email|max:255',
+    ]);
+
+    $biodata = Biodata::findOrFail($id);
+
+    $biodata->update([
+        'groom_name' => $request->groom_name,
+        'guardian_mobile' => $request->guardian_mobile,
+        'guardian_relationship' => $request->guardian_relationship,
+        'guardian_email' => $request->guardian_email,
+    ]);
+
+    return redirect()->back()->with('success', 'Contact information updated successfully.');
+}
+
+
+public function downloadPdf($id)
+{
+    $biodata = Biodata::findOrFail($id);
+    $pdf = Pdf::loadView('biodata.pdf', compact('biodata'));
+
+    // Store session flash message
+    session()->flash('success', 'Biodata PDF generated successfully!');
+    
+    // Download PDF
+    return $pdf->download('Biodata_'.$biodata->id.'.pdf');
+}
+
+
+
+
 }
