@@ -115,51 +115,90 @@
         </li>
 
         <!-- User Profile Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-3 animate-dropdown">
-            <li class="px-3 py-3 border-bottom text-center">
-              <img height="50px" src="https://hips.hearstapps.com/hmg-prod/images/index3-3-1651581277.jpg?crop=0.5xw:1xh;center,top&resize=640:*" class="rounded-circle mb-3" alt="Avatar">
+        <!-- Profile Dropdown (Fixed Design) -->
+<li class="nav-item dropdown">
+  <a class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+    <i class="bi bi-person-circle"></i>
+  </a>
 
-              <div>
-                  @if ($hasBiodata)
-                      <a href="{{ route('profiledetail') }}" class="btn btn-success btn-sm mb-2">View Biodata</a>
-                  @else
-                      <a href="{{ route('biodata.create') }}" class="btn btn-primary btn-sm mb-2">Create Biodata</a>
-                  @endif
-              </div>
-              
-              <div class="small text-white px-2 py-1 rounded mb-1" style="background-color: #ff6b6b;">
-                Biodata Status
-              </div>
-              <div class="small text-white px-2 py-1 rounded" style="background-color: #ff6b6b;">
-                Not Approved
-              </div>
-            </li>
+  <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-3 animate-dropdown">
+    <li class="px-3 py-3 border-bottom text-center">
+      <img height="50px"
+        src="https://hips.hearstapps.com/hmg-prod/images/index3-3-1651581277.jpg?crop=0.5xw:1xh;center,top&resize=640:*"
+        class="rounded-circle mb-3" alt="Avatar">
 
-            <!-- Dashboard Items -->
-            <li><a class="dropdown-item" href="#"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-2"></i>Edit Biodata</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-heart me-2"></i>Shortlist</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-x-circle me-2"></i>Ignore List</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-cart3 me-2"></i>My Purchased</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i>Support & Report</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-danger" href="#"
-                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                  <i class="bi bi-box-arrow-right me-2"></i>Logout
-              </a>
+      <div>
+        @if ($hasBiodata)
+          <a href="{{ route('profiledetail') }}" class="btn btn-success btn-sm mb-2">View Biodata</a>
+        @else
+          <a href="{{ route('biodata.create') }}" class="btn btn-primary btn-sm mb-2">Create Biodata</a>
+        @endif
+      </div>
 
-              <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                  @csrf
-              </form>
-            </li>
-          </ul>
-        </li>
+      <div class="small text-white px-2 py-1 rounded mb-1" style="background-color: #ff6b6b;">
+        Biodata Status
+      </div>
+      <div class="small text-white px-2 py-1 rounded" style="background-color: #ff6b6b;">
+        Not Approved
+      </div>
+    </li>
+
+    <li><a class="dropdown-item" href="#"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-2"></i>Edit Biodata</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-heart me-2"></i>Shortlist</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-x-circle me-2"></i>Ignore List</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-cart3 me-2"></i>My Purchased</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i>Support & Report</a></li>
+    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+
+    <li><hr class="dropdown-divider"></li>
+
+    <li>
+      <a class="dropdown-item text-danger" href="#"
+        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </a>
+
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+      </form>
+    </li>
+  </ul>
+</li>
+
+<!-- Add this CSS -->
+<style>
+/* Keep dropdown open on hover */
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block;
+  margin-top: 0; /* No gap */
+}
+
+/* Prevent dropdown from hiding when mouse moves */
+.nav-item.dropdown .dropdown-menu {
+  right: 0;
+  left: auto;
+  top: 100%;
+  transform: translateX(0);
+  min-width: 220px;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Nice animation */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* Avoid overflow on right edge */
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+  overflow: visible;
+}
+</style>
+
       </ul>
     </div>
   </div>

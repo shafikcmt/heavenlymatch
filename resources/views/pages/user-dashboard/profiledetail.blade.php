@@ -108,41 +108,46 @@
     }
 
     .btn-download {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    padding: 8px 16px;
-    font-weight: 500;
-    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
-    transition: all 0.3s ease-in-out;
-    position: relative;
-    overflow: hidden;
-}
-.btn-download:hover {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #20c997, #28a745);
-    box-shadow: 0 6px 15px rgba(32, 201, 151, 0.5);
-}
-.btn-download i {
-    transition: transform 0.3s ease-in-out;
-}
-.btn-download:hover i {
-    transform: translateY(-2px);
-}
-.btn-download::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.3);
-    transition: left 0.4s ease-in-out;
-}
-.btn-download:hover::after {
-    left: 100%;
-}
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: #fff;
+        border: none;
+        border-radius: 25px;
+        padding: 8px 16px;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-download:hover {
+        transform: scale(1.05);
+        background: linear-gradient(135deg, #20c997, #28a745);
+        box-shadow: 0 6px 15px rgba(32, 201, 151, 0.5);
+    }
+
+    .btn-download i {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .btn-download:hover i {
+        transform: translateY(-2px);
+    }
+
+    .btn-download::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        transition: left 0.4s ease-in-out;
+    }
+
+    .btn-download:hover::after {
+        left: 100%;
+    }
 </style>
 @endpush
 
@@ -180,10 +185,9 @@
     : 'N/A' }} , {{ $biodata->height ?? 'N/A' }} inc |
             {{ $biodata->present_address ?? 'N/A' }}
         </p>
-     <a href="{{ route('biodata.download', $biodata->id) }}" 
-   class="btn btn-download btn-sm" onclick="confirmDownload({{ $biodata->id }})">
-   <i class="bi bi-download me-1"></i> Download Biodata
-</a>
+        <a href="{{ route('biodata.download', $biodata->id) }}" class="btn btn-download btn-sm" onclick="confirmDownload({{ $biodata->id }})">
+            <i class="bi bi-download me-1"></i> Download Biodata
+        </a>
     </div>
 
     <!-- Profile Box -->
@@ -1389,38 +1393,37 @@
         });
     });
 
-function confirmDownload(id) {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "You are about to download the biodata PDF!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, Download!',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Start download
-            const link = document.createElement('a');
-            link.href = '/biodata/download/' + id;
-            link.download = '';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    function confirmDownload(id) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to download the biodata PDF!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Download!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Start download
+                const link = document.createElement('a');
+                link.href = '/biodata/download/' + id;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-            // Optional: show success toast
-            Swal.fire({
-                title: 'Downloading...',
-                text: 'Your biodata is being downloaded!',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        }
-    });
-}
-
+                // Optional: show success toast
+                Swal.fire({
+                    title: 'Downloading...',
+                    text: 'Your biodata is being downloaded!',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    }
 </script>
 
 @endsection
