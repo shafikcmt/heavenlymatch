@@ -55,8 +55,8 @@
 
     .id-text {
         text-align: center;
-        margin-top: 10px;
         font-weight: 600;
+        font-size: 10px;
     }
 
     /* LEFT AND RIGHT ICONS AT BOTTOM */
@@ -158,6 +158,40 @@
         color: #0d6efd;
         cursor: pointer;
     }
+
+
+
+.carousel-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.carousel-inner img {
+  width: 100%;
+  height: 201px; /* Set same height for all images */
+  object-fit: cover;
+  display: block;
+}
+
+
+/* ID text on image */
+.id-text {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 6px 14px;
+    /* border-radius: 6px; */
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    display: block;
+}
 </style>
 @endpush
 {{-- Main Dashboard Content --}}
@@ -210,32 +244,35 @@
                 <div class="d-flex align-items-start gap-3">
                     <!-- LEFT CAROUSEL -->
                     <div class="carousel-container position-relative">
-                        <div id="profileCarousel" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner rounded">
-                                <div class="carousel-item active">
-                                    <img src="https://i.pinimg.com/564x/02/e7/f5/02e7f5464591ce514fffbdf03b287eed.jpg" alt="Profile Image 1" />
-                                </div>
-                                <div class="carousel-item">
-                                    <img src="https://i.pinimg.com/736x/7d/9e/4b/7d9e4b710a28f342febffb0be5d88519.jpg" alt="Profile Image 2" />
-                                </div>
-                                <div class="carousel-item">
-                                    <img src="https://i.pinimg.com/736x/b6/86/b8/b686b8e70200aacc92ad78b70b866416.jpg" alt="Profile Image 3" />
-                                </div>
-                            </div>
+  <div id="profileCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner rounded overflow-hidden">
+      <div class="carousel-item active">
+        <img src="https://i.pinimg.com/564x/02/e7/f5/02e7f5464591ce514fffbdf03b287eed.jpg" alt="Profile Image 1" />
+      </div>
+      <div class="carousel-item">
+        <img src="https://i.pinimg.com/736x/7d/9e/4b/7d9e4b710a28f342febffb0be5d88519.jpg" alt="Profile Image 2" />
+      </div>
+      <div class="carousel-item">
+        <img src="https://i.pinimg.com/736x/b6/86/b8/b686b8e70200aacc92ad78b70b866416.jpg" alt="Profile Image 3" />
+      </div>
+    </div>
 
-                            <div class="carousel-indicators position-absolute bottom-0 end-0 me-2 mb-2" style="justify-content: center">
-                                <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="0" class="active"></button>
-                                <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="1"></button>
-                                <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="2"></button>
-                            </div>
-                        </div>
+ 
 
-                        <!-- ID BELOW IMAGE -->
-                        <div class="id-text">
-                            <i class="bi bi-person-vcard-fill me-1"></i>ID:
-                            <span>#GU12345</span>
-                        </div>
-                    </div>
+    <!-- Carousel Indicators -->
+    <div class="carousel-indicators position-absolute bottom-0 end-0 me-2 mb-1" style="justify-content: end">
+      <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="0" class="active"></button>
+      <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="1"></button>
+      <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="2"></button>
+    </div>
+  </div>
+
+  <!-- ID OVERLAY TEXT -->
+  <div class="id-text position-absolute">
+  ID:<span>HM12345</span>
+  </div>
+</div>
+
 
                     <!-- RIGHT DETAILS -->
                     <div class="flex-grow-1 position-relative">
