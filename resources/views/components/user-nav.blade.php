@@ -79,24 +79,29 @@
 .navbar .dropdown-menu {
     position: absolute; /* ensures it floats over all elements */
 }
+.navbar {
+    font-size: 12px !important;
+}
 </style>
 <!-- Main Navbar (unchanged) -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top navbar-main text-uppercase">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top navbar-main ">
   <div class="container">
-    <a class="navbar-brand" href="{{route('myhome')}}">Logo</a>
+    <a class="navbar-brand" href="{{route('myhome')}}">❤️ HeavenlyMatch</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>  
     </button>
 
-    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+    <div class="collapse navbar-collapse justify-content-center text-uppercase" id="navbarNav">
       <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link active" href="{{route('myhome')}}">My Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{route('matches')}}">Matches <span class="badge bg-secondary">4957</span></a></li>
-        <li class="nav-item"><a class="nav-link" href="{{route('inbox')}}">Inbox</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{route('search')}}">Search</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Daily Matches</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{route('upgrade')}}">Upgrade</a></li>
+        <li class="nav-item"><a class="nav-link active" href="{{route('myhome')}}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{route('matches')}}">Islamic Profile <span class="badge bg-secondary">4957</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{route('inbox')}}">General Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{route('search')}}">Prefarence Match</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">My Shortlist</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">My Favorite list</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Shortlisted me</a></li>
+        <!-- <li class="nav-item"><a class="nav-link" href="{{route('upgrade')}}">Upgrade</a></li> -->
       </ul>
 
       @php
@@ -205,7 +210,7 @@
 </nav>
 
 <!-- Second Navbar -->
-<nav class="navbar navbar-expand-lg navbar-secondary">
+<!-- <nav class="navbar navbar-expand-lg navbar-secondary">
   <div class="container justify-content-center">
     <ul class="navbar-nav">
       <li class="nav-item"><a class="nav-link" href="{{ route('demo') }}">Demo</a></li>
@@ -214,7 +219,102 @@
       <li class="nav-item"><a class="nav-link" href="{{ route('upgrade') }}">Upgrade</a></li>
     </ul>
   </div>
+</nav> -->
+
+<!-- Responsive Secondary Navbar -->
+<nav class="navbar navbar-expand-lg custom-subnav shadow-sm">
+  <div class="container">
+    <button
+      class="navbar-toggler ms-auto"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#secondaryNavbar"
+      aria-controls="secondaryNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <i class="bi bi-list fs-3 text-white"></i>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-center" id="secondaryNavbar">
+      <ul class="navbar-nav align-items-center gap-lg-3">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('demo') }}">
+            <i class="bi bi-play-circle me-1"></i> Demo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('matches') }}">
+            <i class="bi bi-people-fill me-1"></i> Matches
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('search') }}">
+            <i class="bi bi-search me-1"></i> Search
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('upgrade') }}">
+            <i class="bi bi-arrow-up-circle me-1"></i> Upgrade
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </nav>
+
+<style>
+  /* Custom Navbar Styling */
+  .custom-subnav {
+    background: linear-gradient(90deg, #007bff, #6610f2);
+    padding: 0.4rem 1rem;
+  }
+
+  .custom-subnav .nav-link {
+    color: #fff !important;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .custom-subnav .nav-link i {
+    font-size: 16px;
+  }
+
+  .custom-subnav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff !important;
+  }
+
+  .custom-subnav .navbar-toggler {
+    border: none;
+    outline: none;
+  }
+
+  @media (max-width: 992px) {
+    .custom-subnav .navbar-collapse {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    .custom-subnav .nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .custom-subnav .nav-item {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+
 
 
 <script>

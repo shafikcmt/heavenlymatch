@@ -30,7 +30,6 @@
             @hasSection('subnavbar')
                 @yield('subnavbar')  <!-- If page defines a sidebar, show it -->
             @else
-               @include('components.usernav-inner')  <!-- Default sidebar -->
             @endif
 
       

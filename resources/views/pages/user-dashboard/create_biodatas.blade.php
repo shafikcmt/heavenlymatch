@@ -12,208 +12,241 @@
 {{-- CSS --}}
 
 <style>
-  .stepper {
-    background: #fff;
-    border-radius: 12px;
-    padding: 25px 20px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-    transition: all 0.3s ease-in-out;
-    border-left: 6px solid #6f42c1; /* prominent left border */
-    margin-bottom: 40px;
-    position: relative;
-  }
+    .stepper {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease-in-out;
+        border-left: 6px solid #6f42c1;
+        /* prominent left border */
+        margin-bottom: 40px;
+        position: relative;
+    }
 
-  /* Hover effect on stepper */
-  .stepper:hover {
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
-    transform: translateY(-2px);
-  }
+    /* Hover effect on stepper */
+    .stepper:hover {
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+        transform: translateY(-2px);
+    }
 
-  /* Step item */
-  .step {
-    position: relative;
-    padding-left: 45px; /* space for small circle */
-    margin-bottom: 35px;
-    display: flex;
-    align-items: center;
-  }
+    /* Step item */
+    .step {
+        position: relative;
+        padding-left: 45px;
+        /* space for small circle */
+        margin-bottom: 35px;
+        display: flex;
+        align-items: center;
+    }
 
-  /* Last step */
-  .step:last-child {
-    margin-bottom: 0;
-  }
+    /* Last step */
+    .step:last-child {
+        margin-bottom: 0;
+    }
 
-  /* Small circle indicator */
-  .step .circle {
-    position: absolute;
-    left: -18px; /* smaller offset for small circle */
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #e0e0e0;
-    border: 2px solid #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 12px;
-    color: #6f42c1;
-    box-shadow: 0 0 0 2px #6f42c1;
-    transition: all 0.3s ease-in-out;
-    z-index: 2;
-  }
+    /* Small circle indicator */
+    .step .circle {
+        position: absolute;
+        left: -18px;
+        /* smaller offset for small circle */
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: #6f42c1;
+        box-shadow: 0 0 0 2px #6f42c1;
+        transition: all 0.3s ease-in-out;
+        z-index: 2;
+    }
 
-  /* Active circle */
-  .step.active .circle {
-    background: #e83e8c;
-    color: #fff;
-    box-shadow: 0 0 0 3px #ff5fa2;
-    transform: scale(1.3);
-  }
+    /* Active circle */
+    .step.active .circle {
+        background: #e83e8c;
+        color: #fff;
+        box-shadow: 0 0 0 3px #ff5fa2;
+        transform: scale(1.3);
+    }
 
-  /* Vertical line connecting small circles */
-  .step:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    left: -8px;
-    top: 20px; /* start below the small circle */
-    width: 3px;
-    height: calc(100% - 20px);
-    background: #e0e0e0;
-    border-radius: 2px;
-    z-index: 1;
-  }
+    /* Vertical line connecting small circles */
+    .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        left: -8px;
+        top: 20px;
+        /* start below the small circle */
+        width: 3px;
+        height: calc(100% - 20px);
+        background: #e0e0e0;
+        border-radius: 2px;
+        z-index: 1;
+    }
 
-  /* Step label */
-  .step .label {
-    font-weight: 600;
-    font-size: 15px;
-    color: #212529;
-    transition: color 0.3s;
-  }
+    /* Step label */
+    .step .label {
+        font-weight: 600;
+        font-size: 15px;
+        color: #212529;
+        transition: color 0.3s;
+    }
 
-  /* Hover label effect */
-  .step:hover .label {
-    color: #6f42c1;
-  }
+    /* Hover label effect */
+    .step:hover .label {
+        color: #6f42c1;
+    }
 
-  /* Optional description */
-  .step p {
-    margin: 0;
-    font-size: 13px;
-    color: #6c757d;
-  }
+    /* Optional description */
+    .step p {
+        margin: 0;
+        font-size: 13px;
+        color: #6c757d;
+    }
 
     /* Step Content Card */
-  .step-content {
-    background: #f9f9fb;
-    border: 1px solid #e0e0e0;
-    border-left: 5px solid #6f42c1;
-    border-radius: 10px;
-    padding: 30px 25px;
-    margin-bottom: 35px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.06);
-    transition: all 0.3s ease-in-out;
-  }
+    .step-content {
+        background: #f9f9fb;
+        border: 1px solid #e0e0e0;
+        border-left: 5px solid #6f42c1;
+        border-radius: 10px;
+        padding: 30px 25px;
+        margin-bottom: 35px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease-in-out;
+    }
 
-  .step-content:hover {
-    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
-    transform: translateY(-2px);
-  }
+    .step-content:hover {
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
 
-  /* Step header with progress */
-  .step-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+    /* Step header with progress */
+    .step-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
 
-  .step-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #343a40;
-    margin: 0;
-  }
+    .step-header h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #343a40;
+        margin: 0;
+    }
 
-  .progress {
-    height: 8px;
-    border-radius: 5px;
-    overflow: hidden;
-    background: #e0e0e0;
-    flex: 1;
-    margin-left: 15px;
-  }
+    .progress {
+        height: 8px;
+        border-radius: 5px;
+        overflow: hidden;
+        background: #e0e0e0;
+        flex: 1;
+        margin-left: 15px;
+    }
 
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(135deg, #6f42c1, #e83e8c);
-    width: 0;
-    transition: width 0.4s ease-in-out;
-  }
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(135deg, #6f42c1, #e83e8c);
+        width: 0;
+        transition: width 0.4s ease-in-out;
+    }
 
-  .step-content h4 {
-    font-size: 20px;
-    font-weight: 700;
-    color: #343a40;
-    margin-bottom: 18px;
-    position: relative;
-    padding-left: 12px;
-  }
+    .step-content h4 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 18px;
+        position: relative;
+        padding-left: 12px;
+    }
 
-  .step-content h4::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 5px;
-    width: 4px;
-    height: 70%;
-    background: linear-gradient(135deg, #6f42c1, #e83e8c);
-    border-radius: 3px;
-  }
+    .step-content h4::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 5px;
+        width: 4px;
+        height: 70%;
+        background: linear-gradient(135deg, #6f42c1, #e83e8c);
+        border-radius: 3px;
+    }
 
-  /* Form Inputs */
-  .step-content .form-control {
-    border-radius: 6px;
-    padding: 11px 14px;
-    font-size: 15px;
-    border: 1px solid #ced4da;
-    transition: all 0.3s ease-in-out;
-  }
+    /* Form Inputs */
+    .step-content .form-control {
+        border-radius: 6px;
+        padding: 11px 14px;
+        font-size: 15px;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease-in-out;
+    }
 
-  .step-content .form-control:focus {
-    border-color: #6f42c1;
-    box-shadow: 0 0 6px rgba(111,66,193,0.25);
-  }
+    .step-content .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 6px rgba(111, 66, 193, 0.25);
+    }
 
-  /* Buttons */
-  .step-buttons {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 25px;
-  }
+    /* Buttons */
+    .step-buttons {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 25px;
+    }
 
-  .step-buttons .btn {
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-weight: 600;
-    min-width: 130px;
-    transition: all 0.3s ease-in-out;
-  }
+    .step-buttons .btn {
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 600;
+        min-width: 130px;
+        transition: all 0.3s ease-in-out;
+    }
 
-  .btn-primary { background: #6f42c1; border: none; color: #fff; }
-  .btn-primary:hover { background: #e83e8c; box-shadow: 0 6px 14px rgba(232,62,140,0.25); }
+    .btn-primary {
+        background: #6f42c1;
+        border: none;
+        color: #fff;
+    }
 
-  .btn-secondary { background: #6c757d; border: none; color: #fff; }
-  .btn-secondary:hover { background: #5a6268; }
+    .btn-primary:hover {
+        background: #e83e8c;
+        box-shadow: 0 6px 14px rgba(232, 62, 140, 0.25);
+    }
 
-  .btn-success { background: #198754; border: none; color: #fff; }
-  .btn-success:hover { background: #157347; }
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        color: #fff;
+    }
 
-  .btn-warning { background: #ffc107; border: none; color: #212529; }
-  .btn-warning:hover { background: #e0a800; }
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .btn-success {
+        background: #198754;
+        border: none;
+        color: #fff;
+    }
+
+    .btn-success:hover {
+        background: #157347;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        border: none;
+        color: #212529;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+    }
 </style>
 
 @endpush
@@ -281,11 +314,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- ✅ Step 1: General Info -->
                 @if($step == 1)
                 <div class="step-content active" data-step="1">
-                   <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4>General Info</h4>
@@ -358,11 +391,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 2: Address -->
                 @if($step == 2)
                 <div class="step-content active" data-step="2">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4>Address</h4>
@@ -428,11 +461,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 3: Educational Qualifications -->
                 @if($step == 3)
                 <div class="step-content active" data-step="3">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Educational Qualifications</h4>
@@ -499,11 +532,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 4: Family Information -->
                 @if($step == 4)
                 <div class="step-content active" data-step="4">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Family Information</h4>
@@ -617,11 +650,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 5: Personal Information -->
                 @if($step == 5)
                 <div class="step-content active" data-step="5">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Personal Information</h4>
@@ -642,13 +675,17 @@ $step = $step ?? 1; // if $step is not set, use 1
 
                     <!-- Clothes above ankles -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Do you wear clothes above the ankles? *</label>
-                        <select name="clothes_above_ankles" class="form-select">
+                        <label for="clothes_above_ankles" class="form-label fw-bold">
+                            Do you wear clothes above the ankles? *
+                        </label>
+                        <select name="clothes_above_ankles" id="clothes_above_ankles" class="form-select" required>
                             <option value="">-- Select --</option>
-                            <option value="1" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='1' ? 'selected' : '' }}>Yes</option>
-                            <option value="0" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='0' ? 'selected' : '' }}>No</option>
+                            <option value="yes" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
                         </select>
-                        @error('clothes_above_ankles') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('clothes_above_ankles')
+                        <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
 
                     <!-- Prayer -->
@@ -658,28 +695,38 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('prayers_info') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <!-- Mahram Compliance -->
+                   <!-- Mahram Compliance -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Do you comply with mahram / non-mahram? *</label>
-                        <select name="mahram_nonmahram" class="form-select">
+                        <label for="mahram_nonmahram" class="form-label fw-bold">
+                            Do you comply with mahram / non-mahram? *
+                        </label>
+                        <select 
+                            name="mahram_nonmahram" 
+                            id="mahram_nonmahram" 
+                            class="form-select" 
+                            required
+                        >
                             <option value="">-- Select --</option>
-                            <option value="1" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '' )=='1' ? 'selected' : '' }}>Yes</option>
-                            <option value="0" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '' )=='0' ? 'selected' : '' }}>No</option>
+                            <option value="yes" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '') == 'yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '') == 'no' ? 'selected' : '' }}>No</option>
                         </select>
-                        @error('mahram_nonmahram') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('mahram_nonmahram')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
 
+
                     <div class="mb-3">
-    <label class="form-label fw-bold">Are you able to read the Quran correctly? *</label>
-    <select name="quran_recitation" class="form-select" required>
-        <option value="">-- Select --</option>
-        <option value="Yes" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
-        <option value="No" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '') == 'No' ? 'selected' : '' }}>No</option>
-    </select>
-    @error('quran_recitation')
-        <small class="text-danger">{{ $message }}</small>
-    @enderror
-</div>
+                        <label class="form-label fw-bold">Are you able to read the Quran correctly? *</label>
+                        <select name="quran_recitation" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            <option value="Yes" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="No" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
+                        </select>
+                        @error('quran_recitation')
+                        <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
                     <!-- Fiqh -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Which Fiqh do you follow? *</label>
@@ -692,29 +739,38 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('fiqh') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <!-- Entertainment -->
+                <!-- Entertainment -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Do you watch or listen to dramas / movies / serials / songs? *</label>
-                        <select name="watch_entertainment" class="form-select">
+                        <label for="watch_entertainment" class="form-label fw-bold">
+                            Do you watch or listen to dramas / movies / serials / songs? *
+                        </label>
+                        <select 
+                            name="watch_entertainment" 
+                            id="watch_entertainment" 
+                            class="form-select" 
+                            required
+                        >
                             <option value="">-- Select --</option>
-                            <option value="1" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '' )=='1' ? 'selected' : '' }}>Yes</option>
-                            <option value="0" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '' )=='0' ? 'selected' : '' }}>No</option>
+                            <option value="yes" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '') == 'yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '') == 'no' ? 'selected' : '' }}>No</option>
                         </select>
-                        @error('watch_entertainment') <small class="text-danger">{{ $message }}</small> @enderror
+                        @error('watch_entertainment')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
 
                     <!-- Health -->
-<div class="mb-3">
-    <label class="form-label fw-bold">Do you have any mental or physical diseases? *</label>
-    <select name="diseases" class="form-select" required>
-        <option value="">-- Select --</option>
-        <option value="Yes" {{ old('diseases', $biodata['step_5']['diseases'] ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
-        <option value="No" {{ old('diseases', $biodata['step_5']['diseases'] ?? '') == 'No' ? 'selected' : '' }}>No</option>
-    </select>
-    @error('diseases')
-        <small class="text-danger">{{ $message }}</small>
-    @enderror
-</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Do you have any mental or physical diseases? *</label>
+                        <select name="diseases" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            <option value="Yes" {{ old('diseases', $biodata['step_5']['diseases'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="No" {{ old('diseases', $biodata['step_5']['diseases'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
+                        </select>
+                        @error('diseases')
+                        <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
 
                     <!-- Shrine beliefs -->
                     <div class="mb-3">
@@ -734,16 +790,15 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <div class="mb-3">
                         <label class="form-label fw-bold">Select the category applicable to you</label>
                         @php
-                            $categories = ['Disabled','Infertile','Converted Muslim','Orphan','Interested in becoming a second wife','Tablig'];
-                            $selected = old('special_category', $biodata['step_5']['special_category'] ?? []);
+                        $categories = ['Disabled','Infertile','Converted Muslim','Orphan','Interested in becoming a second wife','Tablig'];
+                        $selected = old('special_category', $biodata['step_5']['special_category'] ?? []);
                         @endphp
                         <div>
                             @foreach($categories as $category)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="special_category[]" value="{{ $category }}" 
-                                        {{ in_array($category, $selected) ? 'checked' : '' }}>
-                                    <label class="form-check-label">{{ $category }}</label>
-                                </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="special_category[]" value="{{ $category }}" {{ in_array($category, $selected) ? 'checked' : '' }}>
+                                <label class="form-check-label">{{ $category }}</label>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -787,11 +842,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 6: Occupational Information -->
                 @if($step == 6)
                 <div class="step-content active" data-step="6">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Occupational Information</h4>
@@ -822,11 +877,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 7: Marriage Related Information -->
                 @if($step == 7)
                 <div class="step-content active" data-step="7">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Marriage Related Information</h4>
@@ -836,44 +891,44 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <label class="form-label fw-bold">Do your guardians agree to your marriage? *</label>
                         <select name="guardian_agree" class="form-select" required>
                             <option value="">-- Select --</option>
-                            <option value="Yes" {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="No"  {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '') == 'No' ? 'selected' : '' }}>No</option>
+                            <option value="Yes" {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="No" {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
                         </select>
                         @error('guardian_agree')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
-                   <!-- Wife in Veil -->
+                    <!-- Wife in Veil -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Will you be able to keep your wife in the veil after marriage? *</label>
                         <select name="wife_in_veil" class="form-select" required>
                             <option value="">-- Select --</option>
                             @php
-                                $options = ['Yes', 'No', 'InshaAllah'];
-                                $selected = old('wife_in_veil', $biodata['step_7']['wife_in_veil'] ?? '');
+                            $options = ['Yes', 'No', 'InshaAllah'];
+                            $selected = old('wife_in_veil', $biodata['step_7']['wife_in_veil'] ?? '');
                             @endphp
                             @foreach($options as $option)
-                                <option value="{{ $option }}" {{ $selected == $option ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
+                            <option value="{{ $option }}" {{ $selected==$option ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
                             @endforeach
                         </select>
                         @error('wife_in_veil')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
-                   <!-- Wife Study Allowed -->
+                    <!-- Wife Study Allowed -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Would you like to allow your wife to study after marriage? *</label>
                         <select name="wife_study_allowed" class="form-select" required>
                             <option value="">-- Select --</option>
-                            <option value="Yes" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="No" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '') == 'No' ? 'selected' : '' }}>No</option>
+                            <option value="Yes" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="No" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
                         </select>
                         @error('wife_study_allowed')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
@@ -882,11 +937,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <label class="form-label fw-bold">Would you like to allow your wife to do any job after marriage? *</label>
                         <select name="wife_job_allowed" class="form-select" required>
                             <option value="">-- Select --</option>
-                            <option value="Yes" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '') == 'Yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="No" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '') == 'No' ? 'selected' : '' }}>No</option>
+                            <option value="Yes" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="No" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
                         </select>
                         @error('wife_job_allowed')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
@@ -896,13 +951,13 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <select name="residence_after_marriage" class="form-select" required>
                             <option value="">-- Select --</option>
                             @foreach(['Own House', 'Wife’s House', 'Rented House', 'Other'] as $option)
-                                <option value="{{ $option }}" {{ old('residence_after_marriage', $biodata['step_7']['residence_after_marriage'] ?? '') == $option ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
+                            <option value="{{ $option }}" {{ old('residence_after_marriage', $biodata['step_7']['residence_after_marriage'] ?? '' )==$option ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
                             @endforeach
                         </select>
                         @error('residence_after_marriage')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
@@ -912,13 +967,13 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <select name="expect_gift_from_bride" class="form-select" required>
                             <option value="">-- Select --</option>
                             @foreach(['Yes', 'No'] as $option)
-                                <option value="{{ $option }}" {{ old('expect_gift_from_bride', $biodata['step_7']['expect_gift_from_bride'] ?? '') == $option ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
+                            <option value="{{ $option }}" {{ old('expect_gift_from_bride', $biodata['step_7']['expect_gift_from_bride'] ?? '' )==$option ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
                             @endforeach
                         </select>
                         @error('expect_gift_from_bride')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
                 </div>
@@ -927,11 +982,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 8: Expected Life Partner -->
                 @if($step == 8)
                 <div class="step-content active" data-step="8">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4 class="mb-3">Expected Life Partner</h4>
@@ -940,23 +995,22 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <label class="form-label fw-bold">Preferred Age Range *</label>
                         <div class="d-flex gap-2">
                             @php
-                                $ageFrom = old('partner_age', $biodata['step_8']['partner_age'] ?? '');
-                                $ageFromValue = explode('-', $ageFrom)[0] ?? '';
-                                $ageToValue = explode('-', $ageFrom)[1] ?? '';
+                            $ageFrom = old('partner_age', $biodata['step_8']['partner_age'] ?? '');
+                            $ageFromValue = explode('-', $ageFrom)[0] ?? '';
+                            $ageToValue = explode('-', $ageFrom)[1] ?? '';
                             @endphp
 
                             <select id="age-from" class="form-select" required>
                                 <option value="">From</option>
-                                @for($from = 18; $from <= 55; $from++)
-                                    <option value="{{ $from }}" {{ $ageFromValue == $from ? 'selected' : '' }}>{{ $from }}</option>
-                                @endfor
+                                @for($from = 18; $from <= 55; $from++) <option value="{{ $from }}" {{ $ageFromValue==$from ? 'selected' : '' }}>{{ $from }}</option>
+                                    @endfor
                             </select>
 
                             <select id="age-to" class="form-select" required>
                                 <option value="">To</option>
                                 @for($to = 23; $to <= 60; $to++) <!-- minimum 5-year gap -->
-                                    <option value="{{ $to }}" {{ $ageToValue == $to ? 'selected' : '' }}>{{ $to }}</option>
-                                @endfor
+                                    <option value="{{ $to }}" {{ $ageToValue==$to ? 'selected' : '' }}>{{ $to }}</option>
+                                    @endfor
                             </select>
 
                             <!-- Hidden input to store combined value -->
@@ -972,7 +1026,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                         const hiddenAgeInput = document.getElementById('partner-age');
 
                         function updateAge() {
-                            if(ageFromSelect.value && ageToSelect.value) {
+                            if (ageFromSelect.value && ageToSelect.value) {
                                 hiddenAgeInput.value = ageFromSelect.value + '-' + ageToSelect.value;
                             } else {
                                 hiddenAgeInput.value = '';
@@ -985,20 +1039,17 @@ $step = $step ?? 1; // if $step is not set, use 1
 
 
 
-               <!-- Complexion -->
+                    <!-- Complexion -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Complexion *</label>
                         <div class="d-flex flex-wrap gap-3">
                             @foreach(['Dark','Brown','Bright Brown','Fair','Bright Fair'] as $option)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="partner_complexion[]" 
-                                        value="{{ $option }}" 
-                                        id="complexion_{{ $loop->index }}"
-                                        {{ in_array($option, old('partner_complexion', $biodata['step_8']['partner_complexion'] ?? [])) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="complexion_{{ $loop->index }}">
-                                        {{ $option }}
-                                    </label>
-                                </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="partner_complexion[]" value="{{ $option }}" id="complexion_{{ $loop->index }}" {{ in_array($option, old('partner_complexion', $biodata['step_8']['partner_complexion'] ?? [])) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="complexion_{{ $loop->index }}">
+                                    {{ $option }}
+                                </label>
+                            </div>
                             @endforeach
                         </div>
                         <small class="text-muted">You may select multiple items. Do not write 'Any' or 'Adjustable'.</small>
@@ -1006,89 +1057,89 @@ $step = $step ?? 1; // if $step is not set, use 1
                     </div>
 
                     <!-- Height Range -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Preferred Partner Height (in feet) *</label>
-                            <div class="d-flex gap-2">
-                                @php
-                                    $heights = [
-                                        '4.5','4.6','4.7','4.8','4.9',
-                                        '5.0','5.1','5.2','5.3','5.4','5.5',
-                                        '5.6','5.7','5.8','5.9',
-                                        '6.0','6.1','6.2','6.3','6.4','6.5'
-                                    ];
-                                    $selectedRange = old('partner_height', $biodata['step_8']['partner_height'] ?? '');
-                                    $fromSelected = explode('-', $selectedRange)[0] ?? '';
-                                    $toSelected   = explode('-', $selectedRange)[1] ?? '';
-                                @endphp
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Preferred Partner Height (in feet) *</label>
+                        <div class="d-flex gap-2">
+                            @php
+                            $heights = [
+                            '4.5','4.6','4.7','4.8','4.9',
+                            '5.0','5.1','5.2','5.3','5.4','5.5',
+                            '5.6','5.7','5.8','5.9',
+                            '6.0','6.1','6.2','6.3','6.4','6.5'
+                            ];
+                            $selectedRange = old('partner_height', $biodata['step_8']['partner_height'] ?? '');
+                            $fromSelected = explode('-', $selectedRange)[0] ?? '';
+                            $toSelected = explode('-', $selectedRange)[1] ?? '';
+                            @endphp
 
-                                <select id="height-from" class="form-select" required>
-                                    <option value="">From</option>
-                                    @foreach($heights as $height)
-                                        <option value="{{ $height }}" {{ $fromSelected == $height ? 'selected' : '' }}>{{ $height }}</option>
-                                    @endforeach
-                                </select>
+                            <select id="height-from" class="form-select" required>
+                                <option value="">From</option>
+                                @foreach($heights as $height)
+                                <option value="{{ $height }}" {{ $fromSelected==$height ? 'selected' : '' }}>{{ $height }}</option>
+                                @endforeach
+                            </select>
 
-                                <select id="height-to" class="form-select" required>
-                                    <option value="">To</option>
-                                    @foreach($heights as $height)
-                                        <option value="{{ $height }}" {{ $toSelected == $height ? 'selected' : '' }}>{{ $height }}</option>
-                                    @endforeach
-                                </select>
+                            <select id="height-to" class="form-select" required>
+                                <option value="">To</option>
+                                @foreach($heights as $height)
+                                <option value="{{ $height }}" {{ $toSelected==$height ? 'selected' : '' }}>{{ $height }}</option>
+                                @endforeach
+                            </select>
 
-                                <!-- Hidden input to store combined value -->
-                                <input type="hidden" name="partner_height" id="partner-height" value="{{ $selectedRange }}">
-                            </div>
-                            <small class="text-muted">Select the height range.</small>
-                            @error('partner_height') <small class="text-danger">{{ $message }}</small> @enderror
+                            <!-- Hidden input to store combined value -->
+                            <input type="hidden" name="partner_height" id="partner-height" value="{{ $selectedRange }}">
                         </div>
+                        <small class="text-muted">Select the height range.</small>
+                        @error('partner_height') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
 
-                        <script>
-                            const fromSelect = document.getElementById('height-from');
-                            const toSelect = document.getElementById('height-to');
-                            const hiddenInput = document.getElementById('partner-height');
+                    <script>
+                        const fromSelect = document.getElementById('height-from');
+                        const toSelect = document.getElementById('height-to');
+                        const hiddenInput = document.getElementById('partner-height');
 
-                            function updateHeight() {
-                                if(fromSelect.value && toSelect.value) {
-                                    hiddenInput.value = fromSelect.value + '-' + toSelect.value;
-                                } else {
-                                    hiddenInput.value = '';
-                                }
+                        function updateHeight() {
+                            if (fromSelect.value && toSelect.value) {
+                                hiddenInput.value = fromSelect.value + '-' + toSelect.value;
+                            } else {
+                                hiddenInput.value = '';
                             }
+                        }
 
-                            fromSelect.addEventListener('change', updateHeight);
-                            toSelect.addEventListener('change', updateHeight);
-                        </script>
+                        fromSelect.addEventListener('change', updateHeight);
+                        toSelect.addEventListener('change', updateHeight);
+                    </script>
 
 
-                   <!-- Education -->
+                    <!-- Education -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Educational Qualification *</label>
                         <select name="partner_education" class="form-select" required>
                             <option value="">-- Select Qualification --</option>
                             @php
-                                $educationOptions = [
-                                    'SSC',
-                                    'HSC',
-                                    'Diploma',
-                                    'Graduation',
-                                    'Post Graduation',
-                                    'Hafez',
-                                    'Others'
-                                ];
-                                $selected = old('partner_education', $biodata['step_8']['partner_education'] ?? '');
+                            $educationOptions = [
+                            'SSC',
+                            'HSC',
+                            'Diploma',
+                            'Graduation',
+                            'Post Graduation',
+                            'Hafez',
+                            'Others'
+                            ];
+                            $selected = old('partner_education', $biodata['step_8']['partner_education'] ?? '');
                             @endphp
                             @foreach($educationOptions as $option)
-                                <option value="{{ $option }}" {{ $selected == $option ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
+                            <option value="{{ $option }}" {{ $selected==$option ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
                             @endforeach
                         </select>
                         @error('partner_education')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
-                   <!-- District -->
+                    <!-- District -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">District *</label>
                         <select name="partner_district" id="partner_district" class="form-select" required>
@@ -1096,7 +1147,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                         </select>
                         <small class="text-muted">Mention specific districts.</small>
                         @error('partner_district')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
@@ -1110,8 +1161,8 @@ $step = $step ?? 1; // if $step is not set, use 1
 
                                     data.forEach(district => {
                                         const option = document.createElement('option');
-                                        option.value = district.name;  // use "name" or "bn_name" if you want Bangla
-                                        option.text = district.name;   // display text
+                                        option.value = district.name; // use "name" or "bn_name" if you want Bangla
+                                        option.text = district.name; // display text
                                         if (district.name === oldDistrict) {
                                             option.selected = true;
                                         }
@@ -1120,28 +1171,28 @@ $step = $step ?? 1; // if $step is not set, use 1
                                 })
                                 .catch(error => console.error('Error loading districts:', error));
                         });
-                        </script>
+                    </script>
 
 
 
 
-                 <!-- Marital Status -->
+                    <!-- Marital Status -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Marital Status *</label>
                         <select name="partner_marital_status[]" class="form-select" multiple required>
                             @php
-                                $maritalOptions = ['Never Married', 'Divorced', 'Widow'];
-                                $selected = old('partner_marital_status', $biodata['step_8']['partner_marital_status'] ?? []);
+                            $maritalOptions = ['Never Married', 'Divorced', 'Widow'];
+                            $selected = old('partner_marital_status', $biodata['step_8']['partner_marital_status'] ?? []);
                             @endphp
                             @foreach($maritalOptions as $option)
-                                <option value="{{ $option }}" {{ in_array($option, $selected) ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
+                            <option value="{{ $option }}" {{ in_array($option, $selected) ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
                             @endforeach
                         </select>
                         <small class="text-muted">You may select multiple options.</small>
                         @error('partner_marital_status')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
@@ -1152,57 +1203,57 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <select name="partner_profession" class="form-select" required>
                             <option value="">-- Select Profession --</option>
                             @php
-                                $professions = [
-                                    'Engineer',
-                                    'Doctor',
-                                    'Teacher',
-                                    'Business',
-                                    'Government Employee',
-                                    'Private Job',
-                                    'Farmer',
-                                    'Others'
-                                ];
-                                $selected = old('partner_profession', $biodata['step_8']['partner_profession'] ?? '');
+                            $professions = [
+                            'Engineer',
+                            'Doctor',
+                            'Teacher',
+                            'Business',
+                            'Government Employee',
+                            'Private Job',
+                            'Farmer',
+                            'Others'
+                            ];
+                            $selected = old('partner_profession', $biodata['step_8']['partner_profession'] ?? '');
                             @endphp
                             @foreach($professions as $profession)
-                                <option value="{{ $profession }}" {{ $selected == $profession ? 'selected' : '' }}>
-                                    {{ $profession }}
-                                </option>
+                            <option value="{{ $profession }}" {{ $selected==$profession ? 'selected' : '' }}>
+                                {{ $profession }}
+                            </option>
                             @endforeach
                         </select>
                         <small class="text-muted">Do not write 'Any' or 'Adjustable'.</small>
                         @error('partner_profession')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
 
-                   <!-- Financial Condition -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Financial Condition *</label>
-                            <select name="partner_financial_condition" class="form-select" required>
-                                <option value="">-- Select Financial Condition --</option>
-                                @php
-                                    $financialOptions = [
-                                        'Poor',
-                                        'Average',
-                                        'Good',
-                                        'Very Good',
-                                        'Wealthy'
-                                    ];
-                                    $selected = old('partner_financial_condition', $biodata['step_8']['partner_financial_condition'] ?? '');
-                                @endphp
-                                @foreach($financialOptions as $option)
-                                    <option value="{{ $option }}" {{ $selected == $option ? 'selected' : '' }}>
-                                        {{ $option }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted">Be specific about financial status.</small>
-                            @error('partner_financial_condition')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
+                    <!-- Financial Condition -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Financial Condition *</label>
+                        <select name="partner_financial_condition" class="form-select" required>
+                            <option value="">-- Select Financial Condition --</option>
+                            @php
+                            $financialOptions = [
+                            'Poor',
+                            'Average',
+                            'Good',
+                            'Very Good',
+                            'Wealthy'
+                            ];
+                            $selected = old('partner_financial_condition', $biodata['step_8']['partner_financial_condition'] ?? '');
+                            @endphp
+                            @foreach($financialOptions as $option)
+                            <option value="{{ $option }}" {{ $selected==$option ? 'selected' : '' }}>
+                                {{ $option }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Be specific about financial status.</small>
+                        @error('partner_financial_condition')
+                        <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
 
 
                     <!-- Expected Qualities -->
@@ -1218,11 +1269,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 9:  Pledge -->
                 @if($step == 9)
                 <div class="step-content active" data-step="9">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4>Pledge</h4>
@@ -1253,11 +1304,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 <!-- Step 10:  Contact -->
                 @if($step == 10)
                 <div class="step-content active" data-step="10">
-                     <!-- Step Header with Progress -->
+                    <!-- Step Header with Progress -->
                     <div class="step-header">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
-                        <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
+                            <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
                     <h4>Contact</h4>
@@ -1329,8 +1380,7 @@ $step = $step ?? 1; // if $step is not set, use 1
 
 {{-- JS --}}
 <script>
-   
-   /* document.addEventListener("DOMContentLoaded", function() {
+    /* document.addEventListener("DOMContentLoaded", function() {
         const stepButtons = document.querySelectorAll(".step-btn");
         const stepInput = document.getElementById("currentStep");
         const form = document.querySelector("form");
@@ -1350,41 +1400,41 @@ $step = $step ?? 1; // if $step is not set, use 1
     });
 */
 
-document.addEventListener("DOMContentLoaded", function () {
-    const steps = document.querySelectorAll(".step");
-    const stepButtons = document.querySelectorAll(".step-btn");
-    const stepInput = document.getElementById("currentStep");
-    const form = document.querySelector("form");
+    document.addEventListener("DOMContentLoaded", function() {
+        const steps = document.querySelectorAll(".step");
+        const stepButtons = document.querySelectorAll(".step-btn");
+        const stepInput = document.getElementById("currentStep");
+        const form = document.querySelector("form");
 
-    if (!form || !stepInput || steps.length === 0) {
-        console.warn("Step form or buttons not found in DOM.");
-        return;
-    }
+        if (!form || !stepInput || steps.length === 0) {
+            console.warn("Step form or buttons not found in DOM.");
+            return;
+        }
 
-    // Function to set active step
-    function setActiveStep(stepNumber) {
-        steps.forEach(step => {
-            step.classList.remove("active");
-            if (parseInt(step.dataset.step) <= stepNumber) {
-                step.classList.add("active");
-            }
-        });
-    }
+        // Function to set active step
+        function setActiveStep(stepNumber) {
+            steps.forEach(step => {
+                step.classList.remove("active");
+                if (parseInt(step.dataset.step) <= stepNumber) {
+                    step.classList.add("active");
+                }
+            });
+        }
 
-    // Initialize stepper on page load
-    const currentStep = parseInt(stepInput.value) || 1;
-    setActiveStep(currentStep);
+        // Initialize stepper on page load
+        const currentStep = parseInt(stepInput.value) || 1;
+        setActiveStep(currentStep);
 
-    // Step buttons click
-    stepButtons.forEach(btn => {
-        btn.addEventListener("click", function () {
-            const newStep = parseInt(this.dataset.step);
-            stepInput.value = newStep;
-            setActiveStep(newStep); // update active step visually
-            form.submit();
+        // Step buttons click
+        stepButtons.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const newStep = parseInt(this.dataset.step);
+                stepInput.value = newStep;
+                setActiveStep(newStep); // update active step visually
+                form.submit();
+            });
         });
     });
-});
 
 
     // Address data

@@ -53,11 +53,6 @@
         margin-top: 5px;
     }
 
-    .id-text {
-        text-align: center;
-        font-weight: 600;
-        font-size: 10px;
-    }
 
     /* LEFT AND RIGHT ICONS AT BOTTOM */
     .bottom-icons {
@@ -182,15 +177,16 @@
     left: 0px;
     background: rgba(0, 0, 0, 0.7);
     color: #fff;
-    padding: 6px 14px;
-    /* border-radius: 6px; */
+    padding: 0px 0px;
     font-weight: 500;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     display: flex;
-    align-items: center;
+    text-align: center;
     width: 100%;
     display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
 }
 </style>
 @endpush
@@ -260,7 +256,7 @@
  
 
     <!-- Carousel Indicators -->
-    <div class="carousel-indicators position-absolute bottom-0 end-0 me-2 mb-1" style="justify-content: end">
+    <div class="carousel-indicators position-absolute bottom-0 end-0 mb-3" style="justify-content: center">
       <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="0" class="active"></button>
       <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="1"></button>
       <button type="button" data-bs-target="#profileCarousel" data-bs-slide-to="2"></button>

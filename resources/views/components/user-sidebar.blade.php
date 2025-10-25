@@ -1,84 +1,205 @@
 <style>
-  .sidebar .btn {
-  background: none;
-  border: none;
-  font-size: 15px;
-  padding: 0;
-}
-.sidebar .btn:focus {
-  box-shadow: none;
-}
-.sidebar .list-group-item {
-  border: none;
-  padding: 6px 0;
-}
-.sidebar h6 {
-  font-size: 14px;
-  margin-top: 10px;
-}
+  .sidebar {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    max-width: 300px;
+    margin: auto;
+  }
+
+  .sidebar:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .sidebar .profile-section img {
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e9ecef;
+  }
+
+  .sidebar .username {
+    font-weight: 700;
+    font-size: 15px;
+    margin-top: 8px;
+    color: #333;
+  }
+
+  .sidebar .biodata-btn {
+    margin-top: 10px;
+  }
+
+  .sidebar .status-badge {
+    font-size: 12px;
+    color: #fff;
+    background-color: #ff6b6b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 8px;
+  }
+
+  .sidebar .menu {
+    text-align: left;
+    margin-top: 20px;
+  }
+
+  .sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    text-decoration: none;
+  }
+
+  .sidebar .menu-item i {
+    margin-right: 10px;
+    font-size: 16px;
+    color: #6c757d;
+  }
+
+  .sidebar .menu-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+  }
+
+  .sidebar .menu-item:hover i {
+    color: #007bff;
+  }
+
+  .sidebar .logout {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+
+  .sidebar .logout a {
+    color: #dc3545;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .sidebar .logout a:hover {
+    text-decoration: underline;
+  }
+
+  /* -----------------------------
+     ✅ RESPONSIVE DESIGN STYLES
+     ----------------------------- */
+  @media (max-width: 992px) {
+    .sidebar {
+      max-width: 90%;
+      margin: 20px auto;
+      padding: 15px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      text-align: left;
+      border-radius: 0;
+      box-shadow: none;
+      border-top: 2px solid #f1f1f1;
+      padding: 15px 10px;
+    }
+
+    .sidebar .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .sidebar .profile-section img {
+      height: 60px;
+      width: 60px;
+    }
+
+    .sidebar .username {
+      font-size: 14px;
+      margin-top: 0;
+    }
+
+    .sidebar .biodata-btn {
+      margin-top: 5px;
+    }
+
+    .sidebar .menu-item {
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .sidebar .menu-item i {
+      font-size: 15px;
+    }
+
+    .sidebar .status-badge {
+      margin-top: 4px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .sidebar {
+      padding: 10px 5px;
+      max-width: 100%;
+    }
+
+    .sidebar .menu-item {
+      justify-content: flex-start;
+      padding: 6px 8px;
+    }
+
+    .sidebar .logout {
+      text-align: center;
+    }
+  }
 </style>
 
-<div class="sidebar p-3 bg-white shadow-sm rounded">
-    <!-- Messages Section -->
-    <div class="mb-4">
-        <button class="btn w-100 d-flex justify-content-between align-items-center text-start fw-bold" 
-                data-bs-toggle="collapse" data-bs-target="#messagesCollapse">
-            Messages
-            <i class="bi bi-chevron-down"></i>
-        </button>
-        <div class="collapse show" id="messagesCollapse">
-            <!-- Tabs -->
-            <ul class="nav nav-tabs mt-2" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#inbox">Inbox <span class="badge bg-secondary">0</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#sent">Sent <span class="badge bg-primary">3</span></a>
-                </li>
-            </ul>
-
-            <!-- Tab Contents -->
-            <div class="tab-content mt-2">
-                <div class="tab-pane fade show active" id="inbox">
-                    <ul class="list-group list-group-flush small">
-                        <li class="list-group-item d-flex justify-content-between">Pending <span class="badge bg-secondary">0</span></li>
-                        <li class="list-group-item d-flex justify-content-between">Accepted <span class="badge bg-secondary">0</span></li>
-                        <li class="list-group-item d-flex justify-content-between">Replied <span class="badge bg-secondary">0</span></li>
-                        <li class="list-group-item d-flex justify-content-between">Need time/info <span class="badge bg-secondary">0</span></li>
-                        <li class="list-group-item d-flex justify-content-between">Declined <span class="badge bg-secondary">0</span></li>
-                    </ul>
-                </div>
-                <div class="tab-pane fade" id="sent">
-                    <p class="text-muted small">No sent items yet.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Request Section -->
-    <div class="mb-4">
-        <button class="btn w-100 d-flex justify-content-between align-items-center text-start fw-bold" 
-                data-bs-toggle="collapse" data-bs-target="#requestCollapse">
-            Request
-            <i class="bi bi-chevron-down"></i>
-        </button>
-        <div class="collapse" id="requestCollapse">
-            <p class="text-muted small mt-2">No requests available.</p>
-        </div>
-    </div>
-
-    <!-- Chat History -->
-    <div class="mb-4">
-        <h6 class="fw-bold border-bottom pb-2">Chat History</h6>
-        <p class="text-muted small">No chats yet.</p>
-    </div>
-
-    <!-- Activity Board -->
+<div class="sidebar">
+  <!-- Profile Section -->
+  <div class="profile-section">
+    <img src="https://hips.hearstapps.com/hmg-prod/images/index3-3-1651581277.jpg?crop=0.5xw:1xh;center,top&resize=640:*" alt="Avatar">
     <div>
-        <h6 class="fw-bold border-bottom pb-2">Your Activity Board</h6>
-        <ul class="list-group list-group-flush small">
-            <li class="list-group-item d-flex justify-content-between">SMS Sent <span class="badge bg-secondary">0</span></li>
-            <li class="list-group-item d-flex justify-content-between">SMS Received <span class="badge bg-secondary">0</span></li>
-        </ul>
+      <div class="username">{{ auth()->user()->name ?? 'User Name' }}</div>
+
+      <div class="biodata-btn">
+        @if (auth()->user()->biodata()->exists())
+          <a href="{{ route('profiledetail') }}" class="btn btn-success btn-sm">View Biodata</a>
+        @else
+          <a href="{{ route('biodata.create') }}" class="btn btn-primary btn-sm">Create Biodata</a>
+        @endif
+      </div>
+
+      <div class="status-badge">Not Approved</div>
     </div>
+  </div>
+
+  <!-- Sidebar Menu -->
+  <div class="menu mt-3">
+    <a href="#" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="#" class="menu-item"><i class="bi bi-pencil-square"></i> Edit Biodata</a>
+    <a href="#" class="menu-item"><i class="bi bi-heart"></i> Shortlist</a>
+    <a href="#" class="menu-item"><i class="bi bi-x-circle"></i> Ignore List</a>
+    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> My Purchased</a>
+    <a href="#" class="menu-item"><i class="bi bi-question-circle"></i> Support & Report</a>
+    <a href="#" class="menu-item"><i class="bi bi-gear"></i> Settings</a>
+  </div>
+
+  <!-- Logout -->
+  <div class="logout">
+    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+      @csrf
+    </form>
+  </div>
 </div>

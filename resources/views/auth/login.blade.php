@@ -90,9 +90,9 @@
     @endif
 
     <!-- Login with Google -->
-    <a href="{{ route('login.google') }}" class="btn btn-danger w-100 mb-3">
+    <!-- <a href="{{ route('login.google') }}" class="btn btn-danger w-100 mb-3">
         Login with Google
-    </a>
+    </a> -->
 
     <hr>
 
