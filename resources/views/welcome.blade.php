@@ -14,112 +14,10 @@ background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat c
 @section('content')
     <section class="hero-section text-white d-flex align-items-center w-100">
 
-    <div class="container text-center">
+    <div class="container text-center bg-dark bg-opacity-50 p-5">
         <!-- Hero Text -->
-        <h1 class="display-4 fw-bold">Find Your Perfect Match ❤️</h1>
-        <p class="lead mb-4">Join our Matrimony website today and connect with your life partner easily.</p>
 
-        <!-- Registration Form -->
-        <form action="{{ route('register.show') }}" method="GET" class="row g-2 justify-content-center bg-dark bg-opacity-50 p-4 rounded">
-            @csrf
-
-            <!-- Looking For -->
-            <div class="col-md-3">
-                <select name="looking_for" class="form-select" required>
-                    <option value="">Matrimony Profile For</option>
-                    <option value="myself">Myself</option>
-                    <option value="daughter">Daughter</option>
-                    <option value="son">Son</option>
-                    <option value="sister">Sister</option>
-                    <option value="brother">Brother</option>
-                    <option value="relative">Relative</option>
-                    <option value="friend">Friend</option>
-                </select>
-            </div>
-
-
-            <!-- Name -->
-            <div class="col-md-3">
-                <input type="text" name="name" class="form-control" placeholder="Your Name" required>
-            </div>
-
-            <!-- Mobile Number -->
-            <div class="col-md-4">
-                <input type="tel" name="mobile" class="form-control" placeholder="Mobile Number" required>
-            </div>
-
-            <!-- Register Button -->
-            <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-danger">Register</button>
-            </div>
-        </form>
-    </div>
-</section>
-
-<section class="py-5 bg-light">
-    <div class="container text-center">
-        <h2 class="mb-5 fw-bold">Find Your Special Someone</h2>
-
-        <div class="row g-4">
-            <!-- Step 1: Sign Up -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm p-3">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="bi bi-person-plus-fill fs-1 text-danger"></i> <!-- Icon -->
-                        </div>
-                        <h5 class="card-title fw-bold">Sign Up</h5>
-                        <p class="card-text">Register for free & put up your Matrimony Profile.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2: Connect -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm p-3">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="bi bi-chat-dots-fill fs-1 text-danger"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Connect</h5>
-                        <p class="card-text">Select & Connect with Matches you like.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Interact -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm p-3">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="bi bi-heart-fill fs-1 text-danger"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Interact</h5>
-                        <p class="card-text">Become a Premium Member & Start a Conversation.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Celebrate -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm p-3">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="bi bi-gift-fill fs-1 text-danger"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Celebrate</h5>
-                        <p class="card-text">Find your life partner & celebrate your journey together.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-4">Begin Your Search for an Ideal Match</h2>
+          <h2 class="text-center fw-bold mb-4">Begin Your Search for an Ideal Match</h2>
 
         <form action="" method="GET" class="row g-3 justify-content-center">
             @csrf
@@ -187,6 +85,110 @@ background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat c
                 <button type="submit" class="btn btn-danger btn-lg">Search</button>
             </div>
         </form>
+      
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="mb-5 fw-bold">Find Your Special Someone</h2>
+
+        <div class="row g-4">
+            <!-- Step 1: Sign Up -->
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-person-plus-fill fs-1 text-danger"></i> <!-- Icon -->
+                        </div>
+                        <h5 class="card-title fw-bold">Sign Up</h5>
+                        <p class="card-text">Register for free & put up your Matrimony Profile.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Connect -->
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-chat-dots-fill fs-1 text-danger"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Connect</h5>
+                        <p class="card-text">Select & Connect with Matches you like.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Interact -->
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-heart-fill fs-1 text-danger"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Interact</h5>
+                        <p class="card-text">Become a Premium Member & Start a Conversation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Celebrate -->
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-gift-fill fs-1 text-danger"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Celebrate</h5>
+                        <p class="card-text">Find your life partner & celebrate your journey together.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+       <h1 class="display-6 fw-bold text-center">Find Your Perfect Match ❤️</h1>
+        <p class="lead mb-4 text-center">Join our Matrimony website today and connect with your life partner easily.</p>
+
+        <!-- Registration Form -->
+        <form action="{{ route('register.show') }}" method="GET" class="row g-2 justify-content-center bg-dark bg-opacity-50 p-4 rounded">
+            @csrf
+
+            <!-- Looking For -->
+            <div class="col-md-3">
+                <select name="looking_for" class="form-select" required>
+                    <option value="">Matrimony Profile For</option>
+                    <option value="myself">Myself</option>
+                    <option value="daughter">Daughter</option>
+                    <option value="son">Son</option>
+                    <option value="sister">Sister</option>
+                    <option value="brother">Brother</option>
+                    <option value="relative">Relative</option>
+                    <option value="friend">Friend</option>
+                </select>
+            </div>
+
+
+            <!-- Name -->
+            <div class="col-md-3">
+                <input type="text" name="name" class="form-control" placeholder="Your Name" required>
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="col-md-4">
+                <input type="tel" name="mobile" class="form-control" placeholder="Mobile Number" required>
+            </div>
+
+            <!-- Register Button -->
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-danger">Register</button>
+            </div>
+        </form> 
     </div>
 </section>
 
