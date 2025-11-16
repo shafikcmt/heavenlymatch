@@ -33,6 +33,8 @@ class Biodata extends Model
         'other_education',
         'ssc_year',
         'ssc_group',
+        'hsc_year',
+        'hsc_group',
         'diploma_subject',
         'diploma_medium',
         'diploma_institution',
@@ -65,6 +67,7 @@ class Biodata extends Model
         'clothing_style',
         'beard_info',
         'clothes_above_ankles',
+        'niqab_since',
         'prays_five_times',
         'prayers_info',
         'mahram_nonmahram',
@@ -76,7 +79,6 @@ class Biodata extends Model
         'books_read',
         'special_category',
         'hobbies',
-        'groom_mobile',
         'groom_photo',
 
         // Step 6: Occupation
@@ -109,7 +111,6 @@ class Biodata extends Model
         'responsibility',
 
         // Step 10: Contact
-        'groom_name',
         'guardian_mobile',
         'guardian_relationship',
         'guardian_email',

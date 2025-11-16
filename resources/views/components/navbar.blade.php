@@ -43,12 +43,12 @@
 
                 @guest
                     <li class="nav-item">
-                        <a class="btn btn-outline-danger ms-2" href="{{route('login')}}">
+                        <a class="btn btn-outline-danger ms-2"  href="{{route('login')}}">
                             Login
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn btn-danger ms-2" href="{{route('register.show')}}">
+                   <li class="nav-item">
+                        <a class="btn btn-danger ms-2" href="{{ route('register.show') }}">
                             Register
                         </a>
                     </li>

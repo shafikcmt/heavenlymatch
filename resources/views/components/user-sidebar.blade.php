@@ -178,7 +178,7 @@
         @endif
       </div>
 
-      <div class="status-badge">Not Approved</div>
+      <div class="status-badge">Share Profile</div>
     </div>
   </div>
 
@@ -187,10 +187,11 @@
     <a href="#" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a href="#" class="menu-item"><i class="bi bi-pencil-square"></i> Edit Biodata</a>
     <a href="#" class="menu-item"><i class="bi bi-heart"></i> Shortlist</a>
-    <a href="#" class="menu-item"><i class="bi bi-x-circle"></i> Ignore List</a>
-    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> My Purchased</a>
-    <a href="#" class="menu-item"><i class="bi bi-question-circle"></i> Support & Report</a>
-    <a href="#" class="menu-item"><i class="bi bi-gear"></i> Settings</a>
+    <a href="#" class="menu-item"><i class="bi bi-x-circle"></i> Favorite List</a>
+    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Contact List</a>
+    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Privacy Settings</a>
+    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Account Settings</a>
+    <a href="#" class="menu-item"><i class="bi bi-question-circle"></i>Help & Report</a>
   </div>
 
   <!-- Logout -->

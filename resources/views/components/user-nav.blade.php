@@ -98,8 +98,8 @@
         <li class="nav-item"><a class="nav-link" href="{{route('matches')}}">Islamic Profile <span class="badge bg-secondary">4957</span></a></li>
         <li class="nav-item"><a class="nav-link" href="{{route('inbox')}}">General Profile</a></li>
         <li class="nav-item"><a class="nav-link" href="{{route('search')}}">Prefarence Match</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">My Shortlist</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">My Favorite list</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Shortlist</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Favorite list</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Shortlisted me</a></li>
         <!-- <li class="nav-item"><a class="nav-link" href="{{route('upgrade')}}">Upgrade</a></li> -->
       </ul>
@@ -144,7 +144,7 @@
         Biodata Status
       </div>
       <div class="small text-white px-2 py-1 rounded" style="background-color: #ff6b6b;">
-        Not Approved
+       Share Profile
       </div>
     </li>
 
@@ -240,22 +240,27 @@
       <ul class="navbar-nav align-items-center gap-lg-3">
         <li class="nav-item">
           <a class="nav-link" href="{{ route('demo') }}">
-            <i class="bi bi-play-circle me-1"></i> Demo
+            <i class="bi bi-play-circle me-1"></i> Preferred Profession
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{{ route('matches') }}">
-            <i class="bi bi-people-fill me-1"></i> Matches
+            <i class="bi bi-people-fill me-1"></i> Preferred Education
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{{ route('search') }}">
-            <i class="bi bi-search me-1"></i> Search
+            <i class="bi bi-search me-1"></i> Preferred Location
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{{ route('upgrade') }}">
-            <i class="bi bi-arrow-up-circle me-1"></i> Upgrade
+            <i class="bi bi-arrow-up-circle me-1"></i> Nearby Matches
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('upgrade') }}">
+            <i class="bi bi-arrow-up-circle me-1"></i>  Contact List
           </a>
         </li>
       </ul>

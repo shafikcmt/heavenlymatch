@@ -97,14 +97,14 @@
     <hr>
 
     <!-- Login with Email -->
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" autocomplete="off">
         @csrf
 
         <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
             <input id="email" type="email" 
                    class="form-control @error('email') is-invalid @enderror" 
-                   name="email" value="{{ old('email') }}" required autofocus>
+                   name="email" value="{{ old('email') }}"  autofocus>
             @error('email')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror
@@ -114,7 +114,7 @@
             <label for="password" class="form-label">Password</label>
             <input id="password" type="password" 
                    class="form-control @error('password') is-invalid @enderror" 
-                   name="password" required>
+                   name="password" autocomplete="new-password" >
             @error('password')
                 <span class="text-danger small">{{ $message }}</span>
             @enderror

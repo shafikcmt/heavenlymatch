@@ -53,45 +53,56 @@ class BiodataController extends Controller
 
             case 3: // Education
                 $rules = [
-        'education_method'       => 'required|string|in:General,Islamic,Both',
-        'education_type'   => 'required|array',
-        'education_type.*' => 'required|string|max:255',
+                    'education_method'       => 'required|string|in:General,Islamic,Both',
+                    'education_type'         => 'required|array',
+                    'education_type.*'       => 'required|string|max:255',
+                    'ssc_year'               => 'nullable|array',
+                    'ssc_year.*'             => 'nullable|digits:4',
+                    'ssc_group'              => 'nullable|array',
+                    'ssc_group.*'            => 'nullable|string|max:100',
 
-        'ssc_year'               => 'nullable|array',
-        'ssc_year.*'             => 'nullable|digits:4',
-        'ssc_group'              => 'nullable|array',
-        'ssc_group.*'            => 'nullable|string|max:100',
+                    'hsc_year'               => 'nullable|array',
+                    'hsc_year.*'             => 'nullable|digits:4',
+                    'hsc_group'              => 'nullable|array',
+                    'hsc_group.*'            => 'nullable|string|max:100',
 
-        'diploma_subject'        => 'nullable|array',
-        'diploma_subject.*'      => 'nullable|string|max:255',
-        'diploma_medium'         => 'nullable|array',
-        'diploma_medium.*'       => 'nullable|string|max:100',
-        'diploma_institution'    => 'nullable|array',
-        'diploma_institution.*'  => 'nullable|string|max:255',
-        'diploma_year'           => 'nullable|array',
-        'diploma_year.*'         => 'nullable|digits:4',
+                    'diploma_subject'        => 'nullable|array',
+                    'diploma_subject.*'      => 'nullable|string|max:255',
+                    'diploma_medium'         => 'nullable|array',
+                    'diploma_medium.*'       => 'nullable|string|max:100',
+                    'diploma_institution'    => 'nullable|array',
+                    'diploma_institution.*'  => 'nullable|string|max:255',
+                    'diploma_year'           => 'nullable|array',
+                    'diploma_year.*'         => 'nullable|digits:4',
 
-        'graduation_subject'     => 'nullable|array',
-        'graduation_subject.*'   => 'nullable|string|max:255',
-        'graduation_institution' => 'nullable|array',
-        'graduation_institution.*' => 'nullable|string|max:255',
-        'graduation_year'        => 'nullable|array',
-        'graduation_year.*'      => 'nullable|digits:4',
+                    'graduation_subject'     => 'nullable|array',
+                    'graduation_subject.*'   => 'nullable|string|max:255',
+                    'graduation_institution' => 'nullable|array',
+                    'graduation_institution.*' => 'nullable|string|max:255',
+                    'graduation_year'        => 'nullable|array',
+                    'graduation_year.*'      => 'nullable|digits:4',
 
-        'postgraduation_subject' => 'nullable|array',
-        'postgraduation_subject.*' => 'nullable|string|max:255',
-        'postgraduation_institution' => 'nullable|array',
-        'postgraduation_institution.*' => 'nullable|string|max:255',
-        'postgraduation_year'    => 'nullable|array',
-        'postgraduation_year.*'  => 'nullable|digits:4',
+                    'postgraduation_subject' => 'nullable|array',
+                    'postgraduation_subject.*' => 'nullable|string|max:255',
+                    'postgraduation_institution' => 'nullable|array',
+                    'postgraduation_institution.*' => 'nullable|string|max:255',
+                    'postgraduation_year'    => 'nullable|array',
+                    'postgraduation_year.*'  => 'nullable|digits:4',
 
-        'islamic_institution'    => 'nullable|array',
-        'islamic_institution.*'  => 'nullable|string|max:255',
-        'islamic_year'           => 'nullable|array',
-        'islamic_year.*'         => 'nullable|digits:4',
+                    'phd_subject' => 'nullable|array',
+                    'phd_subject.*' => 'nullable|string|max:255',
+                    'phd_institution' => 'nullable|array',
+                    'phd_institution.*' => 'nullable|string|max:255',
+                    'phd_year'    => 'nullable|array',
+                    'phd_year.*'  => 'nullable|digits:4',
 
-        'other_education'        => 'nullable|string|max:500',
-    ];
+                    'islamic_institution'    => 'nullable|array',
+                    'islamic_institution.*'  => 'nullable|string|max:255',
+                    'islamic_year'           => 'nullable|array',
+                    'islamic_year.*'         => 'nullable|digits:4',
+
+                    'other_education'        => 'nullable|string|max:500',
+                ];
                 break;
 
             case 4: // Family
@@ -116,6 +127,7 @@ class BiodataController extends Controller
                     'clothing_style'     => 'required|string',
                     'beard_info'         => 'required|string',
                     'clothes_above_ankles' => 'required|string',
+                    'niqab_since' => 'required|string',
                     'prayers_info'       => 'nullable|string',
                     'mahram_nonmahram'   => 'required|string',
                     'quran_recitation' => 'required|string|in:Yes,No',
@@ -127,7 +139,6 @@ class BiodataController extends Controller
                     'special_category'   => 'nullable|array',
                     'special_category.*' => 'string|in:Disabled,Infertile,Converted Muslim,Orphan,Interested in becoming a second wife,Tablig',
                     'hobbies'            => 'nullable|string',
-                    'groom_mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/', 'unique:biodatas,groom_mobile'],
                     'groom_photo'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                 ];
                 break;
@@ -176,7 +187,6 @@ class BiodataController extends Controller
 
             case 10: // Contact
                 $rules = [
-                    'groom_name'           => 'required|string|max:255',
                     'guardian_mobile'      => 'required|string|max:20',
                     'guardian_relationship'=> 'required|string|max:50',
                     'guardian_email'       => 'required|email|max:255',

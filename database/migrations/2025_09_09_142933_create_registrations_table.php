@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('registration_id')->unique();
 
             // Step 1 fields
+            $table->string('looking_for');
             $table->string('name');
             $table->enum('gender', ['male', 'female'])->nullable();
 

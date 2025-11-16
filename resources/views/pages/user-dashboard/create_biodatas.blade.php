@@ -264,7 +264,7 @@ $step = $step ?? 1; // if $step is not set, use 1
             <div class="stepper">
                 <div class="step active" data-step="1">
                     <div class="circle">1</div>
-                    <div class="label">General Info</div>
+                    <div class="label">Basic Information</div>
                 </div>
                 <div class="step" data-step="2">
                     <div class="circle">2</div>
@@ -272,7 +272,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                 </div>
                 <div class="step" data-step="3">
                     <div class="circle">3</div>
-                    <div class="label">Educational Qualifications</div>
+                    <div class="label">Educational & Career</div>
                 </div>
                 <div class="step" data-step="4">
                     <div class="circle">4</div>
@@ -280,7 +280,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                 </div>
                 <div class="step" data-step="5">
                     <div class="circle">5</div>
-                    <div class="label">Personal Information</div>
+                    <div class="label">Personal Information & Lifestyle</div>
                 </div>
                 <div class="step" data-step="6">
                     <div class="circle">6</div>
@@ -288,7 +288,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                 </div>
                 <div class="step" data-step="7">
                     <div class="circle">7</div>
-                    <div class="label">Marriage Related Information</div>
+                    <div class="label">Marriage & Future plan</div>
                 </div>
                 <div class="step" data-step="8">
                     <div class="circle">8</div>
@@ -296,11 +296,11 @@ $step = $step ?? 1; // if $step is not set, use 1
                 </div>
                 <div class="step" data-step="9">
                     <div class="circle">9</div>
-                    <div class="label">Pledge</div>
+                    <div class="label">Interest & Hobbies</div>
                 </div>
                 <div class="step" data-step="10">
                     <div class="circle">10</div>
-                    <div class="label">Contact</div>
+                    <div class="label">Contact Details</div>
                 </div>
             </div>
         </div>
@@ -341,16 +341,58 @@ $step = $step ?? 1; // if $step is not set, use 1
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label>Height *</label>
-                            <input type="text" name="height" class="form-control" value="{{ old('height', $biodata['step_1']['height'] ?? '') }}">
-                            @error('height') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label>Weight *</label>
-                            <input type="text" name="weight" class="form-control" value="{{ old('weight', $biodata['step_1']['weight'] ?? '') }}">
-                            @error('weight') <small class="text-danger">{{ $message }}</small> @enderror
-                        </div>
+                   <div class="col-md-6 mb-3">
+                        <label for="height" class="form-label">Height *</label>
+                        <select name="height" id="height" class="form-select">
+                            <option value="">-- Select Your Height --</option>
+
+                            @php
+                                $heights = [
+                                    "4'6\"" => "137 cm", "4'7\"" => "140 cm", "4'8\"" => "142 cm", "4'9\"" => "145 cm",
+                                    "4'10\"" => "147 cm", "4'11\"" => "150 cm", "5'0\"" => "152 cm", "5'1\"" => "155 cm",
+                                    "5'2\"" => "157 cm", "5'3\"" => "160 cm", "5'4\"" => "162 cm", "5'5\"" => "165 cm",
+                                    "5'6\"" => "167 cm", "5'7\"" => "170 cm", "5'8\"" => "173 cm", "5'9\"" => "175 cm",
+                                    "5'10\"" => "178 cm", "5'11\"" => "180 cm", "6'0\"" => "183 cm", "6'1\"" => "185 cm",
+                                    "6'2\"" => "188 cm", "6'3\"" => "190 cm", "6'4\"" => "193 cm", "6'5\"" => "196 cm",
+                                    "6'6\"" => "198 cm"
+                                ];
+                            @endphp
+
+                            @foreach($heights as $ft => $cm)
+                                <option value="{{ $ft }}" {{ old('height', $biodata['step_1']['height'] ?? '') == $ft ? 'selected' : '' }}>
+                                    {{ $ft }} ({{ $cm }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('height')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+
+                       <div class="col-md-6 mb-3">
+                        <label for="weight" class="form-label">Weight *</label>
+                        <select name="weight" id="weight" class="form-select">
+                            <option value="">-- Select Your Weight --</option>
+
+                            @php
+                                $weights = [];
+                                for ($i = 30; $i <= 120; $i++) {
+                                    $weights[] = $i . ' kg';
+                                }
+                            @endphp
+
+                            @foreach($weights as $w)
+                                <option value="{{ $w }}" {{ old('weight', $biodata['step_1']['weight'] ?? '') == $w ? 'selected' : '' }}>
+                                    {{ $w }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('weight')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
                     </div>
 
                     <div class="mb-3">
@@ -380,11 +422,73 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('blood_group') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label>Nationality</label>
-                        <input type="text" name="nationality" class="form-control" value="{{ old('nationality', $biodata['step_1']['nationality'] ?? 'Bangladeshi') }}">
-                        @error('nationality') <small class="text-danger">{{ $message }}</small> @enderror
+                   <div class="mb-3">
+                        <label for="nationality" class="form-label">Nationality *</label>
+                        <select name="nationality" id="nationality" class="form-select">
+                            <option value="">-- Select Nationality --</option>
+
+                            @php
+                                $countries = [
+                                    'Afghan' => 'Afghanistan',
+                                    'Albanian' => 'Albania',
+                                    'Algerian' => 'Algeria',
+                                    'American' => 'United States',
+                                    'Argentinian' => 'Argentina',
+                                    'Australian' => 'Australia',
+                                    'Austrian' => 'Austria',
+                                    'Bangladeshi' => 'Bangladesh',
+                                    'Belgian' => 'Belgium',
+                                    'Brazilian' => 'Brazil',
+                                    'British' => 'United Kingdom',
+                                    'Canadian' => 'Canada',
+                                    'Chinese' => 'China',
+                                    'Danish' => 'Denmark',
+                                    'Egyptian' => 'Egypt',
+                                    'French' => 'France',
+                                    'German' => 'Germany',
+                                    'Greek' => 'Greece',
+                                    'Indian' => 'India',
+                                    'Indonesian' => 'Indonesia',
+                                    'Iranian' => 'Iran',
+                                    'Iraqi' => 'Iraq',
+                                    'Irish' => 'Ireland',
+                                    'Italian' => 'Italy',
+                                    'Japanese' => 'Japan',
+                                    'Malaysian' => 'Malaysia',
+                                    'Nepalese' => 'Nepal',
+                                    'New Zealander' => 'New Zealand',
+                                    'Nigerian' => 'Nigeria',
+                                    'Norwegian' => 'Norway',
+                                    'Pakistani' => 'Pakistan',
+                                    'Palestinian' => 'Palestine',
+                                    'Philippine' => 'Philippines',
+                                    'Qatari' => 'Qatar',
+                                    'Russian' => 'Russia',
+                                    'Saudi' => 'Saudi Arabia',
+                                    'Singaporean' => 'Singapore',
+                                    'South African' => 'South Africa',
+                                    'South Korean' => 'South Korea',
+                                    'Sri Lankan' => 'Sri Lanka',
+                                    'Syrian' => 'Syria',
+                                    'Thai' => 'Thailand',
+                                    'Turkish' => 'Turkey',
+                                    'UAE' => 'United Arab Emirates',
+                                    'Vietnamese' => 'Vietnam'
+                                ];
+                            @endphp
+
+                            @foreach($countries as $key => $country)
+                                <option value="{{ $key }}" 
+                                    {{ old('nationality', $biodata['step_1']['nationality'] ?? 'Bangladeshi') == $key ? 'selected' : '' }}>
+                                    {{ $country }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('nationality')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
+
                 </div>
                 @endif
 
@@ -400,13 +504,66 @@ $step = $step ?? 1; // if $step is not set, use 1
                     </div>
                     <h4>Address</h4>
 
-                    <div class="mb-3">
-                        <label>Country *</label>
-                        <select id="country" class="form-select" required>
-                            <option value="Bangladesh">Bangladesh</option>
-                        </select>
-                        <small class="form-text text-muted">Select your country</small>
-                    </div>
+                   <div class="mb-3">
+                    <label for="country" class="form-label fw-semibold">Country *</label>
+                    <select name="country" id="country" class="form-select" required>
+                        <option value="">-- Select Your Country --</option>
+                        <option value="Afghanistan">Afghanistan</option>
+                        <option value="Albania">Albania</option>
+                        <option value="Algeria">Algeria</option>
+                        <option value="Argentina">Argentina</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Austria">Austria</option>
+                        <option value="Bahrain">Bahrain</option>
+                        <option value="Bangladesh" selected>Bangladesh</option>
+                        <option value="Belgium">Belgium</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="Canada">Canada</option>
+                        <option value="China">China</option>
+                        <option value="Denmark">Denmark</option>
+                        <option value="Egypt">Egypt</option>
+                        <option value="France">France</option>
+                        <option value="Germany">Germany</option>
+                        <option value="Greece">Greece</option>
+                        <option value="Hong Kong">Hong Kong</option>
+                        <option value="India">India</option>
+                        <option value="Indonesia">Indonesia</option>
+                        <option value="Iran">Iran</option>
+                        <option value="Iraq">Iraq</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Kuwait">Kuwait</option>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Maldives">Maldives</option>
+                        <option value="Nepal">Nepal</option>
+                        <option value="Netherlands">Netherlands</option>
+                        <option value="New Zealand">New Zealand</option>
+                        <option value="Nigeria">Nigeria</option>
+                        <option value="Norway">Norway</option>
+                        <option value="Oman">Oman</option>
+                        <option value="Pakistan">Pakistan</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Qatar">Qatar</option>
+                        <option value="Russia">Russia</option>
+                        <option value="Saudi Arabia">Saudi Arabia</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="South Korea">South Korea</option>
+                        <option value="Spain">Spain</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="Sweden">Sweden</option>
+                        <option value="Switzerland">Switzerland</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Turkey">Turkey</option>
+                        <option value="UAE">United Arab Emirates</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="USA">United States</option>
+                        <option value="Vietnam">Vietnam</option>
+                    </select>
+                    <small class="form-text text-muted">Select your country</small>
+                </div>
+
 
                     <!-- Present Address -->
                     <div class="mb-3">
@@ -666,27 +823,53 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('clothing_style') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                    <!-- Beard -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Do you have beard according to sunnah? Since when? *</label>
-                        <input type="text" name="beard_info" class="form-control" placeholder="e.g., 5 years" value="{{ old('beard_info', $biodata['step_5']['beard_info'] ?? '') }}">
-                        @error('beard_info') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+              @php
+    // Fetch logged-in user’s gender from registration table
+    $gender = Auth::user()->gender ?? $biodata['step_5']['gender'] ?? null;
+@endphp
 
-                    <!-- Clothes above ankles -->
-                    <div class="mb-3">
-                        <label for="clothes_above_ankles" class="form-label fw-bold">
-                            Do you wear clothes above the ankles? *
-                        </label>
-                        <select name="clothes_above_ankles" id="clothes_above_ankles" class="form-select" required>
-                            <option value="">-- Select --</option>
-                            <option value="yes" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="no" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
-                        </select>
-                        @error('clothes_above_ankles')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
+<!-- Hidden gender input (optional, for form submission) -->
+<input type="hidden" name="gender" value="{{ $gender }}">
+
+<!-- Gender-based dynamic fields -->
+<div id="gender-specific-fields">
+    @if ($gender === 'male')
+        <!-- Beard -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">Do you have beard according to sunnah? Since when? *</label>
+            <input type="text" name="beard_info" class="form-control"
+                placeholder="e.g., 5 years"
+                value="{{ old('beard_info', $biodata['step_5']['beard_info'] ?? '') }}">
+            @error('beard_info') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
+
+        <!-- Clothes above ankles -->
+        <div class="mb-3">
+            <label for="clothes_above_ankles" class="form-label fw-bold">
+                Do you wear clothes above the ankles? *
+            </label>
+            <select name="clothes_above_ankles" id="clothes_above_ankles" class="form-select" required>
+                <option value="">-- Select --</option>
+                <option value="yes" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
+                <option value="no" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
+            </select>
+            @error('clothes_above_ankles')
+            <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+
+    @elseif ($gender === 'female')
+        <!-- Niqab / Veil -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">Since when have you been wearing a veil with a niqab? *</label>
+            <input type="text" name="niqab_since" class="form-control"
+                placeholder="e.g., 3 years"
+                value="{{ old('niqab_since', $biodata['step_5']['niqab_since'] ?? '') }}">
+            @error('niqab_since') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
+    @endif
+</div>
+
 
                     <!-- Prayer -->
                     <div class="mb-3">
@@ -816,13 +999,6 @@ $step = $step ?? 1; // if $step is not set, use 1
                         <label class="form-label fw-bold">Write about your hobbies, likes, dislikes, tastes, dreams, etc. *</label>
                         <textarea name="hobbies" class="form-control" rows="4">{{ old('hobbies', $biodata['step_5']['hobbies'] ?? '') }}</textarea>
                         @error('hobbies') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <!-- Mobile -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Groom's mobile number *</label>
-                        <input type="text" name="groom_mobile" class="form-control" value="{{ old('groom_mobile', $biodata['step_5']['groom_mobile'] ?? '') }}" placeholder="01768987779">
-                        @error('groom_mobile') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Photo -->
@@ -1313,14 +1489,6 @@ $step = $step ?? 1; // if $step is not set, use 1
                     </div>
                     <h4>Contact</h4>
 
-                    <!-- Groom Name -->
-                    <div class="mb-3">
-                        <label>Groom's Name *</label>
-                        <input type="text" name="groom_name" class="form-control" value="{{ old('groom_name', $biodata['step_10']['groom_name'] ?? '') }}" required>
-                        <small class="form-text text-muted">Enter your full name</small>
-                        @error('groom_name') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
                     <!-- Guardian Mobile -->
                     <div class="mb-3">
                         <label>Guardian's Mobile Number *</label>
@@ -1367,7 +1535,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @else
                         <button type="submit" class="btn btn-success">Finish</button>
                         @endif
-                        <button type="submit" value="1" class="btn btn-warning">Save Temporarily</button>
+                        <!-- <button type="submit" value="1" class="btn btn-warning">Save Temporarily</button> -->
                 </div>
 
                 <input type="hidden" name="step" id="currentStep" value="{{ $step }}">
@@ -1380,25 +1548,7 @@ $step = $step ?? 1; // if $step is not set, use 1
 
 {{-- JS --}}
 <script>
-    /* document.addEventListener("DOMContentLoaded", function() {
-        const stepButtons = document.querySelectorAll(".step-btn");
-        const stepInput = document.getElementById("currentStep");
-        const form = document.querySelector("form");
-
-        if (!form || !stepInput || stepButtons.length === 0) {
-            console.warn("Step form or buttons not found in DOM.");
-            return; // stop running if not found
-        }
-
-        stepButtons.forEach(btn => {
-            btn.addEventListener("click", function() {
-                const newStep = this.dataset.step;
-                stepInput.value = newStep;
-                form.submit();
-            });
-        });
-    });
-*/
+ 
 
     document.addEventListener("DOMContentLoaded", function() {
         const steps = document.querySelectorAll(".step");
@@ -1526,16 +1676,24 @@ $step = $step ?? 1; // if $step is not set, use 1
                 text: "SSC / Dakhil"
             },
             {
+                value: "hsc",
+                text: "HSC / Alim"
+            },
+            {
                 value: "diploma",
                 text: "Diploma"
             },
             {
                 value: "bachelor",
-                text: "Bachelor"
+                text: "Bachelor/ Fazil"
             },
             {
                 value: "master",
-                text: "Master"
+                text: "Master/ Kamil"
+            },
+             {
+                value: "phd",
+                text: "Ph.D"
             },
             {
                 value: "other",
@@ -1570,89 +1728,122 @@ $step = $step ?? 1; // if $step is not set, use 1
         ];
 
         // Generate input fields based on selected qualification
-        function getFields(type) {
-            switch (type) {
-                case "ssc":
-                    return `
-                    <div class="mb-3">
-                        <label>Passing Year *</label>
-                        <input type="text" name="ssc_year[]" class="form-control" placeholder="2014" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Group *</label>
-                        <input type="text" name="ssc_group[]" class="form-control" placeholder="Science" required>
-                    </div>`;
-                case "diploma":
-                    return `
-                    <div class="mb-3">
-                        <label>What medium did you study after SSC? *</label>
-                        <input type="text" name="diploma_medium[]" class="form-control" placeholder="Diploma" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>What is the subject of your diploma? *</label>
-                        <input type="text" name="diploma_subject[]" class="form-control" placeholder="Diploma in Computer Science Engineering" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Name of educational institution *</label>
-                        <input type="text" name="diploma_institution[]" class="form-control" placeholder="Barguna Polyte" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Passing Year *</label>
-                        <input type="text" name="diploma_year[]" class="form-control" placeholder="2018" required>
-                    </div>`;
-                case "bachelor":
-                    return `
-                    <div class="mb-3">
-                        <label>Graduation Subject *</label>
-                        <input type="text" name="graduation_subject[]" class="form-control" placeholder="Computer Science" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Institution *</label>
-                        <input type="text" name="graduation_institution[]" class="form-control" placeholder="University Name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Passing Year *</label>
-                        <input type="text" name="graduation_year[]" class="form-control" placeholder="2022" required>
-                    </div>`;
-                case "master":
-                    return `
-                    <div class="mb-3">
-                        <label>Postgraduation Subject *</label>
-                        <input type="text" name="postgraduation_subject[]" class="form-control" placeholder="Computer Science" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Institution *</label>
-                        <input type="text" name="postgraduation_institution[]" class="form-control" placeholder="Geeta University" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Passing Year *</label>
-                        <input type="text" name="postgraduation_year[]" class="form-control" placeholder="2025" required>
-                    </div>`;
-                case "hafez":
-                case "maolana":
-                case "mufti":
-                case "mufassir":
-                case "adib":
-                case "qari":
-                    return `
-                    <div class="mb-3">
-                        <label>Name of Madrasa *</label>
-                        <input type="text" name="islamic_institution[]" class="form-control" placeholder="Madrasa Name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Passing Year *</label>
-                        <input type="text" name="islamic_year[]" class="form-control" placeholder="2020" required>
-                    </div>`;
-                case "other":
-                    return `
-                    <div class="mb-3">
-                        <label>Other Qualification Details *</label>
-                        <textarea name="other_education[]" class="form-control" placeholder="Institution, subject, passing year"></textarea>
-                    </div>`;
-                default:
-                    return "";
-            }
-        }
+       function getFields(type) {
+    switch (type) {
+        case "ssc":
+            return `
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="ssc_year[]" class="form-control" placeholder="2014" required>
+                </div>
+                <div class="mb-3">
+                    <label>Group *</label>
+                    <input type="text" name="ssc_group[]" class="form-control" placeholder="Science" required>
+                </div>`;
+                
+        case "hsc":
+            return `
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="hsc_year[]" class="form-control" placeholder="2016" required>
+                </div>
+                <div class="mb-3">
+                    <label>Group *</label>
+                    <input type="text" name="hsc_group[]" class="form-control" placeholder="Science" required>
+                </div>`;
+
+        case "diploma":
+            return `
+                <div class="mb-3">
+                    <label>What medium did you study after SSC? *</label>
+                    <input type="text" name="diploma_medium[]" class="form-control" placeholder="Diploma" required>
+                </div>
+                <div class="mb-3">
+                    <label>What is the subject of your diploma? *</label>
+                    <input type="text" name="diploma_subject[]" class="form-control" placeholder="Diploma in Computer Science Engineering" required>
+                </div>
+                <div class="mb-3">
+                    <label>Name of educational institution *</label>
+                    <input type="text" name="diploma_institution[]" class="form-control" placeholder="Barguna Polytechnic" required>
+                </div>
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="diploma_year[]" class="form-control" placeholder="2018" required>
+                </div>`;
+
+        case "bachelor":
+            return `
+                <div class="mb-3">
+                    <label>Graduation Subject *</label>
+                    <input type="text" name="graduation_subject[]" class="form-control" placeholder="Computer Science" required>
+                </div>
+                <div class="mb-3">
+                    <label>Institution *</label>
+                    <input type="text" name="graduation_institution[]" class="form-control" placeholder="University Name" required>
+                </div>
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="graduation_year[]" class="form-control" placeholder="2022" required>
+                </div>`;
+
+        case "master":
+            return `
+                <div class="mb-3">
+                    <label>Postgraduation Subject *</label>
+                    <input type="text" name="postgraduation_subject[]" class="form-control" placeholder="Computer Science" required>
+                </div>
+                <div class="mb-3">
+                    <label>Institution *</label>
+                    <input type="text" name="postgraduation_institution[]" class="form-control" placeholder="Geeta University" required>
+                </div>
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="postgraduation_year[]" class="form-control" placeholder="2025" required>
+                </div>`;
+
+                 case "phd":
+            return `
+                <div class="mb-3">
+                    <label>Ph.D Subject *</label>
+                    <input type="text" name="phd_subject[]" class="form-control" placeholder="Computer Science" required>
+                </div>
+                <div class="mb-3">
+                    <label>Institution *</label>
+                    <input type="text" name="phd_institution[]" class="form-control" placeholder="Geeta University" required>
+                </div>
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="phd_year[]" class="form-control" placeholder="2025" required>
+                </div>`;
+
+        case "hafez":
+        case "maolana":
+        case "mufti":
+        case "mufassir":
+        case "adib":
+        case "qari":
+            return `
+                <div class="mb-3">
+                    <label>Name of Madrasa *</label>
+                    <input type="text" name="islamic_institution[]" class="form-control" placeholder="Madrasa Name" required>
+                </div>
+                <div class="mb-3">
+                    <label>Passing Year *</label>
+                    <input type="text" name="islamic_year[]" class="form-control" placeholder="2020" required>
+                </div>`;
+
+        case "other":
+            return `
+                <div class="mb-3">
+                    <label>Other Qualification Details *</label>
+                    <textarea name="other_education[]" class="form-control" placeholder="Institution, subject, passing year"></textarea>
+                </div>`;
+
+        default:
+            return "";
+    }
+}
+
 
         // Update qualification dropdown options based on method
         function updateQualificationOptions(method) {

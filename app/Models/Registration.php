@@ -13,6 +13,7 @@ class Registration extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'registration_id', // ✅ Add custom registration ID
+        'looking_for',
         'name',
         'gender',
         'email',

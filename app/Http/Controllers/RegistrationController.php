@@ -22,6 +22,7 @@ class RegistrationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'looking_for'   => 'required|string|max:255',
             'name'          => 'required|string|max:255',
             'gender'        => 'required|in:male,female',
             'email'         => 'required|email|unique:registrations,email',
@@ -32,6 +33,7 @@ class RegistrationController extends Controller
 
         // ✅ Create new user
         $user = Registration::create([
+            'looking_for'       => $request->looking_for,
             'name'              => $request->name,
             'gender'            => $request->gender,
             'email'             => $request->email,

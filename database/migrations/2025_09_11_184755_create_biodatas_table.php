@@ -36,6 +36,8 @@ return new class extends Migration {
             $table->text('other_education')->nullable();      // Stores other educational qualifications entered in the text input
             $table->text('ssc_year')->nullable();             // Optional: for SSC passing year
             $table->text('ssc_group')->nullable();            // Optional: for SSC group
+            $table->text('hsc_year')->nullable();             // Optional: for SSC passing year
+            $table->text('hsc_group')->nullable();            // Optional: for SSC group
             $table->text('diploma_subject')->nullable();      // Optional: Diploma subject
             $table->text('diploma_medium')->nullable();       // Optional: medium studied after SSC
             $table->text('diploma_institution')->nullable();  // Optional: Diploma institution
@@ -46,6 +48,9 @@ return new class extends Migration {
             $table->text('postgraduation_subject')->nullable();
             $table->text('postgraduation_institution')->nullable();
             $table->text('postgraduation_year')->nullable();
+            $table->text('phd_subject')->nullable();
+            $table->text('phd_institution')->nullable();
+            $table->text('phd_year')->nullable();
             $table->text('islamic_titles')->nullable();      // Stores comma-separated Islamic titles if selected
             $table->text('islamic_institution')->nullable(); // Madrasa/Institution name for Islamic titles
             $table->text('islamic_year')->nullable();        // Passing year for Islamic titles
@@ -68,6 +73,7 @@ return new class extends Migration {
             $table->text('clothing_style')->nullable();
             $table->text('beard_info')->nullable();
             $table->string('clothes_above_ankles')->nullable();
+            $table->string('niqab_since')->nullable();
             $table->string('prayers_info')->nullable();
             $table->string('mahram_nonmahram')->nullable();
             $table->string('quran_recitation')->nullable();
@@ -78,7 +84,7 @@ return new class extends Migration {
             $table->text('books_read')->nullable();
             $table->string('special_category')->nullable();
             $table->text('hobbies')->nullable();
-            $table->string('groom_mobile')->nullable();
+            // $table->string('groom_mobile')->nullable();
             $table->string('groom_photo')->nullable();
 
             // Step 6: Occupation
@@ -111,7 +117,7 @@ return new class extends Migration {
             $table->string('responsibility')->nullable();
 
             // Step 10: Contact
-            $table->string('groom_name')->nullable();
+            // $table->string('groom_name')->nullable();
             $table->string('guardian_mobile')->nullable();
             $table->string('guardian_relationship')->nullable();
             $table->string('guardian_email')->nullable();
