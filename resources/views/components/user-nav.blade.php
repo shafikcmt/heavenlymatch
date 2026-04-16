@@ -6,10 +6,19 @@
     transform: translateY(0);
   }
 
+  body {
+    background-image: url("../images/black-islamic-pattern-vector-ornament-260nw-2063359424.png");
+    background-attachment: fixed;
+    background-repeat:repeat;
+    /* background-size: cover; */
+    /* background: #807878ff; */
+
+}
+
   /* Dropdown animation */
   .animate-dropdown {
     display: none;
-    opacity: 0;
+    opacity: 0; 
     transform: translateY(10px);
     transition: all 0.3s ease;
   }
@@ -224,6 +233,17 @@
 
       <ul class="navbar-nav ms-auto d-flex align-items-center">
 
+          <!-- Notification -->
+      <li class="nav-item me-3">
+        <a class="upgrade-btn" href="#" role="button" aria-label="Upgrade">
+      
+          <span class="upgrade-text" aria-hidden="false">
+            <span class="text1">Upgrade</span>
+            <span class="text2"> 60% Off</span>
+          </span>
+        </a>
+      </li>
+
       
         <!-- User Profile Dropdown -->
       
@@ -277,16 +297,14 @@
   </ul>
 </li>
 
-        <!-- Notification -->
-      <li class="nav-item me-3">
-        <a class="upgrade-btn" href="#" role="button" aria-label="Upgrade">
-      
-          <span class="upgrade-text" aria-hidden="false">
-            <span class="text1">Upgrade</span>
-            <span class="text2"> 60% Off</span>
-          </span>
-        </a>
-      </li>
+         <li class="nav-item me-3">
+          <a class="nav-link position-relative text-white" href="#">
+            <i class="bi bi-bell"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              3
+            </span>
+          </a>
+        </li>
          <li class="nav-item dropdown me-3">
   <a class="nav-link dropdown-toggle text-white" href="#" id="languageDropdown" role="button" 
      data-bs-toggle="dropdown" aria-expanded="false">
@@ -304,14 +322,7 @@
 </li>
 
 
-         <li class="nav-item me-3">
-          <a class="nav-link position-relative text-white" href="#">
-            <i class="bi bi-bell"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              3
-            </span>
-          </a>
-        </li>
+    
 
 <!-- Add this CSS -->
 <style>
@@ -370,7 +381,21 @@
 
     <div class="collapse navbar-collapse justify-content-center" id="secondaryNavbar">
       <ul class="navbar-nav align-items-center gap-lg-3">
-        
+       <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle d-flex justify-content-between align-items-center" 
+       href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Heavenly Service
+    </a>
+
+    <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
+        <li><a class="dropdown-item" href="#">Wedding Planner</a></li>
+        <li><a class="dropdown-item" href="#">Shopping</a></li>
+        <li><a class="dropdown-item" href="#">Videography</a></li>
+        <li><a class="dropdown-item" href="#">Photography</a></li>
+        <li><a class="dropdown-item" href="#">Decoration</a></li>
+    </ul>
+</li>
+
         <li class="nav-item">
           <a class="nav-link" href="{{ route('demo') }}">
             Preferred Profession
@@ -403,10 +428,10 @@
 
 <style>
   /* Custom Navbar Styling */
-  .custom-subnav {
-    background: linear-gradient(90deg, #007bff, #6610f2);
+.custom-subnav {
+    background: linear-gradient(-77deg, #007C7E, #661176);
     padding: 0.4rem 1rem;
-  }
+}
 
   .custom-subnav .nav-link {
     color: #fff !important;

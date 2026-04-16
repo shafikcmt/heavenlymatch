@@ -16,19 +16,23 @@ return new class extends Migration {
                 ->onDelete('cascade');
 
             // Step 1: General Info
+            $table->string('name')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('profile_created_for')->nullable();
             $table->string('marital_status')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('height')->nullable();
-            $table->string('complexion')->nullable();
             $table->string('weight')->nullable();
+            $table->string('disease_description')->nullable();
+            $table->string('complexion')->nullable();
             $table->string('blood_group')->nullable();
-            $table->string('nationality')->default('Bangladeshi');
-
+            
             // Step 2: Address
             $table->string('permanent_address')->nullable();
             $table->string('village_area')->nullable();
             $table->string('present_address')->nullable();
             $table->string('grew_up')->nullable();
+            $table->string('nationality')->default('Bangladeshi');
 
             // Step 3: Education
             $table->string('education_method')->nullable();   // Stores General / Islamic / Both

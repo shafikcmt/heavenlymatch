@@ -33,7 +33,7 @@
     /* Step item */
     .step {
         position: relative;
-        padding-left: 45px;
+        padding-left: 30px;
         /* space for small circle */
         margin-bottom: 35px;
         display: flex;
@@ -48,7 +48,7 @@
     /* Small circle indicator */
     .step .circle {
         position: absolute;
-        left: -18px;
+        left: -8px;
         /* smaller offset for small circle */
         width: 20px;
         height: 20px;
@@ -91,7 +91,7 @@
     /* Step label */
     .step .label {
         font-weight: 600;
-        font-size: 15px;
+        font-size: 12px;
         color: #212529;
         transition: color 0.3s;
     }
@@ -247,6 +247,35 @@
     .btn-warning:hover {
         background: #e0a800;
     }
+
+
+    /* Make every input and select the same height */
+    .form-control,
+    .form-select {
+        height: 48px !important;
+        padding: 10px 12px !important;
+        font-size: 15px;
+    }
+
+    /* Make label spacing consistent */
+    label.form-label,
+    label {
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    /* Make error message consistent */
+    small.text-danger {
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* ENSURE column boxes look together */
+    .equal-box {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
 </style>
 
 @endpush
@@ -260,11 +289,11 @@ $step = $step ?? 1; // if $step is not set, use 1
 <div class="container py-4">
     <div class="row">
         <!-- Stepper Navigation -->
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="stepper">
                 <div class="step active" data-step="1">
                     <div class="circle">1</div>
-                    <div class="label">Basic Information</div>
+                    <div class="label">Personal Information</div>
                 </div>
                 <div class="step" data-step="2">
                     <div class="circle">2</div>
@@ -307,7 +336,7 @@ $step = $step ?? 1; // if $step is not set, use 1
 
         <!-- Form Content -->
 
-        <div class="col-md-8">
+        <div class="col-md-9">
 
             <form id="biodataForm" method="POST" action="{{ route('biodata.store', $step) }}" enctype="multipart/form-data">
                 @csrf
@@ -321,33 +350,84 @@ $step = $step ?? 1; // if $step is not set, use 1
                             <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
-                    <h4>General Info</h4>
+                    <h4>Personal Information</h4>
+                    <div class="row">
+                        <!-- Name -->
+                        <div class="col-md-4 mb-3">
+                            <label>Name *</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $registration->name ?? '') }}" placeholder="Enter your full name">
+                            @error('name')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
 
-                    <div class="mb-3">
-                        <label>Marital Status *</label>
-                        <select name="marital_status" class="form-select">
-                            <option value="">Select</option>
-                            <option {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Never Married' ? 'selected' : '' }}>Never Married</option>
-                            <option {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Divorced' ? 'selected' : '' }}>Divorced</option>
-                            <option {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Widow' ? 'selected' : '' }}>Widow</option>
-                        </select>
-                        @error('marital_status') <small class="text-danger">{{ $message }}</small> @enderror
+                        <!-- Gender -->
+                        <div class="col-md-4 mb-3">
+                            <label>Gender *</label>
+                            <select name="gender" class="form-control">
+                                <option selected value="Male" {{ old('gender', $registration->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('gender', $registration->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ old('gender', $registration->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+                            </select>
+
+                            @error('gender')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <!-- Profile Created For -->
+                        <div class="col-md-4 mb-3">
+                            <label>Profile Created For *</label>
+                            <select name="profile_created_for" class="form-control">
+                                <option selected value="Self" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Self' ? 'selected' : '' }}>Self</option>
+                                <option value="Son" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Son' ? 'selected' : '' }}>Son</option>
+                                <option value="Daughter" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Daughter' ? 'selected' : '' }}>Daughter</option>
+                                <option value="Brother" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Brother' ? 'selected' : '' }}>Brother</option>
+                                <option value="Sister" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Sister' ? 'selected' : '' }}>Sister</option>
+                                <option value="Relative" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Relative' ? 'selected' : '' }}>Relative</option>
+                                <option value="Friend" {{ old('profile_created_for', $registration->profile_created_for ?? '') == 'Friend' ? 'selected' : '' }}>Friend</option>
+                            </select>
+
+                            @error('profile_created_for')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Birth Date *</label>
-                        <input type="date" name="birth_date" class="form-control" value="{{ old('birth_date', $biodata['step_1']['birth_date'] ?? '') }}">
-                        @error('birth_date') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+
+                    <style>
+                        /* Make all form groups same height */
+                        .equal-box {
+                            display: flex;
+                            flex-direction: column;
+                            height: 100%;
+                        }
+                    </style>
 
                     <div class="row">
-                   <div class="col-md-6 mb-3">
-                        <label for="height" class="form-label">Height *</label>
-                        <select name="height" id="height" class="form-select">
-                            <option value="">-- Select Your Height --</option>
 
-                            @php
-                                $heights = [
+                        <!-- Marital Status -->
+                        <div class="col-md-4 mb-3">
+                            <div class="equal-box">
+                                <label class="form-label">Marital Status *</label>
+                                <select name="marital_status" class="form-select">
+                                    <option value="Never Married" {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Never Married' ? 'selected' : '' }}>Never Married</option>
+                                    <option value="Divorced" {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Divorced' ? 'selected' : '' }}>Divorced</option>
+                                    <option value="Widow" {{ old('marital_status', $biodata['step_1']['marital_status'] ?? '' )=='Widow' ? 'selected' : '' }}>Widow</option>
+                                </select>
+                                @error('marital_status')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Height -->
+                        <div class="col-md-4 mb-3">
+                            <div class="equal-box">
+                                <label for="height" class="form-label">Height *</label>
+                                <select name="height" id="height" class="form-select">
+                                    @php
+                                    $heights = [
                                     "4'6\"" => "137 cm", "4'7\"" => "140 cm", "4'8\"" => "142 cm", "4'9\"" => "145 cm",
                                     "4'10\"" => "147 cm", "4'11\"" => "150 cm", "5'0\"" => "152 cm", "5'1\"" => "155 cm",
                                     "5'2\"" => "157 cm", "5'3\"" => "160 cm", "5'4\"" => "162 cm", "5'5\"" => "165 cm",
@@ -355,265 +435,549 @@ $step = $step ?? 1; // if $step is not set, use 1
                                     "5'10\"" => "178 cm", "5'11\"" => "180 cm", "6'0\"" => "183 cm", "6'1\"" => "185 cm",
                                     "6'2\"" => "188 cm", "6'3\"" => "190 cm", "6'4\"" => "193 cm", "6'5\"" => "196 cm",
                                     "6'6\"" => "198 cm"
-                                ];
-                            @endphp
+                                    ];
+                                    @endphp
 
-                            @foreach($heights as $ft => $cm)
-                                <option value="{{ $ft }}" {{ old('height', $biodata['step_1']['height'] ?? '') == $ft ? 'selected' : '' }}>
-                                    {{ $ft }} ({{ $cm }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('height')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                                    @foreach($heights as $ft => $cm)
+                                    <option value="{{ $ft }}" {{ old('height', $biodata['step_1']['height'] ?? '' )==$ft ? 'selected' : '' }}>
+                                        {{ $ft }} ({{ $cm }})
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('height')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Weight -->
+                        <div class="col-md-4 mb-3">
+                            <div class="equal-box">
+                                <label for="weight" class="form-label">Weight *</label>
+                                <select name="weight" id="weight" class="form-select">
+                                    @php
+                                    $weights = [];
+                                    for ($i = 30; $i <= 120; $i++) { $weights[]=$i . ' kg' ; } @endphp @foreach($weights as $w) <option value="{{ $w }}" {{ old('weight', $biodata['step_1']['weight'] ?? '' )==$w ? 'selected' : '' }}>
+                                        {{ $w }}
+                                        </option>
+                                        @endforeach
+                                </select>
+                                @error('weight')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+
                     </div>
 
 
-                       <div class="col-md-6 mb-3">
-                        <label for="weight" class="form-label">Weight *</label>
-                        <select name="weight" id="weight" class="form-select">
-                            <option value="">-- Select Your Weight --</option>
 
+
+                    <div class="row g-3">
+
+                        <!-- Birth Date Column -->
+                        <div class="col-md-6">
+                            <label>Birth Date *</label>
                             @php
-                                $weights = [];
-                                for ($i = 30; $i <= 120; $i++) {
-                                    $weights[] = $i . ' kg';
+                            $savedDate = old('birth_date', $biodata['step_1']['birth_date'] ?? '');
+                            $savedDay = $savedDate ? date('d', strtotime($savedDate)) : '';
+                            $savedMonth = $savedDate ? date('m', strtotime($savedDate)) : '';
+                            $savedYear = $savedDate ? date('Y', strtotime($savedDate)) : '';
+                            @endphp
+
+                            <div class="combined-date-box">
+                                <select id="day" class="date-part">
+                                    <option value="">Day</option>
+                                    @for($d = 1; $d <= 31; $d++) <option value="{{ $d }}" {{ $savedDay==$d ? 'selected' : '' }}>{{ $d }}</option>
+                                        @endfor
+                                </select>
+
+                                <select id="month" class="date-part">
+                                    <option value="">Month</option>
+                                    @for($m = 1; $m <= 12; $m++) <option value="{{ $m }}" {{ $savedMonth==$m ? 'selected' : '' }}>
+                                        {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                                        </option>
+                                        @endfor
+                                </select>
+
+                                <select id="year" class="date-part">
+                                    <option value="">Year</option>
+                                    @for($y = date('Y'); $y >= 1950; $y--)
+                                    <option value="{{ $y }}" {{ $savedYear==$y ? 'selected' : '' }}>{{ $y }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+
+                            <input type="hidden" name="birth_date" id="birth_date" value="{{ $savedDate }}">
+
+                            @error('birth_date')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <!-- Disease Column -->
+                        <div class="col-md-6">
+                            <label>Mental or Physical Diseases *</label>
+                            <select name="disease_status" id="disease_status" class="form-control h-100">
+                                <option value="">Select Option</option>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="diseaseModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Please Describe the Disease</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <textarea name="disease_description" class="form-control" placeholder="Describe your condition"></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                        .combined-date-box {
+                            display: flex;
+                            align-items: center;
+                            gap: 0;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;
+                            overflow: hidden;
+                            height: 45px;
+                        }
+
+                        .date-part {
+                            flex: 1;
+                            border: none !important;
+                            border-right: 1px solid #ccc !important;
+                            padding: 8px 35px 8px 12px;
+                            /* right padding for arrow */
+                            font-size: 14px;
+                            appearance: none;
+                            -webkit-appearance: none;
+                            -moz-appearance: none;
+                            background-image: url("data:image/svg+xml,%3Csvg width='10' height='5' viewBox='0 0 10 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0L5 5L10 0H0Z' fill='%23333'/%3E%3C/svg%3E");
+                            background-repeat: no-repeat;
+                            background-position: right 10px center;
+                            background-size: 10px 5px;
+                        }
+
+                        .date-part:last-child {
+                            border-right: none !important;
+                        }
+
+                        .date-part:focus {
+                            outline: none !important;
+                            box-shadow: none !important;
+                        }
+
+                        select.form-control.h-100 {
+                            height: 45px;
+                        }
+                    </style>
+
+
+
+
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+
+                            // Birth Date logic
+                            function updateBirthDate() {
+                                const d = document.getElementById('day').value;
+                                const m = document.getElementById('month').value;
+                                const y = document.getElementById('year').value;
+
+                                if (d && m && y) {
+                                    document.getElementById('birth_date').value = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                                 }
-                            @endphp
+                            }
 
-                            @foreach($weights as $w)
-                                <option value="{{ $w }}" {{ old('weight', $biodata['step_1']['weight'] ?? '') == $w ? 'selected' : '' }}>
-                                    {{ $w }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('weight')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                            ['day', 'month', 'year'].forEach(id => {
+                                document.getElementById(id).addEventListener('change', updateBirthDate);
+                            });
+
+                            // Disease modal logic
+                            const diseaseSelect = document.getElementById('disease_status');
+                            diseaseSelect.addEventListener('change', function() {
+                                if (this.value === 'Yes') {
+
+                                    // Remove focus and wait a frame to prevent vibration
+                                    this.blur();
+
+                                    requestAnimationFrame(() => {
+                                        var modal = new bootstrap.Modal(document.getElementById('diseaseModal'), {
+                                            backdrop: 'static', // prevent clicking outside to close if needed
+                                            keyboard: true
+                                        });
+                                        modal.show();
+                                    });
+                                }
+                            });
+
+                        });
+                    </script>
+
+                    <!-- Row 1: Complexion + Blood Group (Two Columns) -->
+                    <div class="row">
+                        <!-- Complexion -->
+                        <div class="col-md-6 mb-3">
+                            <label>Complexion *</label>
+                            <select name="complexion" class="form-select">
+                                <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Fair' ? 'selected' : '' }}>Fair</option>
+                                <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Brown' ? 'selected' : '' }}>Brown</option>
+                                <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Dark' ? 'selected' : '' }}>Dark</option>
+                            </select>
+                            @error('complexion') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
+                        <!-- Blood Group -->
+                        <div class="col-md-6 mb-3">
+                            <label>Blood Group *</label>
+                            <select name="blood_group" class="form-select">
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='A+' ? 'selected' : '' }}>A+</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='A-' ? 'selected' : '' }}>A-</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='B+' ? 'selected' : '' }}>B+</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='B-' ? 'selected' : '' }}>B-</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='O+' ? 'selected' : '' }}>O+</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='O-' ? 'selected' : '' }}>O-</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='AB+' ? 'selected' : '' }}>AB+</option>
+                                <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='AB-' ? 'selected' : '' }}>AB-</option>
+                            </select>
+                            @error('blood_group') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
                     </div>
 
+                    <!-- Row 2: Language FULL WIDTH on single row -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Languages*</label>
+
+                            <div class="multi-select position-relative">
+                                <div id="selectedLanguages" class="d-flex flex-wrap gap-2 mb-2"></div>
+
+                                <input type="text" id="langInput" class="form-control" placeholder="Type to search..." onclick="showDropdown()" onkeyup="filterLanguage()" autocomplete="off" />
+
+                                <ul id="langList" class="list-group position-absolute w-100 mt-1 shadow-sm" style="z-index: 10; display: none;"></ul>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Complexion *</label>
-                        <select name="complexion" class="form-select">
-                            <option value="">Select</option>
-                            <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Fair' ? 'selected' : '' }}>Fair</option>
-                            <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Brown' ? 'selected' : '' }}>Brown</option>
-                            <option {{ old('complexion', $biodata['step_1']['complexion'] ?? '' )=='Dark' ? 'selected' : '' }}>Dark</option>
-                        </select>
-                        @error('complexion') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
 
-                    <div class="mb-3">
-                        <label>Blood Group *</label>
-                        <select name="blood_group" class="form-select">
-                            <option value="">Select</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='A+' ? 'selected' : '' }}>A+</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='A-' ? 'selected' : '' }}>A-</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='B+' ? 'selected' : '' }}>B+</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='B-' ? 'selected' : '' }}>B-</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='O+' ? 'selected' : '' }}>O+</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='O-' ? 'selected' : '' }}>O-</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='AB+' ? 'selected' : '' }}>AB+</option>
-                            <option {{ old('blood_group', $biodata['step_1']['blood_group'] ?? '' )=='AB-' ? 'selected' : '' }}>AB-</option>
-                        </select>
-                        @error('blood_group') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                    <style>
+                        #langList li.list-group-item {
+                            cursor: pointer;
+                        }
 
-                   <div class="mb-3">
-                        <label for="nationality" class="form-label">Nationality *</label>
-                        <select name="nationality" id="nationality" class="form-select">
-                            <option value="">-- Select Nationality --</option>
+                        #langList li.list-group-item:hover {
+                            background-color: #0d6efd;
+                            color: white;
+                        }
+                    </style>
 
-                            @php
-                                $countries = [
-                                    'Afghan' => 'Afghanistan',
-                                    'Albanian' => 'Albania',
-                                    'Algerian' => 'Algeria',
-                                    'American' => 'United States',
-                                    'Argentinian' => 'Argentina',
-                                    'Australian' => 'Australia',
-                                    'Austrian' => 'Austria',
-                                    'Bangladeshi' => 'Bangladesh',
-                                    'Belgian' => 'Belgium',
-                                    'Brazilian' => 'Brazil',
-                                    'British' => 'United Kingdom',
-                                    'Canadian' => 'Canada',
-                                    'Chinese' => 'China',
-                                    'Danish' => 'Denmark',
-                                    'Egyptian' => 'Egypt',
-                                    'French' => 'France',
-                                    'German' => 'Germany',
-                                    'Greek' => 'Greece',
-                                    'Indian' => 'India',
-                                    'Indonesian' => 'Indonesia',
-                                    'Iranian' => 'Iran',
-                                    'Iraqi' => 'Iraq',
-                                    'Irish' => 'Ireland',
-                                    'Italian' => 'Italy',
-                                    'Japanese' => 'Japan',
-                                    'Malaysian' => 'Malaysia',
-                                    'Nepalese' => 'Nepal',
-                                    'New Zealander' => 'New Zealand',
-                                    'Nigerian' => 'Nigeria',
-                                    'Norwegian' => 'Norway',
-                                    'Pakistani' => 'Pakistan',
-                                    'Palestinian' => 'Palestine',
-                                    'Philippine' => 'Philippines',
-                                    'Qatari' => 'Qatar',
-                                    'Russian' => 'Russia',
-                                    'Saudi' => 'Saudi Arabia',
-                                    'Singaporean' => 'Singapore',
-                                    'South African' => 'South Africa',
-                                    'South Korean' => 'South Korea',
-                                    'Sri Lankan' => 'Sri Lanka',
-                                    'Syrian' => 'Syria',
-                                    'Thai' => 'Thailand',
-                                    'Turkish' => 'Turkey',
-                                    'UAE' => 'United Arab Emirates',
-                                    'Vietnamese' => 'Vietnam'
-                                ];
-                            @endphp
+                    <script>
+                        let allLanguages = ['English', 'Hindi', 'Bangla', 'Arabic', 'Urdu'];
+                        let selectedLanguages = [];
 
-                            @foreach($countries as $key => $country)
-                                <option value="{{ $key }}" 
-                                    {{ old('nationality', $biodata['step_1']['nationality'] ?? 'Bangladeshi') == $key ? 'selected' : '' }}>
-                                    {{ $country }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('nationality')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
+                        function showDropdown() {
+                            document.getElementById('langList').style.display = 'block';
+                            renderDropdown();
+                        }
 
+                        function hideDropdown() {
+                            document.getElementById('langList').style.display = 'none';
+                        }
+
+                        function renderDropdown() {
+                            const list = document.getElementById('langList');
+                            list.innerHTML = '';
+
+                            allLanguages.forEach(lang => {
+                                if (!selectedLanguages.includes(lang)) {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item list-group-item-action';
+                                    li.textContent = lang;
+                                    li.onclick = () => addLanguage(lang);
+                                    list.appendChild(li);
+                                }
+                            });
+                        }
+
+                        function addLanguage(lang) {
+                            if (!selectedLanguages.includes(lang)) {
+                                selectedLanguages.push(lang);
+                                renderSelectedLanguages();
+                                renderDropdown();
+                                document.getElementById('langInput').value = '';
+                            }
+                        }
+
+                        function removeLanguage(lang) {
+                            selectedLanguages = selectedLanguages.filter(l => l !== lang);
+                            renderSelectedLanguages();
+                            renderDropdown();
+                        }
+
+                        function renderSelectedLanguages() {
+                            const container = document.getElementById('selectedLanguages');
+                            container.innerHTML = '';
+                            selectedLanguages.forEach(lang => {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-primary';
+                                badge.innerHTML = lang + ' <span class="remove" onclick="removeLanguage(\'' + lang + '\')">&times;</span>';
+                                container.appendChild(badge);
+                            });
+                        }
+
+                        function filterLanguage() {
+                            const input = document.getElementById('langInput').value.toLowerCase();
+                            const list = document.getElementById('langList');
+                            list.innerHTML = '';
+
+                            allLanguages.forEach(lang => {
+                                if (!selectedLanguages.includes(lang) && lang.toLowerCase().includes(input)) {
+                                    const li = document.createElement('li');
+                                    li.className = 'list-group-item list-group-item-action';
+                                    li.textContent = lang;
+                                    li.onclick = () => addLanguage(lang);
+                                    list.appendChild(li);
+                                }
+                            });
+                        }
+
+                        document.addEventListener('click', function(event) {
+                            const multiSelect = document.querySelector('.multi-select');
+                            if (!multiSelect.contains(event.target)) hideDropdown();
+                        });
+                    </script>
                 </div>
                 @endif
+
 
                 <!-- Step 2: Address -->
                 @if($step == 2)
                 <div class="step-content active" data-step="2">
-                    <!-- Step Header with Progress -->
-                    <div class="step-header">
+
+                    <!-- Step Header -->
+                    <div class="step-header mb-4">
                         <h2>Step {{ $step }} of 10</h2>
                         <div class="progress">
                             <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
-                    <h4>Address</h4>
 
-                   <div class="mb-3">
-                    <label for="country" class="form-label fw-semibold">Country *</label>
-                    <select name="country" id="country" class="form-select" required>
-                        <option value="">-- Select Your Country --</option>
-                        <option value="Afghanistan">Afghanistan</option>
-                        <option value="Albania">Albania</option>
-                        <option value="Algeria">Algeria</option>
-                        <option value="Argentina">Argentina</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Austria">Austria</option>
-                        <option value="Bahrain">Bahrain</option>
-                        <option value="Bangladesh" selected>Bangladesh</option>
-                        <option value="Belgium">Belgium</option>
-                        <option value="Brazil">Brazil</option>
-                        <option value="Canada">Canada</option>
-                        <option value="China">China</option>
-                        <option value="Denmark">Denmark</option>
-                        <option value="Egypt">Egypt</option>
-                        <option value="France">France</option>
-                        <option value="Germany">Germany</option>
-                        <option value="Greece">Greece</option>
-                        <option value="Hong Kong">Hong Kong</option>
-                        <option value="India">India</option>
-                        <option value="Indonesia">Indonesia</option>
-                        <option value="Iran">Iran</option>
-                        <option value="Iraq">Iraq</option>
-                        <option value="Ireland">Ireland</option>
-                        <option value="Italy">Italy</option>
-                        <option value="Japan">Japan</option>
-                        <option value="Kuwait">Kuwait</option>
-                        <option value="Malaysia">Malaysia</option>
-                        <option value="Maldives">Maldives</option>
-                        <option value="Nepal">Nepal</option>
-                        <option value="Netherlands">Netherlands</option>
-                        <option value="New Zealand">New Zealand</option>
-                        <option value="Nigeria">Nigeria</option>
-                        <option value="Norway">Norway</option>
-                        <option value="Oman">Oman</option>
-                        <option value="Pakistan">Pakistan</option>
-                        <option value="Philippines">Philippines</option>
-                        <option value="Qatar">Qatar</option>
-                        <option value="Russia">Russia</option>
-                        <option value="Saudi Arabia">Saudi Arabia</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="South Africa">South Africa</option>
-                        <option value="South Korea">South Korea</option>
-                        <option value="Spain">Spain</option>
-                        <option value="Sri Lanka">Sri Lanka</option>
-                        <option value="Sweden">Sweden</option>
-                        <option value="Switzerland">Switzerland</option>
-                        <option value="Thailand">Thailand</option>
-                        <option value="Turkey">Turkey</option>
-                        <option value="UAE">United Arab Emirates</option>
-                        <option value="UK">United Kingdom</option>
-                        <option value="USA">United States</option>
-                        <option value="Vietnam">Vietnam</option>
-                    </select>
-                    <small class="form-text text-muted">Select your country</small>
-                </div>
+                    <h4 class="mb-3">Address</h4>
 
+                    <!-- =============== PRESENT ADDRESS ================= -->
+                    <div class="row border p-3 rounded mb-4">
+                        <h5 class="mb-3">Present Address</h5>
 
-                    <!-- Present Address -->
-                    <div class="mb-3">
-                        <label>Present Address *</label>
-                        <select id="present_address_select" class="form-select" required></select>
-                        <small class="form-text text-muted">Select Division → District → Upazila</small>
-                        @error('present_address') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <!-- Hidden inputs -->
-                    <input type="hidden" id="present_address" name="present_address">
-                    <input type="hidden" id="permanent_address" name="permanent_address">
-
-                    <!-- Village / Area -->
-                    <div class="mb-3">
-                        <label class="form-label">Village / Area</label>
-                        <input type="text" name="village_area" class="form-control" value="{{ old('village_area', $biodata['step_2']['village_area'] ?? '') }}" placeholder="e.g., South Vabanipur">
-                        @error('village_area')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    <!-- Permanent Address -->
-                    <div class="mb-3">
-                        <label>Permanent Address *</label>
-                        <div class="form-check mb-2">
-                            <input type="checkbox" id="same_as_present" class="form-check-input">
-                            <label class="form-check-label" for="same_as_present">Same as Present Address</label>
+                        <!-- Division -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Division *</label>
+                            <select name="present_division" class="form-select"></select>
                         </div>
-                        <select id="permanent_address_select" class="form-select" required></select>
-                        <small class="form-text text-muted">Select Division → District → Upazila</small>
-                        @error('permanent_address') <small class="text-danger">{{ $message }}</small> @enderror
+
+                        <!-- District -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">District *</label>
+                            <select name="present_district" class="form-select"></select>
+                        </div>
+
+                        <!-- Upazila -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Upazila *</label>
+                            <select name="present_upazila" class="form-select"></select>
+                        </div>
+
+                        <!-- Village -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Village / Area *</label>
+                            <input type="text" name="present_village" class="form-control" placeholder="e.g. South Vabanipur">
+                        </div>
                     </div>
-                    <!-- Where did you grow up -->
-                    <div class="mb-3">
-                        <label class="form-label">Where did you grow up? *</label>
-                        <select name="grew_up" class="form-select" required>
-                            <option value="">-- Select District --</option>
-                            @foreach(['Dhaka','Chattogram','Barishal','Jhalakathi','Sylhet','Khulna','Rajshahi','Mymensingh'] as $district)
-                            <option value="{{ $district }}" {{ old('grew_up', $biodata['step_2']['grew_up'] ?? '' )==$district ? 'selected' : '' }}>
-                                {{ $district }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('grew_up')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+
+                    <!-- =============== PERMANENT ADDRESS ================= -->
+                    <div class="row border p-3 rounded">
+                        <h5 class="mb-3">Permanent Address</h5>
+
+                        <div class="col-md-12 mb-3">
+                            <input type="checkbox" id="same_as_present">
+                            <label for="same_as_present">Same as Present Address</label>
+                        </div>
+
+                        <!-- Division -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Division *</label>
+                            <select name="permanent_division" class="form-select"></select>
+                        </div>
+
+                        <!-- District -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">District *</label>
+                            <select name="permanent_district" class="form-select"></select>
+                        </div>
+
+                        <!-- Upazila -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Upazila *</label>
+                            <select name="permanent_upazila" class="form-select"></select>
+                        </div>
+
+                        <!-- Village -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Village / Area *</label>
+                            <input type="text" name="permanent_village" class="form-control" placeholder="e.g. North Vabanipur">
+                        </div>
+
+                        <!-- Country -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Nationality *</label>
+                            <select name="permanent_country" class="form-select">
+                                <option value="">-- Select Your Country --</option>
+                                <option value="Bangladesh" selected>Bangladesh</option>
+                                <option value="India">India</option>
+                                <option value="Saudi Arabia">Saudi Arabia</option>
+                                <option value="USA">United States</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="UAE">United Arab Emirates</option>
+                            </select>
+                        </div>
+
+                        <!-- Grow Up -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Where did you grow up? *</label>
+                            <select name="grow_up" class="form-select">
+                                <option value="">-- Select District --</option>
+                                <option>Dhaka</option>
+                                <option>Chattogram</option>
+                                <option>Barishal</option>
+                                <option>Jhalakathi</option>
+                                <option>Sylhet</option>
+                                <option>Khulna</option>
+                                <option>Rajshahi</option>
+                                <option>Mymensingh</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 @endif
+
+
+                <!-- ======================== JS ======================== -->
+
+                <script>
+                    let divisions = [];
+                    let districts = [];
+                    let upazilas = [];
+
+                    // Load JSON data on page load
+                    async function loadData() {
+                        divisions = await fetch("/json/divisions.json").then(res => res.json());
+                        districts = await fetch("/json/districts.json").then(res => res.json());
+                        upazilas = await fetch("/json/upazilas.json").then(res => res.json());
+
+                        loadDivisions("present_division");
+                        loadDivisions("permanent_division");
+                    }
+
+                    window.onload = loadData;
+
+                    // ---------- Load Divisions ----------
+                    function loadDivisions(selectName) {
+                        const select = document.querySelector(`[name='${selectName}']`);
+                        select.innerHTML = `<option value="">Select Division</option>`;
+                        divisions.forEach(d => {
+                            select.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+                        });
+                    }
+
+                    // ---------- Load Districts ----------
+                    function loadDistricts(divisionId, targetName) {
+                        const target = document.querySelector(`[name='${targetName}']`);
+                        target.innerHTML = `<option value="">Select District</option>`;
+                        districts.filter(d => d.division_id == divisionId).forEach(d => {
+                            target.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+                        });
+                    }
+
+                    // ---------- Load Upazilas ----------
+                    function loadUpazilas(districtId, targetName) {
+                        const target = document.querySelector(`[name='${targetName}']`);
+                        target.innerHTML = `<option value="">Select Upazila</option>`;
+                        upazilas.filter(u => u.district_id == districtId).forEach(u => {
+                            target.innerHTML += `<option value="${u.id}">${u.name}</option>`;
+                        });
+                    }
+
+                    // ----------------- Event Listeners -----------------
+
+                    // Present Address select changes
+                    document.addEventListener("change", function(e) {
+                        if (e.target.name === "present_division") {
+                            loadDistricts(e.target.value, "present_district");
+                        }
+                        if (e.target.name === "present_district") {
+                            loadUpazilas(e.target.value, "present_upazila");
+                        }
+                    });
+
+                    // Permanent Address select changes
+                    document.addEventListener("change", function(e) {
+                        if (e.target.name === "permanent_division") {
+                            loadDistricts(e.target.value, "permanent_district");
+                        }
+                        if (e.target.name === "permanent_district") {
+                            loadUpazilas(e.target.value, "permanent_upazila");
+                        }
+                    });
+
+                    // -------- Same as Present Checkbox ----------
+                    document.getElementById("same_as_present").addEventListener("change", function() {
+                        if (this.checked) {
+
+                            // Division
+                            document.querySelector("[name='permanent_division']").value =
+                                document.querySelector("[name='present_division']").value;
+                            loadDistricts(document.querySelector("[name='present_division']").value, "permanent_district");
+
+                            // District
+                            document.querySelector("[name='permanent_district']").value =
+                                document.querySelector("[name='present_district']").value;
+                            loadUpazilas(document.querySelector("[name='present_district']").value, "permanent_upazila");
+
+                            // Upazila
+                            document.querySelector("[name='permanent_upazila']").value =
+                                document.querySelector("[name='present_upazila']").value;
+
+                            // Village
+                            document.querySelector("[name='permanent_village']").value =
+                                document.querySelector("[name='present_village']").value;
+
+                            // Country always Bangladesh by default
+                            document.querySelector("[name='permanent_country']").value = "Bangladesh";
+
+                        } else {
+                            // Reset Permanent
+                            document.querySelector("[name='permanent_division']").value = "";
+                            document.querySelector("[name='permanent_district']").innerHTML = `<option value="">Select District</option>`;
+                            document.querySelector("[name='permanent_upazila']").innerHTML = `<option value="">Select Upazila</option>`;
+                            document.querySelector("[name='permanent_village']").value = "";
+                            document.querySelector("[name='permanent_country']").value = "";
+                        }
+                    });
+                </script>
+
 
                 <!-- Step 3: Educational Qualifications -->
                 @if($step == 3)
@@ -625,66 +989,159 @@ $step = $step ?? 1; // if $step is not set, use 1
                             <div class="progress-bar" style="width: {{ ($step/10)*100 }}%;"></div>
                         </div>
                     </div>
+
                     <h4 class="mb-3">Educational Qualifications</h4>
 
-                    <!-- Education Method -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Your Education Method *</label>
-                        <select id="education-method" name="education_method" class="form-select" required>
-                            <option value="">-- Select --</option>
-                            @foreach(['General','Islamic','Both'] as $method)
-                            <option value="{{ $method }}" {{ old('education_method', $biodata['step_3']['education_method'] ?? '' )==$method ? 'selected' : '' }}>
-                                {{ $method }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('education_method')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    <!-- Highest Qualification -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Highest Educational Qualification *</label>
-                        <small class="text-muted d-block mb-1">Select your top qualification. You can add more later.</small>
-                        <div id="education-container">
-                            @php
-                            $education_types = old('education_type', $biodata['step_3']['education_type'] ?? ['']);
-                            @endphp
-                            @foreach($education_types as $index => $type)
-                            <div class="education-block mb-4 border p-3 rounded shadow-sm bg-light">
-                                <div class="mb-3">
-                                    <select name="education_type[]" class="form-select education-select" required>
-                                        <option value="">-- Select --</option>
-                                        @foreach(['SSC','HSC','Diploma','Graduation','Post Graduation','Hafez','Others'] as $option)
-                                        <option value="{{ $option }}" {{ $type==$option ? 'selected' : '' }}>
-                                            {{ $option }}
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="education-fields">
-                                    <!-- You can dynamically add fields like year, institution, subject here -->
-                                </div>
-                            </div>
-                            @endforeach
+                    <div class="row">
+                        <!-- Education Method -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Your Education Method *</label>
+                            <select id="education-method" name="education_method" class="form-select">
+                                @foreach(['General','Qawmi','Alia'] as $method)
+                                <option value="{{ $method }}" {{ old('education_method', $biodata['step_3']['education_method'] ?? '' )==$method ? 'selected' : '' }}>
+                                    {{ $method }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('education_method')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
                         </div>
-                        <button type="button" id="add-education" class="btn btn-success btn-sm">+ Add Another Qualification</button>
-                        @error('education_type.*')
-                        <small class="text-danger">{{ $message }}</small>
-                        @enderror
+
+                        <!-- Highest Qualification -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Highest Educational Qualification *</label>
+                          
+
+                         
+                                @php
+                                $education_types = old('education_type', $biodata['step_3']['education_type'] ?? ['']);
+                                @endphp
+
+                                @foreach($education_types as $index => $type)
+                                <div class="education-block mb-3 p-3 border rounded bg-light shadow-sm">
+                                    <select name="education_type[]" class="form-select education-select">
+                                        <option value="">-- Select --</option>
+                                    </select>
+
+                                    <div class="education-fields mt-3"></div>
+                                </div>
+                                @endforeach
+                           
+
+                            <button type="button" id="add-education" class="btn btn-success btn-sm">
+                                + Add Qualification
+                            </button>
+
+                            @error('education_type.*')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Other Educational Qualifications -->
                     <div class="mb-3">
-                        <label for="other_education" class="form-label fw-bold">Other educational qualifications *</label>
-                        <input type="text" class="form-control" id="other_education" name="other_education" placeholder="Enter other qualifications" value="{{ old('other_education', $biodata['step_3']['other_education'] ?? '') }}" required>
+                        <label for="other_education" class="form-label fw-bold">
+                            Other educational qualifications *
+                        </label>
+                        <input type="text" class="form-control" id="other_education" name="other_education" placeholder="Enter other qualifications" value="{{ old('other_education', $biodata['step_3']['other_education'] ?? '') }}">
                         @error('other_education')
                         <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
                 </div>
                 @endif
+                <script>
+                    const generalOptions = [
+                        'Below SSC', 'SSC', 'HSC', 'Diploma',
+                        'Graduation', 'Post Graduation', 'Doctorate'
+                    ];
+
+                    const qawmiOptions = [
+                        'Primary Islamic education',
+                        'Ibtidaiyah',
+                        'Mutawassitah',
+                        'Sanabia Uliya',
+                        'Fazilat',
+                        'Takmil',
+                        'Takhassus'
+                    ];
+
+                    // Update dropdown values
+                    function updateQualificationOptions(method) {
+                        document.querySelectorAll(".education-select").forEach(select => {
+                            select.innerHTML = `<option value="">-- Select --</option>`;
+
+                            // General & Alia → Same
+                            let options = (method === "Qawmi") ? qawmiOptions : generalOptions;
+
+                            options.forEach(text => {
+                                const option = document.createElement("option");
+                                option.value = text;
+                                option.textContent = text;
+                                select.appendChild(option);
+                            });
+                        });
+                    }
+
+                    // Dynamic fields
+                    function getFields(type) {
+                        return `
+        <div class="row">
+            <div class="col-md-4 mb-2">
+                <label>Institution</label>
+                <input type="text" name="institution[]" class="form-control">
+            </div>
+            <div class="col-md-4 mb-2">
+                <label>Major / Subject</label>
+                <input type="text" name="subject[]" class="form-control">
+            </div>
+            <div class="col-md-4 mb-2">
+                <label>Passing Year</label>
+                <input type="number" min="1950" max="2050" name="passing_year[]" class="form-control">
+            </div>
+        </div>
+    `;
+                    }
+
+                    // Change Education Method
+                    document.getElementById("education-method").addEventListener("change", function() {
+                        updateQualificationOptions(this.value);
+                    });
+
+                    // Change Qualification type
+                    document.addEventListener("change", function(e) {
+                        if (e.target.classList.contains("education-select")) {
+                            const container = e.target.closest(".education-block").querySelector(".education-fields");
+                            container.innerHTML = getFields(e.target.value);
+                        }
+                    });
+
+                    // Add new qualification block
+                    document.getElementById("add-education").addEventListener("click", function() {
+                        const method = document.getElementById("education-method").value;
+
+                        const block = document.createElement("div");
+                        block.className = "education-block mb-3 p-3 border rounded bg-light shadow-sm";
+
+                        block.innerHTML = `
+        <select name="education_type[]" class="form-select education-select">
+            <option value="">-- Select --</option>
+        </select>
+        <div class="education-fields mt-3"></div>
+    `;
+
+                        document.getElementById("education-container").appendChild(block);
+                        updateQualificationOptions(method);
+                    });
+
+                    // Auto init after page load
+                    document.addEventListener("DOMContentLoaded", function() {
+                        updateQualificationOptions(document.getElementById("education-method").value);
+                    });
+                </script>
+              
+
 
                 <!-- Step 4: Family Information -->
                 @if($step == 4)
@@ -701,14 +1158,14 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Father Info -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Father's Name *</label>
-                        <input type="text" name="father_name" class="form-control" placeholder="Abdul Haque" value="{{ old('father_name', $biodata['step_4']['father_name'] ?? '') }}" required>
+                        <input type="text" name="father_name" class="form-control" placeholder="Abdul Haque" value="{{ old('father_name', $biodata['step_4']['father_name'] ?? '') }}">
                         <small class="text-muted">Only for authority</small>
                         @error('father_name') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Is your father alive? *</label>
-                        <select name="father_alive" class="form-select" required>
+                        <select name="father_alive" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="1" {{ old('father_alive', $biodata['step_4']['father_alive'] ?? '' )=='1' ? 'selected' : '' }}>Yes</option>
                             <option value="0" {{ old('father_alive', $biodata['step_4']['father_alive'] ?? '' )=='0' ? 'selected' : '' }}>No</option>
@@ -718,20 +1175,20 @@ $step = $step ?? 1; // if $step is not set, use 1
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Father's Profession *</label>
-                        <textarea name="father_profession" class="form-control" rows="2" required placeholder="Businessman, Teacher, etc.">{{ old('father_profession', $biodata['step_4']['father_profession'] ?? '') }}</textarea>
+                        <textarea name="father_profession" class="form-control" rows="2" placeholder="Businessman, Teacher, etc.">{{ old('father_profession', $biodata['step_4']['father_profession'] ?? '') }}</textarea>
                         @error('father_profession') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Mother Info -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Mother's Name *</label>
-                        <input type="text" name="mother_name" class="form-control" value="{{ old('mother_name', $biodata['step_4']['mother_name'] ?? '') }}" required>
+                        <input type="text" name="mother_name" class="form-control" value="{{ old('mother_name', $biodata['step_4']['mother_name'] ?? '') }}">
                         @error('mother_name') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Is your mother alive? *</label>
-                        <select name="mother_alive" class="form-select" required>
+                        <select name="mother_alive" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="1" {{ old('mother_alive', $biodata['step_4']['mother_alive'] ?? '' )=='1' ? 'selected' : '' }}>Yes</option>
                             <option value="0" {{ old('mother_alive', $biodata['step_4']['mother_alive'] ?? '' )=='0' ? 'selected' : '' }}>No</option>
@@ -741,14 +1198,14 @@ $step = $step ?? 1; // if $step is not set, use 1
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Mother's Profession *</label>
-                        <textarea name="mother_profession" class="form-control" rows="2" required placeholder="Housewife, Teacher, etc.">{{ old('mother_profession', $biodata['step_4']['mother_profession'] ?? '') }}</textarea>
+                        <textarea name="mother_profession" class="form-control" rows="2" placeholder="Housewife, Teacher, etc.">{{ old('mother_profession', $biodata['step_4']['mother_profession'] ?? '') }}</textarea>
                         @error('mother_profession') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Brothers -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">How many brothers do you have? *</label>
-                        <input type="number" name="brothers" id="brothers" class="form-control" min="0" value="{{ old('brothers', $biodata['step_4']['brothers'] ?? 0) }}" required>
+                        <input type="number" name="brothers" id="brothers" class="form-control" min="0" value="{{ old('brothers', $biodata['step_4']['brothers'] ?? 0) }}">
                         @error('brothers') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
@@ -760,7 +1217,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Sisters -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">How many sisters do you have? *</label>
-                        <input type="number" name="sisters" id="sisters" class="form-control" min="0" value="{{ old('sisters', $biodata['step_4']['sisters'] ?? 0) }}" required>
+                        <input type="number" name="sisters" id="sisters" class="form-control" min="0" value="{{ old('sisters', $biodata['step_4']['sisters'] ?? 0) }}">
                         @error('sisters') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
@@ -778,7 +1235,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Financial Status -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Family Financial Status *</label>
-                        <select name="family_financial_status" class="form-select" required>
+                        <select name="family_financial_status" class="form-select">
                             <option value="">-- Select --</option>
                             @foreach(['Lower class','Middle class','Upper middle class','Rich'] as $option)
                             <option value="{{ $option }}" {{ old('family_financial_status', $biodata['step_4']['family_financial_status'] ?? '' )==$option ? 'selected' : '' }}>
@@ -791,14 +1248,14 @@ $step = $step ?? 1; // if $step is not set, use 1
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Description of Family's Financial Situation *</label>
-                        <textarea name="family_details" class="form-control" rows="3" required placeholder="Residential house, land, family business, etc.">{{ old('family_details', $biodata['step_4']['family_details'] ?? '') }}</textarea>
+                        <textarea name="family_details" class="form-control" rows="3" placeholder="Residential house, land, family business, etc.">{{ old('family_details', $biodata['step_4']['family_details'] ?? '') }}</textarea>
                         @error('family_details') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Religious Condition -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Family's Religious Condition *</label>
-                        <textarea name="family_religious_condition" class="form-control" rows="3" required placeholder="Describe family religious practices, environment of mahram & non-mahram, etc.">{{ old('family_religious_condition', $biodata['step_4']['family_religious_condition'] ?? '') }}</textarea>
+                        <textarea name="family_religious_condition" class="form-control" rows="3" placeholder="Describe family religious practices, environment of mahram & non-mahram, etc.">{{ old('family_religious_condition', $biodata['step_4']['family_religious_condition'] ?? '') }}</textarea>
                         @error('family_religious_condition') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -823,52 +1280,48 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('clothing_style') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-              @php
-    // Fetch logged-in user’s gender from registration table
-    $gender = Auth::user()->gender ?? $biodata['step_5']['gender'] ?? null;
-@endphp
+                    @php
+                    // Fetch logged-in user’s gender from registration table
+                    $gender = Auth::user()->gender ?? $biodata['step_5']['gender'] ?? null;
+                    @endphp
 
-<!-- Hidden gender input (optional, for form submission) -->
-<input type="hidden" name="gender" value="{{ $gender }}">
+                    <!-- Hidden gender input (optional, for form submission) -->
+                    <input type="hidden" name="gender" value="{{ $gender }}">
 
-<!-- Gender-based dynamic fields -->
-<div id="gender-specific-fields">
-    @if ($gender === 'male')
-        <!-- Beard -->
-        <div class="mb-3">
-            <label class="form-label fw-bold">Do you have beard according to sunnah? Since when? *</label>
-            <input type="text" name="beard_info" class="form-control"
-                placeholder="e.g., 5 years"
-                value="{{ old('beard_info', $biodata['step_5']['beard_info'] ?? '') }}">
-            @error('beard_info') <small class="text-danger">{{ $message }}</small> @enderror
-        </div>
+                    <!-- Gender-based dynamic fields -->
+                    <div id="gender-specific-fields">
+                        @if ($gender === 'male')
+                        <!-- Beard -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Do you have beard according to sunnah? Since when? *</label>
+                            <input type="text" name="beard_info" class="form-control" placeholder="e.g., 5 years" value="{{ old('beard_info', $biodata['step_5']['beard_info'] ?? '') }}">
+                            @error('beard_info') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
 
-        <!-- Clothes above ankles -->
-        <div class="mb-3">
-            <label for="clothes_above_ankles" class="form-label fw-bold">
-                Do you wear clothes above the ankles? *
-            </label>
-            <select name="clothes_above_ankles" id="clothes_above_ankles" class="form-select" required>
-                <option value="">-- Select --</option>
-                <option value="yes" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
-                <option value="no" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
-            </select>
-            @error('clothes_above_ankles')
-            <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
+                        <!-- Clothes above ankles -->
+                        <div class="mb-3">
+                            <label for="clothes_above_ankles" class="form-label fw-bold">
+                                Do you wear clothes above the ankles? *
+                            </label>
+                            <select name="clothes_above_ankles" id="clothes_above_ankles" class="form-select">
+                                <option value="">-- Select --</option>
+                                <option value="yes" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
+                                <option value="no" {{ old('clothes_above_ankles', $biodata['step_5']['clothes_above_ankles'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
+                            </select>
+                            @error('clothes_above_ankles')
+                            <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
 
-    @elseif ($gender === 'female')
-        <!-- Niqab / Veil -->
-        <div class="mb-3">
-            <label class="form-label fw-bold">Since when have you been wearing a veil with a niqab? *</label>
-            <input type="text" name="niqab_since" class="form-control"
-                placeholder="e.g., 3 years"
-                value="{{ old('niqab_since', $biodata['step_5']['niqab_since'] ?? '') }}">
-            @error('niqab_since') <small class="text-danger">{{ $message }}</small> @enderror
-        </div>
-    @endif
-</div>
+                        @elseif ($gender === 'female')
+                        <!-- Niqab / Veil -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Since when have you been wearing a veil with a niqab? *</label>
+                            <input type="text" name="niqab_since" class="form-control" placeholder="e.g., 3 years" value="{{ old('niqab_since', $biodata['step_5']['niqab_since'] ?? '') }}">
+                            @error('niqab_since') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                        @endif
+                    </div>
 
 
                     <!-- Prayer -->
@@ -878,30 +1331,25 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('prayers_info') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                   <!-- Mahram Compliance -->
+                    <!-- Mahram Compliance -->
                     <div class="mb-3">
                         <label for="mahram_nonmahram" class="form-label fw-bold">
                             Do you comply with mahram / non-mahram? *
                         </label>
-                        <select 
-                            name="mahram_nonmahram" 
-                            id="mahram_nonmahram" 
-                            class="form-select" 
-                            required
-                        >
+                        <select name="mahram_nonmahram" id="mahram_nonmahram" class="form-select">
                             <option value="">-- Select --</option>
-                            <option value="yes" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '') == 'yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="no" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '') == 'no' ? 'selected' : '' }}>No</option>
+                            <option value="yes" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ old('mahram_nonmahram', $biodata['step_5']['mahram_nonmahram'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
                         </select>
                         @error('mahram_nonmahram')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Are you able to read the Quran correctly? *</label>
-                        <select name="quran_recitation" class="form-select" required>
+                        <select name="quran_recitation" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="Yes" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
                             <option value="No" {{ old('quran_recitation', $biodata['step_5']['quran_recitation'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
@@ -922,30 +1370,25 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @error('fiqh') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
-                <!-- Entertainment -->
+                    <!-- Entertainment -->
                     <div class="mb-3">
                         <label for="watch_entertainment" class="form-label fw-bold">
                             Do you watch or listen to dramas / movies / serials / songs? *
                         </label>
-                        <select 
-                            name="watch_entertainment" 
-                            id="watch_entertainment" 
-                            class="form-select" 
-                            required
-                        >
+                        <select name="watch_entertainment" id="watch_entertainment" class="form-select">
                             <option value="">-- Select --</option>
-                            <option value="yes" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '') == 'yes' ? 'selected' : '' }}>Yes</option>
-                            <option value="no" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '') == 'no' ? 'selected' : '' }}>No</option>
+                            <option value="yes" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '' )=='yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ old('watch_entertainment', $biodata['step_5']['watch_entertainment'] ?? '' )=='no' ? 'selected' : '' }}>No</option>
                         </select>
                         @error('watch_entertainment')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 
                     <!-- Health -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Do you have any mental or physical diseases? *</label>
-                        <select name="diseases" class="form-select" required>
+                        <select name="diseases" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="Yes" {{ old('diseases', $biodata['step_5']['diseases'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
                             <option value="No" {{ old('diseases', $biodata['step_5']['diseases'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
@@ -1065,7 +1508,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Guardian Agreement -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Do your guardians agree to your marriage? *</label>
-                        <select name="guardian_agree" class="form-select" required>
+                        <select name="guardian_agree" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="Yes" {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
                             <option value="No" {{ old('guardian_agree', $biodata['step_7']['guardian_agree'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
@@ -1078,7 +1521,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Wife in Veil -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Will you be able to keep your wife in the veil after marriage? *</label>
-                        <select name="wife_in_veil" class="form-select" required>
+                        <select name="wife_in_veil" class="form-select">
                             <option value="">-- Select --</option>
                             @php
                             $options = ['Yes', 'No', 'InshaAllah'];
@@ -1098,7 +1541,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Wife Study Allowed -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Would you like to allow your wife to study after marriage? *</label>
-                        <select name="wife_study_allowed" class="form-select" required>
+                        <select name="wife_study_allowed" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="Yes" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
                             <option value="No" {{ old('wife_study_allowed', $biodata['step_7']['wife_study_allowed'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
@@ -1111,7 +1554,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Wife Job Allowed -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Would you like to allow your wife to do any job after marriage? *</label>
-                        <select name="wife_job_allowed" class="form-select" required>
+                        <select name="wife_job_allowed" class="form-select">
                             <option value="">-- Select --</option>
                             <option value="Yes" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '' )=='Yes' ? 'selected' : '' }}>Yes</option>
                             <option value="No" {{ old('wife_job_allowed', $biodata['step_7']['wife_job_allowed'] ?? '' )=='No' ? 'selected' : '' }}>No</option>
@@ -1124,7 +1567,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Residence After Marriage -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Where will you live with your wife after marriage? *</label>
-                        <select name="residence_after_marriage" class="form-select" required>
+                        <select name="residence_after_marriage" class="form-select">
                             <option value="">-- Select --</option>
                             @foreach(['Own House', 'Wife’s House', 'Rented House', 'Other'] as $option)
                             <option value="{{ $option }}" {{ old('residence_after_marriage', $biodata['step_7']['residence_after_marriage'] ?? '' )==$option ? 'selected' : '' }}>
@@ -1140,7 +1583,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Expect Gift from Bride -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Would you or your family expect any gift from the bride's family? *</label>
-                        <select name="expect_gift_from_bride" class="form-select" required>
+                        <select name="expect_gift_from_bride" class="form-select">
                             <option value="">-- Select --</option>
                             @foreach(['Yes', 'No'] as $option)
                             <option value="{{ $option }}" {{ old('expect_gift_from_bride', $biodata['step_7']['expect_gift_from_bride'] ?? '' )==$option ? 'selected' : '' }}>
@@ -1176,13 +1619,13 @@ $step = $step ?? 1; // if $step is not set, use 1
                             $ageToValue = explode('-', $ageFrom)[1] ?? '';
                             @endphp
 
-                            <select id="age-from" class="form-select" required>
+                            <select id="age-from" class="form-select">
                                 <option value="">From</option>
                                 @for($from = 18; $from <= 55; $from++) <option value="{{ $from }}" {{ $ageFromValue==$from ? 'selected' : '' }}>{{ $from }}</option>
                                     @endfor
                             </select>
 
-                            <select id="age-to" class="form-select" required>
+                            <select id="age-to" class="form-select">
                                 <option value="">To</option>
                                 @for($to = 23; $to <= 60; $to++) <!-- minimum 5-year gap -->
                                     <option value="{{ $to }}" {{ $ageToValue==$to ? 'selected' : '' }}>{{ $to }}</option>
@@ -1248,14 +1691,14 @@ $step = $step ?? 1; // if $step is not set, use 1
                             $toSelected = explode('-', $selectedRange)[1] ?? '';
                             @endphp
 
-                            <select id="height-from" class="form-select" required>
+                            <select id="height-from" class="form-select">
                                 <option value="">From</option>
                                 @foreach($heights as $height)
                                 <option value="{{ $height }}" {{ $fromSelected==$height ? 'selected' : '' }}>{{ $height }}</option>
                                 @endforeach
                             </select>
 
-                            <select id="height-to" class="form-select" required>
+                            <select id="height-to" class="form-select">
                                 <option value="">To</option>
                                 @foreach($heights as $height)
                                 <option value="{{ $height }}" {{ $toSelected==$height ? 'selected' : '' }}>{{ $height }}</option>
@@ -1290,7 +1733,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Education -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Educational Qualification *</label>
-                        <select name="partner_education" class="form-select" required>
+                        <select name="partner_education" class="form-select">
                             <option value="">-- Select Qualification --</option>
                             @php
                             $educationOptions = [
@@ -1318,7 +1761,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- District -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">District *</label>
-                        <select name="partner_district" id="partner_district" class="form-select" required>
+                        <select name="partner_district" id="partner_district" class="form-select">
                             <option value="">-- Select District --</option>
                         </select>
                         <small class="text-muted">Mention specific districts.</small>
@@ -1355,7 +1798,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Marital Status -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Marital Status *</label>
-                        <select name="partner_marital_status[]" class="form-select" multiple required>
+                        <select name="partner_marital_status[]" class="form-select" multiple>
                             @php
                             $maritalOptions = ['Never Married', 'Divorced', 'Widow'];
                             $selected = old('partner_marital_status', $biodata['step_8']['partner_marital_status'] ?? []);
@@ -1376,7 +1819,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Profession -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Profession *</label>
-                        <select name="partner_profession" class="form-select" required>
+                        <select name="partner_profession" class="form-select">
                             <option value="">-- Select Profession --</option>
                             @php
                             $professions = [
@@ -1407,7 +1850,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Financial Condition -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Financial Condition *</label>
-                        <select name="partner_financial_condition" class="form-select" required>
+                        <select name="partner_financial_condition" class="form-select">
                             <option value="">-- Select Financial Condition --</option>
                             @php
                             $financialOptions = [
@@ -1457,21 +1900,21 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Parents Knowledge -->
                     <div class="mb-3">
                         <label>Do your parents know that you are submitting biodata ? *</label>
-                        <input type="text" name="parents_know" class="form-control" value="{{ old('parents_know', $biodata['step_9']['parents_know'] ?? '') }}" required>
+                        <input type="text" name="parents_know" class="form-control" value="{{ old('parents_know', $biodata['step_9']['parents_know'] ?? '') }}">
                         @error('parents_know') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Truth Confirmation -->
                     <div class="mb-3">
                         <label>I confirm that all the information provided is true. *</label>
-                        <input type="text" name="truth_testify" class="form-control" value="{{ old('truth_testify', $biodata['step_9']['truth_testify'] ?? '') }}" required>
+                        <input type="text" name="truth_testify" class="form-control" value="{{ old('truth_testify', $biodata['step_9']['truth_testify'] ?? '') }}">
                         @error('truth_testify') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Responsibility Agreement -->
                     <div class="mb-3">
                         <label>If any information is false, we are not responsible. Do you agree? *</label>
-                        <input type="text" name="responsibility" class="form-control" value="{{ old('responsibility', $biodata['step_9']['responsibility'] ?? '') }}" required>
+                        <input type="text" name="responsibility" class="form-control" value="{{ old('responsibility', $biodata['step_9']['responsibility'] ?? '') }}">
                         @error('responsibility') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
                 </div>
@@ -1492,7 +1935,7 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Guardian Mobile -->
                     <div class="mb-3">
                         <label>Guardian's Mobile Number *</label>
-                        <input type="text" name="guardian_mobile" class="form-control" value="{{ old('guardian_mobile', $biodata['step_10']['guardian_mobile'] ?? '') }}" required>
+                        <input type="text" name="guardian_mobile" class="form-control" value="{{ old('guardian_mobile', $biodata['step_10']['guardian_mobile'] ?? '') }}">
                         <small class="form-text text-muted">
                             This number will be given if anyone wants to contact your guardian. After verifying by calling this number, the biodata will be approved.
                             If you write the number of your friend, colleague, cousin or yourself here, biodata will be permanently banned.
@@ -1503,14 +1946,14 @@ $step = $step ?? 1; // if $step is not set, use 1
                     <!-- Guardian Relation -->
                     <div class="mb-3">
                         <label>Relationship with Guardian *</label>
-                        <input type="text" name="guardian_relationship" class="form-control" value="{{ old('guardian_relationship', $biodata['step_10']['guardian_relationship'] ?? '') }}" required>
+                        <input type="text" name="guardian_relationship" class="form-control" value="{{ old('guardian_relationship', $biodata['step_10']['guardian_relationship'] ?? '') }}">
                         @error('guardian_relationship') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <!-- Email -->
                     <div class="mb-3">
                         <label>Email to Receive Biodata *</label>
-                        <input type="email" name="guardian_email" class="form-control" value="{{ old('guardian_email', $biodata['step_10']['guardian_email'] ?? '') }}" required>
+                        <input type="email" name="guardian_email" class="form-control" value="{{ old('guardian_email', $biodata['step_10']['guardian_email'] ?? '') }}">
                         <small class="form-text text-muted">
                             To avoid unwanted incidents, enter the guardian's guardian_email address if possible.
                         </small>
@@ -1535,10 +1978,10 @@ $step = $step ?? 1; // if $step is not set, use 1
                         @else
                         <button type="submit" class="btn btn-success">Finish</button>
                         @endif
-                        <!-- <button type="submit" value="1" class="btn btn-warning">Save Temporarily</button> -->
                 </div>
 
                 <input type="hidden" name="step" id="currentStep" value="{{ $step }}">
+
 
             </form>
         </div>
@@ -1548,20 +1991,22 @@ $step = $step ?? 1; // if $step is not set, use 1
 
 {{-- JS --}}
 <script>
- 
-
     document.addEventListener("DOMContentLoaded", function() {
         const steps = document.querySelectorAll(".step");
-        const stepButtons = document.querySelectorAll(".step-btn");
+        const stepButtons = document.querySelectorAll(".step-btn"); // clickable step headers (divs)
         const stepInput = document.getElementById("currentStep");
         const form = document.querySelector("form");
 
         if (!form || !stepInput || steps.length === 0) {
-            console.warn("Step form or buttons not found in DOM.");
+            console.warn("Stepper elements missing.");
             return;
         }
 
-        // Function to set active step
+        // current step helper
+        function getCurrentStep() {
+            return parseInt(stepInput.value) || 1;
+        }
+
         function setActiveStep(stepNumber) {
             steps.forEach(step => {
                 step.classList.remove("active");
@@ -1571,327 +2016,115 @@ $step = $step ?? 1; // if $step is not set, use 1
             });
         }
 
-        // Initialize stepper on page load
-        const currentStep = parseInt(stepInput.value) || 1;
-        setActiveStep(currentStep);
+        // initialize UI
+        setActiveStep(getCurrentStep());
 
-        // Step buttons click
+        // keep track of last user action so submit handler knows what happened
+        let lastAction = null; // "step", "next", "back" or null
+
+        // STEP HEADER CLICK -> immediate move (no validation)
         stepButtons.forEach(btn => {
-            btn.addEventListener("click", function() {
-                const newStep = parseInt(this.dataset.step);
-                stepInput.value = newStep;
-                setActiveStep(newStep); // update active step visually
+            btn.addEventListener("click", function(e) {
+                e.preventDefault();
+                const goto = parseInt(this.dataset.step);
+                if (isNaN(goto)) return;
+
+                lastAction = "step";
+                stepInput.value = goto;
+                setActiveStep(goto);
+
+                // Submit to let server render that step (no validation required on client)
                 form.submit();
             });
         });
-    });
 
+        // find next/back buttons (they are <button name="next"> and <button name="back">)
+        const nextBtn = form.querySelector("button[name='next']");
+        const backBtn = form.querySelector("button[name='back']");
 
-    // Address data
-    document.addEventListener("DOMContentLoaded", function() {
-
-        Promise.all([
-            fetch('{{ asset("json/divisions.json") }}').then(r => r.json()),
-            fetch('{{ asset("json/districts.json") }}').then(r => r.json()),
-            fetch('{{ asset("json/upazilas.json") }}').then(r => r.json())
-        ]).then(([divisions, districts, upazilas]) => {
-
-            function setupSingleSelect(selectId, hiddenInputId) {
-                const select = document.getElementById(selectId);
-                const hiddenInput = document.getElementById(hiddenInputId);
-
-                let currentStep = "division";
-                let selectedDivision = null;
-                let selectedDistrict = null;
-
-                function loadDivisions() {
-                    currentStep = "division";
-                    select.innerHTML = '<option value="">-- Select Division --</option>' +
-                        divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-                }
-
-                function loadDistricts(divisionId) {
-                    currentStep = "district";
-                    const filtered = districts.filter(d => d.division_id == divisionId);
-                    select.innerHTML = '<option value="">-- Select District --</option>' +
-                        filtered.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-                }
-
-                function loadUpazilas(districtId) {
-                    currentStep = "upazila";
-                    const filtered = upazilas.filter(u => u.district_id == districtId);
-                    select.innerHTML = '<option value="">-- Select Upazila --</option>' +
-                        filtered.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-                }
-
-                select.addEventListener("change", function() {
-                    if (currentStep === "division") {
-                        selectedDivision = divisions.find(d => d.id == this.value);
-                        if (selectedDivision) loadDistricts(selectedDivision.id);
-
-                    } else if (currentStep === "district") {
-                        selectedDistrict = districts.find(d => d.id == this.value);
-                        if (selectedDistrict) loadUpazilas(selectedDistrict.id);
-
-                    } else if (currentStep === "upazila") {
-                        const selectedUpa = upazilas.find(u => u.id == this.value);
-                        if (selectedUpa && selectedDistrict && selectedDivision) {
-                            hiddenInput.value = `Bangladesh, ${selectedUpa.name}, ${selectedDistrict.name}, ${selectedDivision.name}`;
-                            select.innerHTML = `<option value="${hiddenInput.value}">${hiddenInput.value}</option>`;
-                            select.value = hiddenInput.value;
-                        }
-                    }
-                });
-
-                loadDivisions();
-            }
-
-            setupSingleSelect("present_address_select", "present_address");
-            setupSingleSelect("permanent_address_select", "permanent_address");
-
-            const checkbox = document.getElementById("same_as_present");
-            const permSelect = document.getElementById("permanent_address_select");
-            const permHidden = document.getElementById("permanent_address");
-
-            checkbox.addEventListener("change", function() {
-                if (this.checked) {
-                    permSelect.style.display = "none";
-                    permHidden.value = document.getElementById("present_address").value;
-                } else {
-                    permSelect.style.display = "block";
-                    permHidden.value = "";
-                }
-            });
-
-        }).catch(err => console.error("Error loading JSON:", err));
-
-    });
-
-
-
-    // Education Information 
-    document.addEventListener("DOMContentLoaded", function() {
-        const generalOptions = [{
-                value: "ssc",
-                text: "SSC / Dakhil"
-            },
-            {
-                value: "hsc",
-                text: "HSC / Alim"
-            },
-            {
-                value: "diploma",
-                text: "Diploma"
-            },
-            {
-                value: "bachelor",
-                text: "Bachelor/ Fazil"
-            },
-            {
-                value: "master",
-                text: "Master/ Kamil"
-            },
-             {
-                value: "phd",
-                text: "Ph.D"
-            },
-            {
-                value: "other",
-                text: "Other"
-            }
-        ];
-
-        const islamicOptions = [{
-                value: "hafez",
-                text: "Hafez"
-            },
-            {
-                value: "maolana",
-                text: "Maolana"
-            },
-            {
-                value: "mufti",
-                text: "Mufti"
-            },
-            {
-                value: "mufassir",
-                text: "Mufassir"
-            },
-            {
-                value: "adib",
-                text: "Adib"
-            },
-            {
-                value: "qari",
-                text: "Qari"
-            }
-        ];
-
-        // Generate input fields based on selected qualification
-       function getFields(type) {
-    switch (type) {
-        case "ssc":
-            return `
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="ssc_year[]" class="form-control" placeholder="2014" required>
-                </div>
-                <div class="mb-3">
-                    <label>Group *</label>
-                    <input type="text" name="ssc_group[]" class="form-control" placeholder="Science" required>
-                </div>`;
-                
-        case "hsc":
-            return `
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="hsc_year[]" class="form-control" placeholder="2016" required>
-                </div>
-                <div class="mb-3">
-                    <label>Group *</label>
-                    <input type="text" name="hsc_group[]" class="form-control" placeholder="Science" required>
-                </div>`;
-
-        case "diploma":
-            return `
-                <div class="mb-3">
-                    <label>What medium did you study after SSC? *</label>
-                    <input type="text" name="diploma_medium[]" class="form-control" placeholder="Diploma" required>
-                </div>
-                <div class="mb-3">
-                    <label>What is the subject of your diploma? *</label>
-                    <input type="text" name="diploma_subject[]" class="form-control" placeholder="Diploma in Computer Science Engineering" required>
-                </div>
-                <div class="mb-3">
-                    <label>Name of educational institution *</label>
-                    <input type="text" name="diploma_institution[]" class="form-control" placeholder="Barguna Polytechnic" required>
-                </div>
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="diploma_year[]" class="form-control" placeholder="2018" required>
-                </div>`;
-
-        case "bachelor":
-            return `
-                <div class="mb-3">
-                    <label>Graduation Subject *</label>
-                    <input type="text" name="graduation_subject[]" class="form-control" placeholder="Computer Science" required>
-                </div>
-                <div class="mb-3">
-                    <label>Institution *</label>
-                    <input type="text" name="graduation_institution[]" class="form-control" placeholder="University Name" required>
-                </div>
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="graduation_year[]" class="form-control" placeholder="2022" required>
-                </div>`;
-
-        case "master":
-            return `
-                <div class="mb-3">
-                    <label>Postgraduation Subject *</label>
-                    <input type="text" name="postgraduation_subject[]" class="form-control" placeholder="Computer Science" required>
-                </div>
-                <div class="mb-3">
-                    <label>Institution *</label>
-                    <input type="text" name="postgraduation_institution[]" class="form-control" placeholder="Geeta University" required>
-                </div>
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="postgraduation_year[]" class="form-control" placeholder="2025" required>
-                </div>`;
-
-                 case "phd":
-            return `
-                <div class="mb-3">
-                    <label>Ph.D Subject *</label>
-                    <input type="text" name="phd_subject[]" class="form-control" placeholder="Computer Science" required>
-                </div>
-                <div class="mb-3">
-                    <label>Institution *</label>
-                    <input type="text" name="phd_institution[]" class="form-control" placeholder="Geeta University" required>
-                </div>
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="phd_year[]" class="form-control" placeholder="2025" required>
-                </div>`;
-
-        case "hafez":
-        case "maolana":
-        case "mufti":
-        case "mufassir":
-        case "adib":
-        case "qari":
-            return `
-                <div class="mb-3">
-                    <label>Name of Madrasa *</label>
-                    <input type="text" name="islamic_institution[]" class="form-control" placeholder="Madrasa Name" required>
-                </div>
-                <div class="mb-3">
-                    <label>Passing Year *</label>
-                    <input type="text" name="islamic_year[]" class="form-control" placeholder="2020" required>
-                </div>`;
-
-        case "other":
-            return `
-                <div class="mb-3">
-                    <label>Other Qualification Details *</label>
-                    <textarea name="other_education[]" class="form-control" placeholder="Institution, subject, passing year"></textarea>
-                </div>`;
-
-        default:
-            return "";
-    }
-}
-
-
-        // Update qualification dropdown options based on method
-        function updateQualificationOptions(method) {
-            document.querySelectorAll(".education-select").forEach(select => {
-                select.innerHTML = '<option value="">-- Select --</option>'; // reset
-                let options = [];
-                if (method === "General") {
-                    options = generalOptions;
-                } else if (method === "Islamic") {
-                    options = islamicOptions;
-                } else if (method === "Both") {
-                    options = [...generalOptions, ...islamicOptions];
-                }
-                options.forEach(opt => {
-                    let option = document.createElement("option");
-                    option.value = opt.value;
-                    option.textContent = opt.text;
-                    select.appendChild(option);
-                });
+        if (nextBtn) {
+            nextBtn.addEventListener("click", function(e) {
+                // Do NOT change step here — server must validate current step.
+                lastAction = "next";
+                // Ensure hidden step stays current step (so server validates this step)
+                stepInput.value = getCurrentStep();
+                // allow normal submit to proceed
             });
         }
 
-        // Event: change Education Method
-        document.getElementById("education-method").addEventListener("change", function() {
-            updateQualificationOptions(this.value);
-        });
+        if (backBtn) {
+            backBtn.addEventListener("click", function(e) {
+                lastAction = "back";
+                // decrement step so server knows to move back
+                stepInput.value = Math.max(1, getCurrentStep() - 1);
+                // allow normal submit to proceed
+            });
+        }
 
-        // Event: change Qualification dropdown → load fields
-        document.addEventListener("change", function(e) {
-            if (e.target.classList.contains("education-select")) {
-                let type = e.target.value;
-                let fieldsContainer = e.target.closest(".education-block").querySelector(".education-fields");
-                fieldsContainer.innerHTML = getFields(type);
+        // Fallback: user might submit form with Enter key (no button click). Try to detect intent.
+        form.addEventListener("submit", function(e) {
+            // If lastAction set by click handlers, respect it
+            if (lastAction === "step" || lastAction === "next" || lastAction === "back") {
+                // lastAction already set and stepInput already updated by the click handlers
+                // Clear lastAction after allowing submission
+                setTimeout(() => {
+                    lastAction = null;
+                }, 0);
+                return; // allow submit
             }
-        });
 
-        // Add new qualification block
-        document.getElementById("add-education").addEventListener("click", function() {
-            let container = document.getElementById("education-container");
-            let newBlock = document.querySelector(".education-block").cloneNode(true);
+            // Otherwise try to detect the focused element at submit time
+            const active = document.activeElement;
+            if (active && active.tagName) {
+                const name = active.getAttribute && active.getAttribute("name");
+                if (name === "back") {
+                    // user pressed Enter while focused on Back
+                    stepInput.value = Math.max(1, getCurrentStep() - 1);
+                    lastAction = "back";
+                    return;
+                }
+                if (name === "next") {
+                    stepInput.value = getCurrentStep(); // keep same for validation
+                    lastAction = "next";
+                    return;
+                }
+            }
 
-            newBlock.querySelector(".education-fields").innerHTML = "";
-            newBlock.querySelector(".education-select").value = "";
-
-            container.appendChild(newBlock);
-            updateQualificationOptions(document.getElementById("education-method").value);
+            // As a safe default: treat plain submit as "next" (server should handle validation)
+            stepInput.value = getCurrentStep();
+            lastAction = "next";
+            // clear state after submit (async)
+            setTimeout(() => {
+                lastAction = null;
+            }, 0);
         });
     });
+
+
+    // Basic Information
+
+    // Combine day, month, year into YYYY-MM-DD
+    function updateBirthDate() {
+        const d = document.getElementById('day').value;
+        const m = document.getElementById('month').value;
+        const y = document.getElementById('year').value;
+
+        if (d && m && y) {
+            const formatted = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            document.getElementById('birth_date').value = formatted;
+        }
+    }
+
+    document.getElementById('day').addEventListener('change', updateBirthDate);
+    document.getElementById('month').addEventListener('change', updateBirthDate);
+    document.getElementById('year').addEventListener('change', updateBirthDate);
+
+
+
+
+
+
+
 
     // Family Information
     document.addEventListener("DOMContentLoaded", function() {
