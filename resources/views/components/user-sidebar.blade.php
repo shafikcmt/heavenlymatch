@@ -1,206 +1,45 @@
-<style>
-  .sidebar {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    max-width: 300px;
-    margin: auto;
-  }
-
-  .sidebar:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  }
-
-  .sidebar .profile-section img {
-    height: 80px;
-    width: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #e9ecef;
-  }
-
-  .sidebar .username {
-    font-weight: 700;
-    font-size: 15px;
-    margin-top: 8px;
-    color: #333;
-  }
-
-  .sidebar .biodata-btn {
-    margin-top: 10px;
-  }
-
-  .sidebar .status-badge {
-    font-size: 12px;
-    color: #fff;
-    background-color: #ff6b6b;
-    padding: 4px 10px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-top: 8px;
-  }
-
-  .sidebar .menu {
-    text-align: left;
-    margin-top: 20px;
-  }
-
-  .sidebar .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 10px;
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.25s ease;
-    text-decoration: none;
-  }
-
-  .sidebar .menu-item i {
-    margin-right: 10px;
-    font-size: 16px;
-    color: #6c757d;
-  }
-
-  .sidebar .menu-item:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
-  }
-
-  .sidebar .menu-item:hover i {
-    color: #007bff;
-  }
-
-  .sidebar .logout {
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
-  }
-
-  .sidebar .logout a {
-    color: #dc3545;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .sidebar .logout a:hover {
-    text-decoration: underline;
-  }
-
-  /* -----------------------------
-     ✅ RESPONSIVE DESIGN STYLES
-     ----------------------------- */
-  @media (max-width: 992px) {
-    .sidebar {
-      max-width: 90%;
-      margin: 20px auto;
-      padding: 15px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .sidebar {
-      text-align: left;
-      border-radius: 0;
-      box-shadow: none;
-      border-top: 2px solid #f1f1f1;
-      padding: 15px 10px;
-    }
-
-    .sidebar .profile-section {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 10px;
-    }
-
-    .sidebar .profile-section img {
-      height: 60px;
-      width: 60px;
-    }
-
-    .sidebar .username {
-      font-size: 14px;
-      margin-top: 0;
-    }
-
-    .sidebar .biodata-btn {
-      margin-top: 5px;
-    }
-
-    .sidebar .menu-item {
-      padding: 8px;
-      font-size: 13px;
-    }
-
-    .sidebar .menu-item i {
-      font-size: 15px;
-    }
-
-    .sidebar .status-badge {
-      margin-top: 4px;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .sidebar {
-      padding: 10px 5px;
-      max-width: 100%;
-    }
-
-    .sidebar .menu-item {
-      justify-content: flex-start;
-      padding: 6px 8px;
-    }
-
-    .sidebar .logout {
-      text-align: center;
-    }
-  }
-</style>
-
-<div class="sidebar">
-  <!-- Profile Section -->
-  <div class="profile-section">
-    <img src="https://hips.hearstapps.com/hmg-prod/images/index3-3-1651581277.jpg?crop=0.5xw:1xh;center,top&resize=640:*" alt="Avatar">
-    <div>
-      <div class="username">{{ auth()->user()->name ?? 'User Name' }}</div>
-
-      <div class="biodata-btn">
-        @if (auth()->user()->biodata()->exists())
-          <a href="{{ route('profiledetail') }}" class="btn btn-success btn-sm">View Biodata</a>
+@php
+    $user = auth()->user();
+    $biodata = $user?->biodata;
+    $required = ['biodata_type','marital_status','birth_date','height','weight','permanent_address','present_address','education_method','highest_qualification','father_name','mother_name','occupation','partner_age','groom_name','guardian_mobile'];
+    $filled = $biodata ? collect($required)->filter(fn($field) => filled($biodata->{$field} ?? null))->count() : 0;
+    $percent = $biodata ? (int) round(($filled / count($required)) * 100) : 0;
+    $items = [
+        ['route' => 'myhome', 'icon' => 'bi-house-door-fill', 'label' => 'Home'],
+        ['route' => 'matches', 'icon' => 'bi-people-fill', 'label' => 'Matches'],
+        ['route' => 'search', 'icon' => 'bi-search', 'label' => 'Search'],
+        ['route' => 'inbox', 'icon' => 'bi-envelope-fill', 'label' => 'Mailbox'],
+        ['route' => 'shortlist', 'icon' => 'bi-star-fill', 'label' => 'Shortlist'],
+        ['route' => 'biodata.create', 'icon' => 'bi-pencil-square', 'label' => 'Edit Biodata'],
+        ['route' => 'profiledetail', 'icon' => 'bi-person-fill', 'label' => 'Profile'],
+        ['route' => 'upgrade', 'icon' => 'bi-gem', 'label' => 'Upgrade Plan'],
+    ];
+@endphp
+<div class="tw-sticky tw-top-20 tw-overflow-hidden tw-rounded-[1.7rem] tw-border tw-border-slate-200 tw-bg-white tw-p-4 tw-shadow-card">
+    <div class="tw-flex tw-items-center tw-gap-3">
+        @if($biodata)
+            @include('components.profile-photo', ['profile' => $biodata, 'index' => 2, 'class' => 'tw-h-16 tw-w-16 tw-rounded-2xl'])
         @else
-          <a href="{{ route('biodata.create') }}" class="btn btn-primary btn-sm">Create Biodata</a>
+            <div class="tw-grid tw-h-16 tw-w-16 tw-place-items-center tw-rounded-2xl tw-bg-gradient-to-br tw-from-hm-green tw-to-hm-500 tw-text-xl tw-font-black tw-text-white">{{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}</div>
         @endif
-      </div>
-
-      <div class="status-badge">Share Profile</div>
+        <div class="tw-min-w-0">
+            <div class="tw-truncate tw-text-base tw-font-black tw-text-slate-950">{{ $user->name ?? 'User' }}</div>
+            <div class="tw-truncate tw-text-xs tw-text-slate-500">{{ $user->registration_id ?? '' }}</div>
+            <div class="tw-mt-1 tw-rounded-full tw-bg-emerald-50 tw-px-2 tw-py-0.5 tw-text-[11px] tw-font-black tw-text-hm-green">{{ $percent }}% profile score</div>
+        </div>
     </div>
-  </div>
 
-  <!-- Sidebar Menu -->
-  <div class="menu mt-3">
-    <a href="#" class="menu-item"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="#" class="menu-item"><i class="bi bi-pencil-square"></i> Edit Biodata</a>
-    <a href="#" class="menu-item"><i class="bi bi-heart"></i> Shortlist</a>
-    <a href="#" class="menu-item"><i class="bi bi-x-circle"></i> Favorite List</a>
-    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Contact List</a>
-    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Privacy Settings</a>
-    <a href="#" class="menu-item"><i class="bi bi-cart3"></i> Account Settings</a>
-    <a href="#" class="menu-item"><i class="bi bi-question-circle"></i>Help & Report</a>
-  </div>
+    <div class="tw-mt-4 tw-rounded-2xl tw-bg-slate-50 tw-p-3">
+        <div class="tw-flex tw-items-center tw-justify-between tw-text-xs tw-font-bold tw-text-slate-500"><span>Profile completion</span><span>{{ $percent }}%</span></div>
+        <div class="tw-mt-2 tw-h-2 tw-overflow-hidden tw-rounded-full tw-bg-white"><div class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-hm-green tw-to-hm-500" style="width: {{ $percent }}%"></div></div>
+        <a href="{{ route('biodata.create') }}" class="tw-mt-3 tw-block tw-rounded-xl tw-bg-gradient-to-r tw-from-hm-green tw-to-hm-500 tw-px-3 tw-py-2.5 tw-text-center tw-text-sm tw-font-black tw-text-white tw-no-underline">Update Biodata</a>
+    </div>
 
-  <!-- Logout -->
-  <div class="logout">
-    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-      <i class="bi bi-box-arrow-right"></i> Logout
-    </a>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-      @csrf
-    </form>
-  </div>
+    <nav class="tw-mt-4 tw-space-y-1">
+        @foreach($items as $item)
+            <a href="{{ route($item['route']) }}" class="tw-flex tw-items-center tw-gap-3 tw-rounded-2xl tw-px-3 tw-py-3 tw-text-sm tw-font-bold tw-no-underline {{ request()->routeIs($item['route']) ? 'tw-bg-emerald-50 tw-text-hm-green' : 'tw-text-slate-600 hover:tw-bg-slate-50 hover:tw-text-hm-green' }}">
+                <i class="bi {{ $item['icon'] }}"></i> {{ $item['label'] }}
+            </a>
+        @endforeach
+    </nav>
 </div>

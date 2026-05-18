@@ -1,0 +1,111 @@
+:root {
+  --hm-green: #08745c;
+  --hm-green-dark: #045441;
+  --hm-pink: #e21d63;
+  --hm-pink-soft: #fff0f6;
+  --hm-ink: #111827;
+  --hm-muted: #667085;
+  --hm-line: #e7edf3;
+}
+
+body.hm-app-body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f6f8fb;
+  color: var(--hm-ink);
+}
+
+.hm-mobile-header {
+  background: var(--hm-green);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(3, 84, 65, 0.18);
+}
+
+.hm-mobile-tabbar {
+  scrollbar-width: none;
+}
+.hm-mobile-tabbar::-webkit-scrollbar { display: none; }
+
+.hm-action-card {
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.hm-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(16, 24, 40, .10);
+  border-color: rgba(226, 29, 99, .28);
+}
+
+.hm-profile-photo {
+  object-fit: cover;
+  object-position: center;
+  background: #eef2f7;
+}
+
+.hm-pill-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.hm-pill-scroll::-webkit-scrollbar { display: none; }
+
+.hm-bottom-nav {
+  box-shadow: 0 -12px 28px rgba(16,24,40,.08);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.hm-clean-input,
+.hm-clean-select,
+.hm-clean-textarea {
+  width: 100%;
+  border: 1px solid #d7dee8;
+  border-radius: 18px;
+  background: #fff;
+  color: #101828;
+  outline: none;
+  box-shadow: none;
+}
+.hm-clean-input,
+.hm-clean-select { min-height: 48px; padding: 10px 14px; }
+.hm-clean-textarea { min-height: 100px; padding: 12px 14px; }
+.hm-clean-input:focus,
+.hm-clean-select:focus,
+.hm-clean-textarea:focus {
+  border-color: var(--hm-pink);
+  box-shadow: 0 0 0 4px rgba(226,29,99,.10);
+}
+
+.hm-floating-filter {
+  backdrop-filter: blur(8px);
+}
+
+.hm-section-tabs {
+  scrollbar-width: none;
+}
+.hm-section-tabs::-webkit-scrollbar { display: none; }
+
+.hm-match-score {
+  background: conic-gradient(var(--hm-green) var(--score), #e5e7eb 0);
+}
+
+.hm-detail-table-row {
+  display: grid;
+  grid-template-columns: minmax(120px, .8fr) 14px minmax(0, 1.2fr);
+  gap: 8px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px solid #f1f4f7;
+}
+.hm-detail-table-row:last-child { border-bottom: 0; }
+.hm-detail-table-row .hm-label { color: #475467; }
+.hm-detail-table-row .hm-value { font-weight: 650; color: #101828; }
+
+@media (max-width: 767px) {
+  body.hm-app-body { background: #fff; }
+  .hm-desktop-only { display: none !important; }
+  .hm-mobile-safe-bottom { padding-bottom: 92px; }
+  .hm-mobile-card { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
+  .hm-detail-table-row { grid-template-columns: 1fr 10px 1.1fr; font-size: 15px; }
+}
+
+@media (min-width: 768px) {
+  .hm-mobile-only { display: none !important; }
+}

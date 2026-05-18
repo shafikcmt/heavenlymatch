@@ -2,92 +2,37 @@
 
 @section('title', 'FAQ')
 
-{{-- Optional CSS for plus/minus icon --}}
-<style>
-/* Remove default Bootstrap arrow */
-.accordion-button::after { display: none; }
-
-/* Plus/Minus icon */
-.accordion-button .accordion-icon {
-    font-weight: bold;
-    font-size: 1.25rem;
-    margin-left: auto;
-}
-
-/* Shadow, rounded and spacing */
-.accordion-item {
-    transition: all 0.3s ease;
-    padding: 0.5rem;
-}
-.accordion-button {
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-}
-.accordion-button:hover {
-    background-color: #f8f9fa;
-}
-</style>
-
 @section('content')
+@php($hmFaqIntro = \App\Models\SystemSetting::get('pages.faq_intro'))
+<section class="tw-relative tw-overflow-hidden tw-bg-[radial-gradient(circle_at_top_left,#ffe8f5,transparent_34%),linear-gradient(135deg,#ffffff_0%,#fff7fc_48%,#f8fafc_100%)] tw-px-4 tw-py-16 sm:tw-py-20">
+    <div class="tw-pointer-events-none tw-absolute -tw-left-24 tw-top-8 tw-h-72 tw-w-72 tw-rounded-full tw-bg-hm-100 tw-blur-3xl"></div>
+    <div class="tw-pointer-events-none tw-absolute -tw-right-20 tw-bottom-0 tw-h-80 tw-w-80 tw-rounded-full tw-bg-hm-200/60 tw-blur-3xl"></div>
 
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">Frequently Asked Questions</h2>
+    <div class="tw-relative tw-mx-auto tw-max-w-5xl">
+        <div class="tw-mx-auto tw-mb-10 tw-max-w-3xl tw-text-center">
+            <span class="tw-inline-flex tw-items-center tw-rounded-full tw-border tw-border-hm-200 tw-bg-white tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-hm-700 tw-shadow-shad">Help Center</span>
+            <h1 class="tw-mt-4 tw-text-4xl tw-font-black tw-tracking-tight tw-text-slate-950 md:tw-text-5xl">Frequently Asked Questions</h1>
+            <p class="tw-mx-auto tw-mt-4 tw-max-w-2xl tw-text-base tw-leading-7 tw-text-slate-600">
+                {{ $hmFaqIntro ?: 'Get quick answers about HeavenlyMatch, biodata, privacy, approval, and communication.' }}
+            </p>
         </div>
 
-        <div class="accordion" id="faqAccordion">
-            @php
-            $faqs = [
-                ['q' => 'What is HeavenlyMatch.com?', 'a' => 'HeavenlyMatch.com is a Shariah-compliant Islamic matrimonial platform to help Muslims find pious life partners.'],
-                ['q' => 'How does it work?', 'a' => 'Users create biodata according to Islamic guidelines, browse suitable matches, and can express interest or connect through the platform.'],
-                ['q' => 'How much does it cost to submit biodata?', 'a' => 'Submitting biodata may be free or based on membership plans. Check the Pricing page for current fees.'],
-                ['q' => 'Is this website open to everyone?', 'a' => 'The website is designed primarily for practicing Muslims seeking Shariah-compliant marriage matches.'],
-                ['q' => 'Are there any special requirements for making biodata?', 'a' => 'Users must provide accurate Islamic-compliant personal and family details for verification and approval.'],
-                ['q' => 'How confidential will my information be?', 'a' => 'All biodata information is strictly confidential and only shared with approved matches.'],
-                ['q' => 'Why is my biodata not approved?', 'a' => 'Biodata may not be approved due to incomplete information or non-compliance with Islamic guidelines.'],
-                ['q' => 'Can I submit my biodata again after rejection?', 'a' => 'Yes, you can correct the information and resubmit for approval.'],
-                ['q' => 'Can I upload my biodata if I do not keep beard but pray regularly?', 'a' => 'Yes, keeping beard is recommended but not mandatory for biodata submission; Salah compliance is important.'],
-                ['q' => 'Could I interact directly if a biodata is chosen by me?', 'a' => 'Direct interaction is allowed only after mutual interest and approval through the platform.'],
-                ['q' => 'Can I submit without guardian consent?', 'a' => 'No, guardian consent is required for all minors.'],
-                ['q' => 'Can I delete my biodata after marriage?', 'a' => 'Yes, users can delete their biodata anytime after marriage or for other reasons.'],
-                ['q' => 'Are there post-marital service charges?', 'a' => 'No, there are no post-marital service charges.']
-            ];
-            @endphp
-
-            @foreach($faqs as $index => $faq)
-            <div class="accordion-item mb-4 shadow rounded">
-                <h2 class="accordion-header" id="faqHeading{{ $index }}">
-                    <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse{{ $index }}" aria-expanded="false" aria-controls="faqCollapse{{ $index }}">
-                        <span>{{ $faq['q'] }}</span>
-                        <span class="accordion-icon">+</span>
-                    </button>
-                </h2>
-                <div id="faqCollapse{{ $index }}" class="accordion-collapse collapse" aria-labelledby="faqHeading{{ $index }}" data-bs-parent="#faqAccordion">
-                    <div class="accordion-body">
+        <div class="tw-grid tw-gap-4">
+            @foreach(($faqs ?? []) as $index => $faq)
+                <details class="tw-group tw-rounded-3xl tw-border tw-border-slate-200 tw-bg-white/95 tw-p-1 tw-shadow-shad tw-transition hover:tw-shadow-soft">
+                    <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-gap-4 tw-rounded-[1.35rem] tw-p-4 tw-text-left tw-text-base tw-font-black tw-text-slate-950 md:tw-p-5">
+                        <span class="tw-grid tw-h-11 tw-w-11 tw-shrink-0 tw-place-items-center tw-rounded-2xl tw-bg-hm-50 tw-text-sm tw-font-black tw-text-hm-700">{{ $index + 1 }}</span>
+                        <span class="tw-flex-1">{{ $faq['q'] }}</span>
+                        <span class="tw-grid tw-h-9 tw-w-9 tw-shrink-0 tw-place-items-center tw-rounded-full tw-bg-slate-100 tw-text-slate-600 tw-transition group-open:tw-rotate-45 group-open:tw-bg-hm-600 group-open:tw-text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="tw-h-5 tw-w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        </span>
+                    </summary>
+                    <div class="tw-border-t tw-border-slate-100 tw-px-5 tw-pb-5 tw-pt-4 tw-text-sm tw-leading-7 tw-text-slate-600 md:tw-pl-[5.75rem]">
                         {{ $faq['a'] }}
                     </div>
-                </div>
-            </div>
+                </details>
             @endforeach
         </div>
     </div>
 </section>
-
-
-<script>
-document.querySelectorAll('.accordion-button').forEach(button => {
-    const collapseEl = document.querySelector(button.getAttribute('data-bs-target'));
-
-    collapseEl.addEventListener('shown.bs.collapse', () => {
-        button.querySelector('.accordion-icon').textContent = '−';
-    });
-
-    collapseEl.addEventListener('hidden.bs.collapse', () => {
-        button.querySelector('.accordion-icon').textContent = '+';
-    });
-});
-</script>
-
-
 @endsection

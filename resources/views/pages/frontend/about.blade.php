@@ -2,15 +2,20 @@
 
 @section('title', 'About')
 
+@php($hmAboutTitle = \App\Models\SystemSetting::get('pages.about_title', 'About Us'))
+@php($hmAboutContent = \App\Models\SystemSetting::get('pages.about_content'))
 @section('content')
 <section class="py-5 bg-light">
   <div class="container">
     <div class="text-center mb-4">
-      <h2 class="fw-bold">About Us</h2>
-      <p class="text-muted">HeavenlyMatch.com</p>
+      <h2 class="fw-bold">{{ $hmAboutTitle }}</h2>
+      <p class="text-muted">{{ \App\Models\SystemSetting::get('general.site_name', 'HeavenlyMatch') }}</p>
     </div>
 
     <div class="bg-white p-4 shadow rounded">
+          @if($hmAboutContent)
+              <div class="fs-5 lh-lg">{!! nl2br(e($hmAboutContent)) !!}</div>
+          @else
       <p class="text-center fs-5 mb-4"><b>بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</b></p>
 
       <p>Indeed, all praise belongs to Allah. We seek refuge in Him from the evils within ourselves and from our ill deeds. Peace and blessings be upon the Prophet (ﷺ).</p>
@@ -43,6 +48,7 @@
       Trade License No: 2021-02693<br>
       Contact Number: +880 9613-820303<br>
       Email: support@HeavenlyMatch.com</p>
+          @endif
     </div>
   </div>
 </section>

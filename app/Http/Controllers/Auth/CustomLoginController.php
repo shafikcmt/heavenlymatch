@@ -7,80 +7,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Models\Registration;
-use App\Models\Biodata;
 
 class CustomLoginController extends Controller
 {
-    /**
-     * Show the login form
-     */
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle login request
-     */
-        public function login(Request $request)
-        {
-            // Validate input
-            $credentials = $request->validate([
-                'email' => ['required', 'email'],
-                'password' => ['required', 'string'],
-            ]);
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
 
-            $remember = $request->filled('remember');
+        $user = Registration::where('email', strtolower($credentials['email']))->first();
 
-            // Find user
-            $user = Registration::where('email', $credentials['email'])->first();
-
-            if (!$user) {
-                throw ValidationException::withMessages([
-                    'email' => __('No account found with this email.'),
-                ]);
-            }
-
-            if (!$user->is_email_verified) {
-                throw ValidationException::withMessages([
-                    'email' => __('Please verify your email before logging in.'),
-                ]);
-            }
-
-            // Attempt login
-            if (Auth::attempt($credentials, $remember)) {
-                $request->session()->regenerate();
-
-                // ✅ Check biodata completion
-                $biodataCompleted = $user->biodata && $user->biodata->is_completed;
-
-                if ($biodataCompleted) {
-                    return redirect()->intended(route('myhome'))
-                        ->with('success', '🎉 Welcome back! You have logged in successfully.');
-                } else {
-                    return redirect()->route('biodata.create')
-                        ->with('info', '📝 Please complete your biodata before continuing.');
-                }
-            }
-
-            throw ValidationException::withMessages([
-                'email' => __('Invalid email or password.'),
-            ]);
+        if (! $user) {
+            throw ValidationException::withMessages(['email' => __('No account found with this email.')]);
         }
 
+        if (! $user->is_email_verified) {
+            return redirect()->route('email.verify.notice', ['email' => $user->email])
+                ->with('email', $user->email)
+                ->with('error', 'Please verify your email before logging in.');
+        }
 
+        $remember = $request->boolean('remember');
 
+        if (Auth::attempt(['email' => strtolower($credentials['email']), 'password' => $credentials['password']], $remember)) {
+            $request->session()->regenerate();
+            Auth::user()->update(['last_login_at' => now()]);
 
-    /**
-     * Handle user logout
-     */
+            return redirect()->intended(route('myhome'))
+                ->with('success', 'Welcome back to HeavenlyMatch.');
+        }
+
+        throw ValidationException::withMessages(['email' => __('Invalid email or password.')]);
+    }
+
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')
-            ->with('success', '👋 You have been logged out successfully.');
+        return redirect('/')->with('success', 'You have been logged out successfully.');
     }
 }

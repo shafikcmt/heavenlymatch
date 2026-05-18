@@ -11,6 +11,7 @@ class Biodata extends Model
 
     protected $fillable = [
         'registration_id',
+        'religion',
 
         // Step 1: General Info
         'marital_status',
@@ -115,6 +116,23 @@ class Biodata extends Model
         'guardian_relationship',
         'guardian_email',
         'is_completed',
+        'status',
+        'admin_note',
+        'approved_at',
+        'approved_by',
+        'rejected_at',
+        'rejected_by',
+        'is_featured',
+        'featured_at',
+        'profile_score',
+    ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
+        'is_featured' => 'boolean',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'featured_at' => 'datetime',
     ];
 
     /**

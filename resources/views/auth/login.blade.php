@@ -1,141 +1,65 @@
 @extends('layouts.app')
 
-@section('title', 'Login')
-
-@push('styles')
-<style>
-  /* Set background image for the body */
-  body {
-    background: url('https://heavenlymatch.net/public/images/login_page_backgrond_banner.jpg') no-repeat center center fixed;
-    background-size: cover;
-    min-height: 100vh;
-  }
-
-  /* Add a semi-transparent overlay to improve readability */
-  .body-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* background: rgba(0,0,0,0.5); */
-    z-index: -1; /* behind content */
-  }
-
-  /* Login card styling */
-  .login-card {
-    max-width: 400px;
-    margin: 100px auto;
-    padding: 30px;
-    border-radius: 15px;
-    background: #fff; /* keep login card white for readability */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .login-card h3 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: bold;
-  }
-
-  .login-card .btn-google {
-    background-color: #DB4437;
-    color: #fff;
-  }
-
-  .login-card .text-center a {
-    text-decoration: none;
-    color: #0d6efd;
-  }
-
-  input.form-control {
-    background-color: #fff;
-    color: #000;
-  }
-
-  input.form-control::placeholder {
-    color: #555;
-  }
-
-  .btn-primary {
-    transition: all 0.3s ease;
-  }
-
-  .btn-primary:hover {
-    background-color: #0b5ed7;
-    transform: scale(1.05);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-</style>
-@endpush
+@section('title', 'Login | HeavenlyMatch')
 
 @section('content')
+<section class="tw-min-h-screen tw-bg-[radial-gradient(circle_at_top_left,#fff1f8,transparent_35%),linear-gradient(135deg,#ffffff_0%,#fff7fc_45%,#f7f4ff_100%)] tw-px-4 tw-py-10">
+    <div class="tw-mx-auto tw-grid tw-w-full tw-max-w-5xl tw-gap-6 lg:tw-grid-cols-[0.9fr_1fr]">
+        <aside class="tw-hidden tw-rounded-[2rem] tw-bg-gradient-to-br tw-from-hm-700 tw-via-hm-600 tw-to-hm-500 tw-p-8 tw-text-white tw-shadow-soft lg:tw-block">
+            <div class="tw-inline-flex tw-rounded-full tw-bg-white/15 tw-px-4 tw-py-2 tw-text-sm tw-font-black">❤ HeavenlyMatch Matrimony</div>
+            <h1 class="tw-mt-10 tw-text-5xl tw-font-black tw-leading-tight">Welcome back to your safe matrimony dashboard.</h1>
+            <p class="tw-mt-5 tw-text-sm tw-leading-7 tw-text-white/80">Login to continue biodata completion, profile search, matches and membership tools.</p>
+        </aside>
 
-<div class="body-overlay"></div> <!-- optional overlay for readability -->
+        <div class="tw-rounded-[2rem] tw-border tw-border-slate-200 tw-bg-white tw-p-6 tw-shadow-soft sm:tw-p-8">
+            <div class="tw-text-center">
+                <div class="tw-mx-auto tw-grid tw-h-16 tw-w-16 tw-place-items-center tw-rounded-3xl tw-bg-hm-50 tw-text-3xl">🔐</div>
+                <h1 class="tw-mt-4 tw-text-3xl tw-font-black tw-text-slate-950">Login</h1>
+                <p class="tw-text-sm tw-text-slate-500">Access your HeavenlyMatch account</p>
+            </div>
 
-<div class="login-card">
-    <h3>Log In to Your Account</h3>
-
-    @if (session('success'))
-      <div class="alert alert-success text-center">{{ session('success') }}</div>
-    @endif
-
-    @if ($errors->any())
-      <div class="alert alert-danger text-center">{{ $errors->first() }}</div>
-    @endif
-
-    <!-- Login with Google -->
-    <!-- <a href="{{ route('login.google') }}" class="btn btn-danger w-100 mb-3">
-        Login with Google
-    </a> -->
-
-    <hr>
-
-    <!-- Login with Email -->
-    <form method="POST" action="{{ route('login') }}" autocomplete="off">
-        @csrf
-
-        <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
-            <input id="email" type="email" 
-                   class="form-control @error('email') is-invalid @enderror" 
-                   name="email" value="{{ old('email') }}"  autofocus>
-            @error('email')
-                <span class="text-danger small">{{ $message }}</span>
-            @enderror
-        </div>
-
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input id="password" type="password" 
-                   class="form-control @error('password') is-invalid @enderror" 
-                   name="password" autocomplete="new-password" >
-            @error('password')
-                <span class="text-danger small">{{ $message }}</span>
-            @enderror
-        </div>
-
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-            <label class="form-check-label" for="remember">Remember Me</label>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 mb-2">Login</button>
-
-        <div class="text-center">
-            @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}">Forgot Your Password?</a>
+            @if(session('error'))
+                <div class="tw-mt-5 tw-rounded-3xl tw-border tw-border-rose-200 tw-bg-rose-50 tw-p-4 tw-text-sm tw-font-bold tw-text-rose-700">{{ session('error') }}</div>
             @endif
-        </div>
+            @if($errors->any())
+                <div class="tw-mt-5 tw-rounded-3xl tw-border tw-border-rose-200 tw-bg-rose-50 tw-p-4 tw-text-sm tw-font-bold tw-text-rose-700">{{ $errors->first() }}</div>
+            @endif
 
-        <div class="text-center mt-2">
-            Don’t have an account? <a href="{{ route('register.show') }}">Create an Account</a>
+            <form method="POST" action="{{ Route::has('login.post') ? route('login.post') : url('/login') }}" class="tw-mt-6 tw-space-y-4">
+                @csrf
+                <div>
+                    <label class="tw-mb-2 tw-block tw-text-sm tw-font-black">Email address</label>
+                    <input type="email" name="email" value="{{ old('email') }}" class="form-control tw-rounded-2xl tw-border-slate-200 tw-py-3" placeholder="you@example.com" required autofocus>
+                </div>
+                <div>
+                    <label class="tw-mb-2 tw-block tw-text-sm tw-font-black">Password</label>
+                    <div class="tw-relative">
+                        <input type="password" id="password" name="password" class="form-control tw-rounded-2xl tw-border-slate-200 tw-py-3 tw-pr-12" placeholder="Enter password" required>
+                        <button type="button" onclick="togglePassword()" class="tw-absolute tw-right-3 tw-top-1/2 -tw-translate-y-1/2 tw-rounded-full tw-border-0 tw-bg-transparent tw-text-slate-400"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <div class="tw-flex tw-items-center tw-justify-between tw-text-sm">
+                    <label class="tw-flex tw-items-center tw-gap-2 tw-font-bold tw-text-slate-600"><input type="checkbox" name="remember" class="form-check-input"> Remember me</label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="tw-font-bold tw-text-hm-700 tw-no-underline">Forgot password?</a>
+                    @endif
+                </div>
+                <button type="submit" class="tw-w-full tw-rounded-2xl tw-bg-gradient-to-r tw-from-hm-700 tw-to-hm-500 tw-px-5 tw-py-3 tw-text-sm tw-font-black tw-text-white tw-shadow-sm">Login →</button>
+            </form>
+
+            <div class="tw-mt-6 tw-text-center tw-text-sm tw-text-slate-600">
+                New here? <a href="{{ route('register.show') }}" class="tw-font-black tw-text-hm-700 tw-no-underline">Create account</a>
+            </div>
         </div>
-    </form>
-</div>
+    </div>
+</section>
 @endsection
+
+@push('scripts')
+<script>
+function togglePassword() {
+    const input = document.getElementById('password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+</script>
+@endpush

@@ -1,91 +1,32 @@
-
-<style>
-    .footer {
-      background-color: #222;
-      color: #fff;
-      padding: 40px 20px 20px;
-    }
-    .footer h5 {
-      color: #f8f9fa;
-      margin-bottom: 15px;
-    }
-    .footer a {
-      color: #bbb;
-      text-decoration: none;
-    }
-    .footer a:hover {
-      color: #fff;
-    }
-    .footer-bottom {
-      border-top: 1px solid #444;
-      margin-top: 20px;
-      padding-top: 15px;
-      font-size: 14px;
-      text-align: center;
-      color: #aaa;
-    }
-    .footer img {
-      margin-top: 20px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      height: 70px;
-      min-width: 600px;
-      max-width: 700px;
-      object-fit: cover;
-    }
-  </style>
-
-
-<footer class="footer">
-    <div class="container">
-      <div class="row text-center text-md-start">
-        <!-- Column 1 -->
-        <div class="col-md-4 mb-4">
-          <h5>About HeavenlyMatchMatrimony</h5>
-          <p>
-            HeavenlyMatchMatrimony is dedicated to helping people find their life partners with trust, safety, and ease.
-          </p>
+@php($hmSiteName = \App\Models\SystemSetting::get('general.site_name', 'HeavenlyMatch'))
+@php($hmFooterAbout = \App\Models\SystemSetting::get('frontend.footer_about', 'A privacy-first matrimony platform for serious family-led marriage search.'))
+<footer class="tw-border-t tw-border-slate-200 tw-bg-slate-950 tw-px-4 tw-py-12 tw-text-white">
+    <div class="tw-mx-auto tw-grid tw-max-w-7xl tw-gap-8 md:tw-grid-cols-4">
+        <div class="md:tw-col-span-2">
+            <div class="tw-flex tw-items-center tw-gap-3">
+                <span class="tw-grid tw-h-11 tw-w-11 tw-place-items-center tw-rounded-2xl tw-bg-gradient-to-br tw-from-hm-700 tw-to-hm-500 tw-text-white">❤</span>
+                <h3 class="tw-m-0 tw-text-xl tw-font-black">{{ $hmSiteName }}</h3>
+            </div>
+            <p class="tw-mt-4 tw-max-w-xl tw-text-sm tw-leading-6 tw-text-slate-300">{{ $hmFooterAbout }}</p>
+            <p class="tw-mt-3 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-widest tw-text-slate-500">Strictly for matrimony purpose only, not a dating website.</p>
         </div>
-
-        <!-- Column 2 -->
-        <div class="col-md-4 mb-4">
-          <h5>Help & Support</h5>
-          <ul class="list-unstyled">
-            <li><a href="#">Customer Support</a></li>
-            <li><a href="#">FAQs</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms & Conditions</a></li>
-          </ul>
+        <div>
+            <h4 class="tw-text-sm tw-font-black tw-uppercase tw-tracking-wide tw-text-slate-400">Quick links</h4>
+            <div class="tw-mt-4 tw-space-y-2 tw-text-sm">
+                <a class="tw-block tw-text-slate-300 tw-no-underline hover:tw-text-white" href="{{ route('about') }}">About</a>
+                <a class="tw-block tw-text-slate-300 tw-no-underline hover:tw-text-white" href="{{ route('guide') }}">Guide</a>
+                <a class="tw-block tw-text-slate-300 tw-no-underline hover:tw-text-white" href="{{ route('faq') }}">FAQ</a>
+                <a class="tw-block tw-text-slate-300 tw-no-underline hover:tw-text-white" href="{{ route('contact') }}">Contact</a>
+            </div>
         </div>
-
-        <!-- Column 3 -->
-        <div class="col-md-4 mb-4">
-          <h5>Quick Links</h5>
-          <ul class="list-unstyled">
-            <li><a href="#">Register</a></li>
-            <li><a href="#">Search Profiles</a></li>
-            <li><a href="#">Membership Plans</a></li>
-            <li><a href="#">Contact Us</a></li>
-          </ul>
+        <div>
+            <h4 class="tw-text-sm tw-font-black tw-uppercase tw-tracking-wide tw-text-slate-400">Support</h4>
+            <div class="tw-mt-4 tw-space-y-2 tw-text-sm tw-text-slate-300">
+                <p class="tw-m-0">support@HeavenlyMatch.com</p>
+                <p class="tw-m-0">+880 9613-820303</p>
+                <p class="tw-m-0">Mymensingh, Bangladesh</p>
+            </div>
         </div>
-      </div>
-
-      <!-- Second Row -->
-      
-
-      <!-- Bottom Text -->
-      <div class="footer-bottom">
-        HeavenlyMatchMatrimony is part of Globalmatrimony.com | Copyright © 2025. 
-        All rights reserved. <br>
-        This website is strictly for matrimony purpose only and not a dating website
-      </div>
-
-      <!-- Image -->
-      <img class="img-fluid" src="{{asset('images/payment-getway.png')}}" alt="Footer Banner">
     </div>
-  </footer>
-
-
-
-
+    <div class="tw-mx-auto tw-mt-8 tw-max-w-7xl tw-border-t tw-border-white/10 tw-pt-5 tw-text-center tw-text-xs tw-text-slate-400">© {{ date('Y') }} {{ $hmSiteName }}. All rights reserved.</div>
+</footer>

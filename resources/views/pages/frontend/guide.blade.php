@@ -2,84 +2,37 @@
 
 @section('title', 'Guide')
 
-<style>
-/* Remove default Bootstrap arrow */
-.accordion-button::after { display: none; }
-
-/* Plus/Minus icon */
-.accordion-button .accordion-icon {
-    font-weight: bold;
-    font-size: 1.25rem;
-    margin-left: auto;
-}
-
-/* Shadow, rounded and spacing */
-.accordion-item {
-    transition: all 0.3s ease;
-    padding: 0.5rem;
-}
-.accordion-button {
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-}
-.accordion-button:hover {
-    background-color: #f8f9fa;
-}
-</style>
-
 @section('content')
-    <section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">General Guidelines</h2>
+@php($hmGuideIntro = \App\Models\SystemSetting::get('pages.guide_intro'))
+<section class="tw-relative tw-overflow-hidden tw-bg-[radial-gradient(circle_at_top_right,#ffe8f5,transparent_32%),linear-gradient(135deg,#f8fafc_0%,#ffffff_44%,#fff7fc_100%)] tw-px-4 tw-py-16 sm:tw-py-20">
+    <div class="tw-pointer-events-none tw-absolute -tw-left-24 tw-top-8 tw-h-72 tw-w-72 tw-rounded-full tw-bg-hm-100 tw-blur-3xl"></div>
+    <div class="tw-pointer-events-none tw-absolute -tw-right-20 tw-bottom-0 tw-h-80 tw-w-80 tw-rounded-full tw-bg-hm-200/60 tw-blur-3xl"></div>
+
+    <div class="tw-relative tw-mx-auto tw-max-w-6xl">
+        <div class="tw-mx-auto tw-mb-10 tw-max-w-3xl tw-text-center">
+            <span class="tw-inline-flex tw-items-center tw-rounded-full tw-border tw-border-hm-200 tw-bg-white tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-widest tw-text-hm-700 tw-shadow-shad">User Guide</span>
+            <h1 class="tw-mt-4 tw-text-4xl tw-font-black tw-tracking-tight tw-text-slate-950 md:tw-text-5xl">General Guidelines</h1>
+            <p class="tw-mx-auto tw-mt-4 tw-max-w-2xl tw-text-base tw-leading-7 tw-text-slate-600">
+                {{ $hmGuideIntro ?: 'A simple step-by-step guide for account creation, biodata submission, profile updates, and support requests.' }}
+            </p>
         </div>
 
-        <div class="accordion" id="guideAccordion">
-            @php
-            $guides = [
-                ['q' => 'How to create an account in HeavenlyMatch.com?', 'a' => 'Go to the Register page, fill in the required details, and submit the form to create your account.'],
-                ['q' => 'How to submit biodata in HeavenlyMatch.com?', 'a' => 'After logging in, navigate to the "Submit Biodata" section, fill in your personal and family information according to Islamic guidelines, and submit for verification.'],
-                ['q' => 'How to edit biodata in HeavenlyMatch.com?', 'a' => 'Login to your account, go to "My Biodata", click edit, update your information, and save changes.'],
-                ['q' => 'How to temporarily hide biodata in HeavenlyMatch.com?', 'a' => 'Login, go to "My Biodata" and select the option to temporarily hide your profile. Your biodata will not be visible until you reactivate it.'],
-                ['q' => 'How to delete biodata in HeavenlyMatch.com?', 'a' => 'Login, go to "My Biodata", select delete, and confirm to permanently remove your biodata.'],
-                ['q' => 'How will I complain about a biodata?', 'a' => 'Use the "Report" feature available on each biodata or contact our support team via the Help & Support section.'],
-                ['q' => 'How to purchase connection?', 'a' => 'Go to the "Buy Connections" page, select the desired package, and complete payment via the available payment methods.'],
-                ['q' => 'How will I get my “Connection” refund?', 'a' => 'Refunds are processed according to our refund policy. Contact support with your request, and it will be reviewed.'],
-                ['q' => 'I want to delete my account from HeavenlyMatch.com. I don\'t need my remaining Connections. How can I get my refund?', 'a' => 'Contact our support team requesting account deletion and refund of unused Connections. The refund will be processed according to policy.']
-            ];
-            @endphp
-
-            @foreach($guides as $index => $guide)
-            <div class="accordion-item mb-4 shadow rounded">
-                <h2 class="accordion-header" id="guideHeading{{ $index }}">
-                    <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#guideCollapse{{ $index }}" aria-expanded="false" aria-controls="guideCollapse{{ $index }}">
-                        <span>{{ $guide['q'] }}</span>
-                        <span class="accordion-icon">+</span>
-                    </button>
-                </h2>
-                <div id="guideCollapse{{ $index }}" class="accordion-collapse collapse" aria-labelledby="guideHeading{{ $index }}" data-bs-parent="#guideAccordion">
-                    <div class="accordion-body">
+        <div class="tw-grid tw-gap-4 lg:tw-grid-cols-2">
+            @foreach(($guides ?? []) as $index => $guide)
+                <details class="tw-group tw-rounded-3xl tw-border tw-border-slate-200 tw-bg-white/95 tw-p-1 tw-shadow-shad tw-transition hover:tw-shadow-soft">
+                    <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-gap-4 tw-rounded-[1.35rem] tw-p-4 tw-text-left tw-text-base tw-font-black tw-text-slate-950 md:tw-p-5">
+                        <span class="tw-grid tw-h-11 tw-w-11 tw-shrink-0 tw-place-items-center tw-rounded-2xl tw-bg-hm-50 tw-text-sm tw-font-black tw-text-hm-700">{{ $index + 1 }}</span>
+                        <span class="tw-flex-1">{{ $guide['q'] }}</span>
+                        <span class="tw-grid tw-h-9 tw-w-9 tw-shrink-0 tw-place-items-center tw-rounded-full tw-bg-slate-100 tw-text-slate-600 tw-transition group-open:tw-rotate-45 group-open:tw-bg-hm-600 group-open:tw-text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="tw-h-5 tw-w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        </span>
+                    </summary>
+                    <div class="tw-border-t tw-border-slate-100 tw-px-5 tw-pb-5 tw-pt-4 tw-text-sm tw-leading-7 tw-text-slate-600 md:tw-pl-[5.75rem]">
                         {{ $guide['a'] }}
                     </div>
-                </div>
-            </div>
+                </details>
             @endforeach
         </div>
     </div>
 </section>
-
-
-<script>
-document.querySelectorAll('.accordion-button').forEach(button => {
-    const collapseEl = document.querySelector(button.getAttribute('data-bs-target'));
-
-    collapseEl.addEventListener('shown.bs.collapse', () => {
-        button.querySelector('.accordion-icon').textContent = '−';
-    });
-
-    collapseEl.addEventListener('hidden.bs.collapse', () => {
-        button.querySelector('.accordion-icon').textContent = '+';
-    });
-});
-</script>
 @endsection

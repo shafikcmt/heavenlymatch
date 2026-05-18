@@ -1,11 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Home')
+@section('title', \App\Models\SystemSetting::get('seo.meta_title', 'Home'))
 
+@php($hmHeroBackground = \App\Models\SystemSetting::get('frontend.hero_background'))
+@php($hmHeroTitle = \App\Models\SystemSetting::get('frontend.hero_title', 'Begin Your Search for an Ideal Match'))
+@php($hmHeroSubtitle = \App\Models\SystemSetting::get('frontend.hero_subtitle'))
 @push('styles')
 <style>
 .hero-section{
-background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat center center fixed; 
+background: url({{ $hmHeroBackground ? asset($hmHeroBackground) : 'https://heavenlymatch.net/public/images/hero-bg.jpg' }}) no-repeat center center fixed; 
                 background-size: cover; height: 100vh;
 }
 </style>
@@ -17,7 +20,8 @@ background: url(https://heavenlymatch.net/public/images/hero-bg.jpg) no-repeat c
     <div class="container text-center bg-dark bg-opacity-50 p-5">
         <!-- Hero Text -->
 
-          <h2 class="text-center fw-bold mb-4">Begin Your Search for an Ideal Match</h2>
+          <h2 class="text-center fw-bold mb-3">{{ $hmHeroTitle }}</h2>
+              @if($hmHeroSubtitle)<p class="lead mb-4">{{ $hmHeroSubtitle }}</p>@endif
 
         <form action="" method="GET" class="row g-3 justify-content-center">
             @csrf

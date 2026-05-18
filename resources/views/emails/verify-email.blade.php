@@ -2,102 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Email Verification</title>
-    <style>
-        body {
-            font-family: 'Helvetica', Arial, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .header {
-            background: linear-gradient(90deg, #007bff, #00c6ff);
-            color: #ffffff;
-            text-align: center;
-            padding: 30px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .tagline {
-            font-size: 14px;
-            color: #e3f2fd;
-            margin-top: 8px;
-        }
-        .content {
-            padding: 30px;
-            text-align: center;
-        }
-        .content h2 {
-            color: #333333;
-        }
-        .code-box {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 15px 25px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #007bff;
-            border: 2px dashed #007bff;
-            border-radius: 8px;
-        }
-        .button {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 12px 25px;
-            background-color: #28a745;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .button:hover {
-            background-color: #218838;
-        }
-        .footer {
-            background-color: #f1f3f5;
-            text-align: center;
-            padding: 20px;
-            font-size: 14px;
-            color: #777777;
-        }
-        a { color: #007bff; text-decoration: none; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify your HeavenlyMatch email</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            HeavenlyMatch 💌
-            <div class="tagline">Your journey to meaningful connections starts here 💖</div>
-        </div>
-        <div class="content">
-            <h2>Hello, {{ $name }}!</h2>
-            <p>Thank you for joining <strong>HeavenlyMatch</strong>! We're delighted to have you on board.</p>
-            
-            <p>Please use the code below to verify your email:</p>
-            <div class="code-box">
-                {{ $code }}
-            </div>
+<body style="margin:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8fafc;padding:32px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f1f5f9;box-shadow:0 20px 60px rgba(52,16,68,0.12);">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#7a1b7e,#e12f83);padding:34px 28px;text-align:center;color:#ffffff;">
+                            <div style="font-size:28px;font-weight:800;line-height:1.2;">HeavenlyMatch</div>
+                            <div style="margin-top:8px;font-size:14px;opacity:.85;">Secure email verification</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px 28px;text-align:center;">
+                            <h1 style="margin:0;font-size:24px;line-height:1.3;color:#0f172a;">Hello, {{ $name }}</h1>
+                            <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#475569;">Use this 6-digit code to verify your email address and continue your matrimony account setup.</p>
 
-            <p>Or click the button below to verify instantly:</p>
-            <a href="{{ url('/verify-email/'.$token) }}" class="button">Verify Email</a>
+                            <div style="display:inline-block;margin:26px 0 20px;padding:16px 24px;border-radius:16px;background:#fff5fb;border:1px dashed #e12f83;color:#7a1b7e;font-size:34px;font-weight:800;letter-spacing:8px;">{{ $code }}</div>
 
-            <p>We are thrilled to help you begin your journey with us.<br>
-            Thank you for trusting <strong>HeavenlyMatch</strong> 💕</p>
+                            @if(!empty($verifyUrl))
+                                <div style="margin-top:12px;">
+                                    <a href="{{ $verifyUrl }}" style="display:inline-block;background:#e12f83;color:#ffffff;text-decoration:none;border-radius:14px;padding:14px 22px;font-size:15px;font-weight:800;">Verify email now</a>
+                                </div>
+                            @endif
 
-            <p>If you did not sign up, please ignore this email.</p>
-        </div>
-        <div class="footer">
-            &copy; {{ now()->year }} HeavenlyMatch. All rights reserved.
-        </div>
-    </div>
+                            <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#64748b;">This code and link expire after 24 hours. If you did not create an account, you can safely ignore this email.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:18px 28px;text-align:center;background:#f8fafc;color:#94a3b8;font-size:12px;">
+                            &copy; {{ now()->year }} HeavenlyMatch. All rights reserved.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

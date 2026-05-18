@@ -2,149 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Registration;
+use App\Models\SystemSetting;
+use App\Models\UserAttribute;
+use App\Services\EmailVerificationSender;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\EmailVerificationMail;
-use Illuminate\Support\Str;
 
 class RegistrationController extends Controller
 {
     public function showForm()
     {
-        return view('auth.registration');
+        if (! SystemSetting::bool('system.enable_registration', true)) {
+            return redirect()->route('login')->with('error', 'Registration is currently disabled. Please contact support.');
+        }
+
+        return view('auth.registration', [
+            'religionOptions' => UserAttribute::optionsFor('religion'),
+            'bloodGroupOptions' => UserAttribute::optionsFor('blood-group'),
+            'maritalStatusOptions' => UserAttribute::optionsFor('marital-status'),
+        ]);
     }
 
-    /**
-     * ✅ Handle new registration & send verification email
-     */
-    public function store(Request $request)
+    public function store(Request $request, EmailVerificationSender $verificationSender)
     {
-        $request->validate([
-            'looking_for'   => 'required|string|max:255',
-            'name'          => 'required|string|max:255',
-            'gender'        => 'required|in:male,female',
-            'email'         => 'required|email|unique:registrations,email',
-            'country_code'  => 'required|string|max:10',
-            'mobile_number' => 'required|string|max:20|unique:registrations,mobile_number',
-            'password'      => 'required|confirmed|min:6',
+        if (! SystemSetting::bool('system.enable_registration', true)) {
+            return redirect()->route('login')->with('error', 'Registration is currently disabled. Please contact support.');
+        }
+
+        $request->merge([
+            'email' => strtolower((string) $request->input('email')),
         ]);
 
-        // ✅ Create new user
+        $validated = $request->validate([
+            'profile_for' => 'required|string|in:self,son,daughter,brother,sister,relative,friend',
+            'name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'religion' => 'nullable|string|max:120',
+            'marital_status' => 'nullable|string|max:120',
+            'blood_group' => 'nullable|string|max:30',
+            'preferred_language' => 'required|in:bn,en',
+            'email' => 'required|email|unique:registrations,email',
+            'country_code' => 'required|string|max:10',
+            'mobile_number' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,15}$/', 'unique:registrations,mobile_number'],
+            'password' => 'required|string|confirmed|min:8|max:64',
+            'terms' => 'accepted',
+        ], [
+            'mobile_number.regex' => 'Use only digits for the mobile number. Do not include country code here.',
+            'terms.accepted' => 'You must accept the privacy and matrimony-use agreement.',
+        ]);
+
+        $emailVerificationRequired = SystemSetting::bool('system.email_verification_required', true);
+        $defaultUserStatus = SystemSetting::get('system.default_user_status', 'pending');
+
         $user = Registration::create([
-            'looking_for'       => $request->looking_for,
-            'name'              => $request->name,
-            'gender'            => $request->gender,
-            'email'             => $request->email,
-            'country_code'      => $request->country_code,
-            'mobile_number'     => $request->mobile_number,
-            'password'          => Hash::make($request->password),
-            'is_email_verified' => false,
-            'is_mobile_verified'=> false,
+            'profile_for' => $validated['profile_for'],
+            'name' => $validated['name'],
+            'gender' => $validated['gender'],
+            'religion' => $validated['religion'] ?? null,
+            'marital_status' => $validated['marital_status'] ?? null,
+            'blood_group' => $validated['blood_group'] ?? null,
+            'preferred_language' => $validated['preferred_language'],
+            'email' => $validated['email'],
+            'country_code' => $validated['country_code'],
+            'mobile_number' => $validated['mobile_number'],
+            'password' => Hash::make($validated['password']),
+            'is_email_verified' => ! $emailVerificationRequired,
+            'is_mobile_verified' => false,
+            'status' => in_array($defaultUserStatus, ['active', 'pending', 'blocked'], true) ? $defaultUserStatus : 'pending',
+            'terms_accepted_at' => now(),
         ]);
 
-        // ✅ Generate code & token
-        $code  = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $token = Str::random(40);
-
-        $user->update([
-            'email_verification_code'     => $code,
-            'email_verification_token'    => $token,
-            'email_verification_sent_at'  => now(),
-        ]);
-
-        // ✅ Send email
-        try {
-            Mail::to($user->email)->send(new EmailVerificationMail($user->name, $code, $token));
-        } catch (\Exception $e) {
-            \Log::error('Email Verification Error: '.$e->getMessage());
+        if (! $emailVerificationRequired) {
+            return redirect()->route('login')->with('success', 'Account created. You can login now.');
         }
 
-        return redirect()->route('email.verify.notice')->with('email', $user->email);
-    }
+        [$code, $token] = $verificationSender->createCode($user);
+        $sent = $verificationSender->send($user, $code, $token);
 
-    /**
-     * ✅ Verify email by code
-     */
-    public function verifyCode(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'code'  => 'required|string|size:6',
-        ]);
+        $redirect = redirect()->route('email.verify.notice', ['email' => $user->email])
+            ->with('email', $user->email);
 
-        $user = Registration::where('email', $request->email)
-                            ->where('email_verification_code', $request->code)
-                            ->first();
-
-        if (!$user) {
-            return back()->with('error', 'Invalid verification code.');
+        if (! $sent) {
+            return $redirect
+                ->with('dev_code', app()->environment(['local', 'development']) ? $code : null)
+                ->with('error', 'Account created, but email sending failed. Please fix MAIL settings, then resend the code.');
         }
 
-        $user->update([
-            'is_email_verified'         => true,
-            'email_verified_at'         => now(),
-            'email_verification_code'   => null,
-            'email_verification_token'  => null,
-        ]);
-
-        return redirect()->route('login')->with('success', '🎉 Email verified successfully!');
-    }
-
-    /**
-     * ✅ Verify email by clickable link
-     */
-    public function verifyLink($token)
-    {
-        $user = Registration::where('email_verification_token', $token)->first();
-
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Invalid or expired verification link.');
-        }
-
-        // Optional: expire after 24 hours
-        if ($user->email_verification_sent_at && $user->email_verification_sent_at->diffInHours(now()) > 24) {
-            return redirect()->route('login')->with('error', 'Verification link has expired.');
-        }
-
-        $user->update([
-            'is_email_verified'         => true,
-            'email_verified_at'         => now(),
-            'email_verification_code'   => null,
-            'email_verification_token'  => null,
-        ]);
-
-        return redirect()->route('login')->with('success', '🎉 Email verified successfully!');
-    }
-
-    /**
-     * ✅ Resend email verification (2-minute cooldown)
-     */
-    public function resendEmail(Request $request)
-    {
-        $user = Registration::where('email', $request->email)->firstOrFail();
-
-        if ($user->email_verification_sent_at && $user->email_verification_sent_at->diffInSeconds(now()) < 120) {
-            $remaining = 120 - $user->email_verification_sent_at->diffInSeconds(now());
-            return back()->with('error', "⏳ Please wait {$remaining} seconds before resending the code.");
-        }
-
-        $code  = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $token = Str::random(40);
-
-        $user->update([
-            'email_verification_code'     => $code,
-            'email_verification_token'    => $token,
-            'email_verification_sent_at'  => now(),
-        ]);
-
-        try {
-            Mail::to($user->email)->send(new EmailVerificationMail($user->name, $code, $token));
-        } catch (\Exception $e) {
-            \Log::error('Email Verification Resend Error: '.$e->getMessage());
-        }
-
-        return back()->with('success', '📧 Verification code resent successfully!');
+        return $redirect->with('success', 'Account created. We sent a verification code to your email.');
     }
 }

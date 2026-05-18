@@ -2,499 +2,374 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Registration;
 use App\Models\Biodata;
+use App\Models\SystemSetting;
+use App\Models\UserAttribute;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class BiodataController extends Controller
 {
-   public function create(Request $request, $step = 1)
-    {
-        // Load biodata from session if exists
-        $biodata = $request->session()->get('biodata', []);
+    private int $maxStep = 10;
 
-        $maxStep = 10; // <-- declare total steps here
+    public function create(Request $request, $step = 1)
+    {
+        $step = max(1, min((int) $step, $this->maxStep));
 
         return view('pages.user-dashboard.create_biodatas', [
             'step' => $step,
-            'biodata' => $biodata,
-            'maxStep' => $maxStep, // <-- pass it to Blade
+            'maxStep' => $this->maxStep,
+            'draft' => $request->session()->get('biodata', []),
+            'savedBiodata' => $request->user()->biodata,
+            'religionOptions' => UserAttribute::optionsFor('religion'),
+            'bloodGroupOptions' => UserAttribute::optionsFor('blood-group'),
+            'maritalStatusOptions' => UserAttribute::optionsFor('marital-status'),
         ]);
     }
 
     public function store(Request $request, $step)
     {
-        $maxStep = 10;
-        $rules = [];
+        $step = max(1, min((int) $step, $this->maxStep));
 
-        switch ($step) {
-            case 1: // General Info
-                $rules = [
-                    'marital_status' => 'required|string',
-                    'birth_date'     => 'required|date',
-                    'height'         => 'required|string|max:10',
-                    'weight'         => 'required|string|max:10',
-                    'complexion'     => 'required|string',
-                    'blood_group'    => 'required|string',
-                    'nationality'    => 'nullable|string|max:50',
-                ];
-                break;
-
-            case 2: // Address
-                $rules = [
-                    'permanent_address' => 'required|string|max:255',
-                    'village_area'      => 'nullable|string|max:255',
-                    'present_address'   => 'required|string|max:255',
-                    'grew_up'           => 'required|string|max:100',
-                ];
-                break;
-
-            case 3: // Education
-                $rules = [
-                    'education_method'       => 'required|string|in:General,Islamic,Both',
-                    'education_type'         => 'required|array',
-                    'education_type.*'       => 'required|string|max:255',
-                    'ssc_year'               => 'nullable|array',
-                    'ssc_year.*'             => 'nullable|digits:4',
-                    'ssc_group'              => 'nullable|array',
-                    'ssc_group.*'            => 'nullable|string|max:100',
-
-                    'hsc_year'               => 'nullable|array',
-                    'hsc_year.*'             => 'nullable|digits:4',
-                    'hsc_group'              => 'nullable|array',
-                    'hsc_group.*'            => 'nullable|string|max:100',
-
-                    'diploma_subject'        => 'nullable|array',
-                    'diploma_subject.*'      => 'nullable|string|max:255',
-                    'diploma_medium'         => 'nullable|array',
-                    'diploma_medium.*'       => 'nullable|string|max:100',
-                    'diploma_institution'    => 'nullable|array',
-                    'diploma_institution.*'  => 'nullable|string|max:255',
-                    'diploma_year'           => 'nullable|array',
-                    'diploma_year.*'         => 'nullable|digits:4',
-
-                    'graduation_subject'     => 'nullable|array',
-                    'graduation_subject.*'   => 'nullable|string|max:255',
-                    'graduation_institution' => 'nullable|array',
-                    'graduation_institution.*' => 'nullable|string|max:255',
-                    'graduation_year'        => 'nullable|array',
-                    'graduation_year.*'      => 'nullable|digits:4',
-
-                    'postgraduation_subject' => 'nullable|array',
-                    'postgraduation_subject.*' => 'nullable|string|max:255',
-                    'postgraduation_institution' => 'nullable|array',
-                    'postgraduation_institution.*' => 'nullable|string|max:255',
-                    'postgraduation_year'    => 'nullable|array',
-                    'postgraduation_year.*'  => 'nullable|digits:4',
-
-                    'phd_subject' => 'nullable|array',
-                    'phd_subject.*' => 'nullable|string|max:255',
-                    'phd_institution' => 'nullable|array',
-                    'phd_institution.*' => 'nullable|string|max:255',
-                    'phd_year'    => 'nullable|array',
-                    'phd_year.*'  => 'nullable|digits:4',
-
-                    'islamic_institution'    => 'nullable|array',
-                    'islamic_institution.*'  => 'nullable|string|max:255',
-                    'islamic_year'           => 'nullable|array',
-                    'islamic_year.*'         => 'nullable|digits:4',
-
-                    'other_education'        => 'nullable|string|max:500',
-                ];
-                break;
-
-            case 4: // Family
-                $rules = [
-                    'father_name'      => 'required|string|max:255',
-                    'father_alive'     => 'required|boolean',
-                    'father_profession'=> 'nullable|string|max:500',
-                    'mother_name'      => 'required|string|max:255',
-                    'mother_alive'     => 'required|boolean',
-                    'mother_profession'=> 'nullable|string|max:500',
-                    'brothers'         => 'required|integer|min:0',
-                    'sisters'          => 'required|integer|min:0',
-                    'uncle_profession' => 'nullable|string|max:500',
-                    'family_financial_status' => 'required|string',
-                    'family_details'   => 'nullable|string|max:1000',
-                    'family_religious_condition' => 'nullable|string|max:1000',
-                ];
-                break;
-
-            case 5: // Personal Info
-                $rules = [
-                    'clothing_style'     => 'required|string',
-                    'beard_info'         => 'required|string',
-                    'clothes_above_ankles' => 'required|string',
-                    'niqab_since' => 'required|string',
-                    'prayers_info'       => 'nullable|string',
-                    'mahram_nonmahram'   => 'required|string',
-                    'quran_recitation' => 'required|string|in:Yes,No',
-                    'fiqh'               => 'required|string|in:Hanafi,Shafi,Maliki,Hanbali',
-                    'watch_entertainment'=> 'required|string',
-                    'diseases' => 'required|string|in:Yes,No',
-                    'beliefs_on_mazar'   => 'nullable|string',
-                    'books_read'         => 'nullable|string',
-                    'special_category'   => 'nullable|array',
-                    'special_category.*' => 'string|in:Disabled,Infertile,Converted Muslim,Orphan,Interested in becoming a second wife,Tablig',
-                    'hobbies'            => 'nullable|string',
-                    'groom_photo'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                ];
-                break;
-
-            case 6: // Occupation
-                $rules = [
-                    'occupation'           => 'required|string|max:255',
-                    'profession_details'   => 'required|string',
-                    'monthly_income'       => 'required|numeric|min:0',
-                ];
-                break;
-
-            case 7: // Marriage Info
-                $rules = [
-                    'guardian_agree' => 'required|string|in:Yes,No',
-                    'wife_in_veil' => 'required|string|in:Yes,No,InshaAllah',
-                    'wife_study_allowed' => 'required|string|in:Yes,No',
-                    'wife_job_allowed'   => 'required|string|in:Yes,No',
-                     'residence_after_marriage' => 'required|string|in:Own House,Wife’s House,Rented House,Other',
-                    'expect_gift_from_bride'  => 'required|string|in:Yes,No',
-                ];
-                break;
-
-           case 8: // Expected Partner
-                $rules = [
-                    'partner_age' => ['required', 'string', 'regex:/^(1[8-9]|2[0-9]|3[0-9]|4[0-9]|5[0-5])\-(2[3-9]|[3-5][0-9]|60)$/'],
-                    'partner_complexion'   => 'required|array|min:1', // must select at least one
-                    'partner_complexion.*' => 'string|in:Dark,Brown,Bright Brown,Fair,Bright Fair',
-                    'partner_height' => ['required', 'string', 'regex:/^(4\.5|4\.6|4\.7|4\.8|4\.9|5\.0|5\.1|5\.2|5\.3|5\.4|5\.5|5\.6|5\.7|5\.8|5\.9|6\.0|6\.1|6\.2|6\.3|6\.4|6\.5)\-(4\.5|4\.6|4\.7|4\.8|4\.9|5\.0|5\.1|5\.2|5\.3|5\.4|5\.5|5\.6|5\.7|5\.8|5\.9|6\.0|6\.1|6\.2|6\.3|6\.4|6\.5)$/'],
-                    'partner_education' => 'required|string|in:SSC,HSC,Diploma,Graduation,Post Graduation,Hafez,Others',
-                    'partner_district'            => 'required|string|max:255',
-                    'partner_marital_status'   => 'required|array|min:1',
-                    'partner_marital_status.*' => 'string|in:Never Married,Divorced,Widow',
-                    'partner_profession' => 'required|string|in:Engineer,Doctor,Teacher,Business,Government Employee,Private Job,Farmer,Others',
-                    'partner_financial_condition' => 'required|string|in:Poor,Average,Good,Very Good,Wealthy',
-                    'partner_expectations'        => 'required|string|max:2000',
-                ];
-                break;
-
-                $rules = [
-                'parents_know' => 'required|string',
-                'truth_testify' => 'required|string',
-                'responsibility' => 'required|string',
-                ];
-                break;
-
-            case 10: // Contact
-                $rules = [
-                    'guardian_mobile'      => 'required|string|max:20',
-                    'guardian_relationship'=> 'required|string|max:50',
-                    'guardian_email'       => 'required|email|max:255',
-                ];
-                break;
-
-            default:
-                $rules = [];
-                break;
+        if ($request->has('back')) {
+            return redirect()->route('biodata.create', max(1, $step - 1));
         }
 
-        $validated = $request->validate($rules);
+        if ($request->has('draft')) {
+            $draftData = $request->except(['_token', 'back', 'next', 'complete', 'draft']);
 
-        // Step 5 extra handling for photo upload
-        if ($step == 5) {
-            if ($request->hasFile('groom_photo')) {
-                $path = $request->file('groom_photo')->store('groom_photos', 'public');
-                $validated['groom_photo'] = $path; // store path
-            } else {
-                $oldData = $request->session()->get("biodata.step_5", []);
-                if (isset($oldData['groom_photo'])) {
-                    $validated['groom_photo'] = $oldData['groom_photo'];
-                }
-            }
-        } 
-
-        if (!empty($validated['education_type'])) {
-            $validated['highest_qualification'] = implode(',', $validated['education_type']);
-        }
-
-        // Save validated data (not raw request) in session
-        $biodata = $request->session()->get('biodata', []);
-        $biodata["step_$step"] = $validated; // <-- use $validated instead of $request->except(...)
-        $request->session()->put('biodata', $biodata);
-
-
-
-        /// Final Step Save to DB
-            if ($step == $maxStep && !$request->has('next')) {
-
-                // Merge all step data from session
-                $allData = array_merge(...array_values($biodata));
-
-                // Convert array fields to comma-separated strings
-                foreach ($allData as $key => $value) {
-                    if (is_array($value)) {
-                        $allData[$key] = implode(',', $value);
-                    }
-                }
-
-                // Attach logged-in user's registration ID
-                $allData['registration_id'] = auth()->user()->registration_id;
-
-                // ✅ Mark biodata as completed
-                $allData['is_completed'] = true;
-
-                // Create or update biodata record
-                $biodataRecord = Biodata::updateOrCreate(
-                    ['registration_id' => auth()->user()->registration_id],
-                    $allData
-                );
-
-                // Clear biodata session
-                $request->session()->forget('biodata');
-
-                return redirect()
-                    ->route('myhome') // Redirect to dashboard after completion
-                    ->with('success', '🎉 Biodata saved successfully!');
+            if ($step === 5 && $request->hasFile('groom_photo')) {
+                $draftData['groom_photo'] = $request->file('groom_photo')->store('groom_photos', 'public');
             }
 
+            $draft = $request->session()->get('biodata', []);
+            $draft["step_{$step}"] = array_merge($draft["step_{$step}"] ?? [], $draftData);
+            $request->session()->put('biodata', $draft);
 
+            $partialData = $this->normaliseForDatabase($draftData);
+            $partialData['registration_id'] = $request->user()->registration_id;
+            $partialData['completion_status'] = 'draft';
+            $partialData['approval_status'] = optional($request->user()->biodata)->approval_status ?? (SystemSetting::bool('system.profile_approval_required', true) ? 'pending' : 'approved');
 
-        // Navigate Steps
-        if ($request->input('next')) {
-            return redirect()->route('biodata.create', $step + 1);
+            Biodata::updateOrCreate(
+                ['registration_id' => $request->user()->registration_id],
+                $this->filterFillable($partialData)
+            );
+
+            return redirect()->route('biodata.create', $step)->with('success', 'Draft saved successfully.');
         }
-        if ($request->input('back')) {
-            return redirect()->route('biodata.create', $step - 1);
+
+        $validated = $request->validate($this->rulesForStep($step), $this->messages());
+
+        if ($step === 5 && $request->hasFile('groom_photo')) {
+            $validated['groom_photo'] = $request->file('groom_photo')->store('groom_photos', 'public');
         }
 
-        return view('pages.user-dashboard.create_biodatas', [
-            'step' => $step,
-            'biodata' => $biodata,
-            'maxStep' => $maxStep, // <-- pass here too
-        ]);
+        $draft = $request->session()->get('biodata', []);
+        $draft["step_{$step}"] = $validated;
+        $request->session()->put('biodata', $draft);
+
+        $partialData = $this->normaliseForDatabase($validated);
+        $partialData['registration_id'] = $request->user()->registration_id;
+        $partialData['completion_status'] = 'draft';
+        $partialData['approval_status'] = optional($request->user()->biodata)->approval_status ?? (SystemSetting::bool('system.profile_approval_required', true) ? 'pending' : 'approved');
+
+        Biodata::updateOrCreate(
+            ['registration_id' => $request->user()->registration_id],
+            $this->filterFillable($partialData)
+        );
+
+        if ($step === $this->maxStep) {
+            $allData = [];
+            foreach ($draft as $data) {
+                $allData = array_merge($allData, $data);
+            }
+
+            $allData = $this->normaliseForDatabase($allData);
+            $allData['registration_id'] = $request->user()->registration_id;
+            $allData['is_completed'] = true;
+            $allData['completion_status'] = 'completed';
+            $allData['approval_status'] = optional($request->user()->biodata)->approval_status ?? (SystemSetting::bool('system.profile_approval_required', true) ? 'pending' : 'approved');
+
+            Biodata::updateOrCreate(
+                ['registration_id' => $request->user()->registration_id],
+                $this->filterFillable($allData)
+            );
+
+            $request->session()->forget('biodata');
+
+            return redirect()->route('myhome')->with('success', 'Biodata saved successfully. Your profile is now ready for review.');
+        }
+
+        return redirect()->route('biodata.create', min($this->maxStep, $step + 1));
     }
 
-        public function updateGeneralInfo(Request $request, $id)
+    private function rulesForStep(int $step): array
     {
-        $biodata = Biodata::findOrFail($id);
+        $adultDate = now()->subYears(18)->format('Y-m-d');
 
+        return match ($step) {
+            1 => [
+                'biodata_type' => 'required|string|in:groom,bride',
+                'religion' => 'nullable|string|max:120',
+                'marital_status' => 'required|string|max:120',
+                'previous_marriage_details' => 'nullable|required_unless:marital_status,Single,Never Married|string|max:1200',
+                'children_count' => 'nullable|integer|min:0|max:20',
+                'birth_date' => "required|date|before_or_equal:{$adultDate}",
+                'height' => 'required|string|max:20',
+                'weight' => 'required|string|max:20',
+                'complexion' => 'required|string|max:60',
+                'blood_group' => 'required|string|max:20',
+                'nationality' => 'required|string|max:50',
+            ],
+            2 => [
+                'permanent_address' => 'required|string|max:255',
+                'village_area' => 'nullable|string|max:255',
+                'present_address' => 'required|string|max:255',
+                'grew_up' => 'required|string|max:255',
+            ],
+            3 => [
+                'education_method' => 'required|string|in:General,Qawmi,Alia,General + Islamic,Other',
+                'highest_qualification' => 'required|string|max:255',
+                'ssc_year' => 'nullable|string|max:80',
+                'ssc_group' => 'nullable|string|max:120',
+                'diploma_subject' => 'nullable|string|max:255',
+                'diploma_medium' => 'nullable|string|max:120',
+                'diploma_institution' => 'nullable|string|max:255',
+                'diploma_year' => 'nullable|string|max:80',
+                'graduation_subject' => 'nullable|string|max:255',
+                'graduation_institution' => 'nullable|string|max:255',
+                'graduation_year' => 'nullable|string|max:80',
+                'postgraduation_subject' => 'nullable|string|max:255',
+                'postgraduation_institution' => 'nullable|string|max:255',
+                'postgraduation_year' => 'nullable|string|max:80',
+                'islamic_titles' => 'nullable|array|max:8',
+                'islamic_titles.*' => 'string|max:80',
+                'islamic_institution' => 'nullable|string|max:255',
+                'islamic_year' => 'nullable|string|max:80',
+                'other_education' => 'nullable|string|max:1500',
+            ],
+            4 => [
+                'father_name' => 'required|string|max:255',
+                'father_alive' => 'required|string|in:Yes,No',
+                'father_profession' => 'required|string|max:700',
+                'mother_name' => 'required|string|max:255',
+                'mother_alive' => 'required|string|in:Yes,No',
+                'mother_profession' => 'required|string|max:700',
+                'brothers' => 'required|integer|min:0|max:20',
+                'brothers_info' => 'nullable|string|max:1500',
+                'sisters' => 'required|integer|min:0|max:20',
+                'sisters_info' => 'nullable|string|max:1500',
+                'uncle_profession' => 'nullable|string|max:1000',
+                'family_financial_status' => 'required|string|max:120',
+                'home_ownership' => 'required|string|max:1200',
+                'family_details' => 'required|string|max:1500',
+                'family_religious_condition' => 'required|string|max:1500',
+            ],
+            5 => [
+                'clothing_style' => 'required|string|max:1000',
+                'niqab_since' => 'nullable|string|max:500',
+                'beard_info' => 'nullable|string|max:500',
+                'clothes_above_ankles' => 'nullable|string|max:500',
+                'prayers_info' => 'required|string|max:700',
+                'prayers_qaza_weekly' => 'required|string|max:255',
+                'mahram_nonmahram' => 'required|string|max:700',
+                'quran_recitation' => 'required|string|max:255',
+                'fiqh' => 'required|string|max:80',
+                'watch_entertainment' => 'required|string|max:700',
+                'diseases' => 'required|string|max:700',
+                'religious_work' => 'nullable|string|max:700',
+                'beliefs_on_mazar' => 'required|string|max:700',
+                'books_read' => 'required|string|max:700',
+                'favorite_scholars' => 'required|string|max:700',
+                'special_category' => 'nullable|array|max:8',
+                'special_category.*' => 'string|max:100',
+                'hobbies' => 'nullable|string|max:1000',
+                'groom_mobile' => 'nullable|string|max:20',
+                'groom_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            ],
+            6 => [
+                'occupation' => 'required|string|max:255',
+                'profession_details' => 'required|string|max:1200',
+                'profession_halal_status' => 'required|string|max:700',
+                'monthly_income' => 'nullable|numeric|min:0|max:999999999',
+            ],
+            7 => [
+                'guardian_agree' => 'required|string|in:Yes,No,Need to discuss',
+                'wife_in_veil' => 'nullable|string|max:255',
+                'wife_study_allowed' => 'nullable|string|max:255',
+                'wife_job_allowed' => 'nullable|string|max:255',
+                'residence_after_marriage' => 'required|string|max:500',
+                'expect_gift_from_bride' => 'required|string|in:Yes,No',
+                'marriage_plan' => 'required|string|max:1200',
+            ],
+            8 => [
+                'partner_age' => 'required|string|max:80',
+                'partner_complexion' => 'nullable|array|max:5',
+                'partner_complexion.*' => 'string|max:80',
+                'partner_height' => 'nullable|string|max:100',
+                'partner_education' => 'nullable|string|max:255',
+                'partner_district' => 'nullable|string|max:255',
+                'partner_marital_status' => 'nullable|array|max:5',
+                'partner_marital_status.*' => 'string|max:80',
+                'partner_profession' => 'nullable|string|max:255',
+                'partner_financial_condition' => 'nullable|string|max:120',
+                'partner_expectations' => 'required|string|max:2500',
+            ],
+            9 => [
+                'parents_know' => 'required|string|in:Yes,No',
+                'truth_testify' => 'required|accepted',
+                'responsibility' => 'required|accepted',
+                'privacy_consent' => 'required|accepted',
+            ],
+            10 => [
+                'groom_name' => 'required|string|max:255',
+                'guardian_mobile' => 'required|string|max:20',
+                'guardian_relationship' => 'required|string|max:100',
+                'guardian_email' => 'nullable|email|max:255',
+            ],
+            default => [],
+        };
+    }
+
+    private function messages(): array
+    {
+        return [
+            'birth_date.before_or_equal' => 'The candidate must be at least 18 years old.',
+            'previous_marriage_details.required_unless' => 'Please add previous marriage details for married/divorced/widow/widower status.',
+            'truth_testify.accepted' => 'Please confirm that the biodata information is true.',
+            'responsibility.accepted' => 'Please accept responsibility for the submitted information.',
+            'privacy_consent.accepted' => 'Please accept the privacy and contact sharing consent.',
+        ];
+    }
+
+    private function normaliseForDatabase(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = implode(', ', array_filter($value));
+            }
+            if (is_bool($value)) {
+                $data[$key] = $value ? 'Yes' : 'No';
+            }
+        }
+
+        return $data;
+    }
+
+    private function filterFillable(array $data): array
+    {
+        $fillable = (new Biodata())->getFillable();
+        return Arr::only($data, $fillable);
+    }
+
+    public function updateGeneralInfo(Request $request, $id)
+    {
         $validated = $request->validate([
-            'marital_status' => 'nullable|string|max:50',
+            'biodata_type' => 'nullable|string|max:30',
+            'religion' => 'nullable|string|max:120',
+            'marital_status' => 'nullable|string|max:120',
+            'previous_marriage_details' => 'nullable|string|max:1200',
+            'children_count' => 'nullable|integer|min:0|max:20',
             'birth_date' => 'nullable|date',
             'height' => 'nullable|string|max:50',
             'complexion' => 'nullable|string|max:50',
             'weight' => 'nullable|string|max:50',
-            'blood_group' => 'nullable|string|max:10',
+            'blood_group' => 'nullable|string|max:30',
             'nationality' => 'nullable|string|max:50',
         ]);
-
-        $biodata->update($validated);
-
-        return redirect()->back()->with('success', 'General information updated successfully.');
+        Biodata::findOrFail($id)->update($validated);
+        return back()->with('success', 'General information updated successfully.');
     }
 
     public function updateAddress(Request $request, $id)
     {
-        $biodata = Biodata::findOrFail($id);
-        $biodata->update([
-            'present_address'   => $request->present_address,
-            'village_area'      => $request->village_area,
-            'permanent_address' => $request->permanent_address,
-            'grew_up'           => $request->grew_up,
-        ]);
-
-        return redirect()->back()->with('success', 'Address updated successfully!');
+        Biodata::findOrFail($id)->update($request->only(['present_address', 'village_area', 'permanent_address', 'grew_up']));
+        return back()->with('success', 'Address updated successfully.');
     }
 
     public function updateEducation(Request $request, $id)
-{
-    $biodata = Biodata::findOrFail($id);
-
-    $biodata->update($request->only([
-        'education_method',
-        'highest_qualification',
-        'other_education',
-        'ssc_year',
-        'ssc_group',
-        'diploma_subject',
-        'diploma_medium',
-        'diploma_institution',
-        'diploma_year',
-        'graduation_subject',
-        'graduation_institution',
-        'graduation_year',
-        'postgraduation_subject',
-        'postgraduation_institution',
-        'postgraduation_year',
-        'islamic_titles',
-        'islamic_institution',
-        'islamic_year',
-    ]));
-
-    return back()->with('success', 'Educational qualifications updated successfully!');
-}
-
-public function updateFamily(Request $request, $id)
-{
-    $biodata = Biodata::findOrFail($id);
-
-    $biodata->update($request->only([
-        'father_name',
-        'father_alive',
-        'father_profession',
-        'mother_name',
-        'mother_alive',
-        'mother_profession',
-        'brothers',
-        'sisters',
-        'uncle_profession',
-        'family_financial_status',
-        'family_details',
-        'family_religious_condition',
-    ]));
-
-    return back()->with('success', 'Family information updated successfully!');
-}
-
-public function updatePersonal(Request $request, $id)
-{
-    // Validate inputs
-    $request->validate([
-        'clothing_style' => 'nullable|string|max:255',
-        'beard_info' => 'nullable|string|max:255',
-        'clothes_above_ankles' => 'nullable|string|max:255',
-        'prayers_info' => 'nullable|string|max:255',
-        'mahram_nonmahram' => 'nullable|string|max:255',
-        'quran_recitation' => 'nullable|string|max:255',
-        'fiqh' => 'nullable|string|max:255',
-        'watch_entertainment' => 'nullable|string|max:255',
-        'diseases' => 'nullable|string|max:255',
-        'beliefs_on_mazar' => 'nullable|string|max:255',
-        'books_read' => 'nullable|string|max:255',
-        'special_category' => 'nullable|string|max:255',
-        'hobbies' => 'nullable|string|max:255',
-        'groom_mobile' => 'nullable|string|max:20',
-    ]);
-
-    $biodata = Biodata::findOrFail($id);
-
-    // Update fields
-    $biodata->update($request->all());
-
-    return redirect()->back()->with('success', 'Personal Information updated successfully.');
-}
-
-public function updateOccupation(Request $request, $id)
     {
-        $request->validate([
-            'occupation' => 'nullable|string|max:255',
-            'profession_details' => 'nullable|string|max:255',
-            'monthly_income' => 'nullable|string|max:255',
-        ]);
-
-        $biodata = Biodata::findOrFail($id);
-
-        $biodata->occupation = $request->occupation;
-        $biodata->profession_details = $request->profession_details;
-        $biodata->monthly_income = $request->monthly_income;
-        $biodata->save();
-
-        return redirect()->back()->with('success', 'Occupational information updated successfully!');
+        $data = $this->normaliseForDatabase($request->only([
+            'education_method', 'highest_qualification', 'other_education', 'ssc_year', 'ssc_group', 'diploma_subject',
+            'diploma_medium', 'diploma_institution', 'diploma_year', 'graduation_subject', 'graduation_institution',
+            'graduation_year', 'postgraduation_subject', 'postgraduation_institution', 'postgraduation_year',
+            'islamic_titles', 'islamic_institution', 'islamic_year'
+        ]));
+        Biodata::findOrFail($id)->update($this->filterFillable($data));
+        return back()->with('success', 'Educational information updated successfully.');
     }
 
-    // Update Marriage & Future Plans Information
+    public function updateFamily(Request $request, $id)
+    {
+        Biodata::findOrFail($id)->update($request->only([
+            'father_name', 'father_alive', 'father_profession', 'mother_name', 'mother_alive', 'mother_profession',
+            'brothers', 'brothers_info', 'sisters', 'sisters_info', 'uncle_profession', 'family_financial_status',
+            'home_ownership', 'family_details', 'family_religious_condition'
+        ]));
+        return back()->with('success', 'Family information updated successfully.');
+    }
+
+    public function updatePersonal(Request $request, $id)
+    {
+        $data = $this->normaliseForDatabase($request->only([
+            'clothing_style', 'niqab_since', 'beard_info', 'clothes_above_ankles', 'prayers_info', 'prayers_qaza_weekly',
+            'mahram_nonmahram', 'quran_recitation', 'fiqh', 'watch_entertainment', 'diseases', 'religious_work',
+            'beliefs_on_mazar', 'books_read', 'favorite_scholars', 'special_category', 'hobbies', 'groom_mobile'
+        ]));
+        Biodata::findOrFail($id)->update($this->filterFillable($data));
+        return back()->with('success', 'Personal information updated successfully.');
+    }
+
+    public function updateOccupation(Request $request, $id)
+    {
+        Biodata::findOrFail($id)->update($request->only(['occupation', 'profession_details', 'profession_halal_status', 'monthly_income']));
+        return back()->with('success', 'Occupational information updated successfully.');
+    }
+
     public function updateMarriage(Request $request, $id)
     {
-        $request->validate([
-            'guardian_agree' => 'nullable|string|max:255',
-            'wife_in_veil' => 'nullable|string|max:255',
-            'wife_study_allowed' => 'nullable|string|max:255',
-            'wife_job_allowed' => 'nullable|string|max:255',
-            'residence_after_marriage' => 'nullable|string|max:255',
-            'expect_gift_from_bride' => 'nullable|string|max:255',
-        ]);
-
-        $biodata = Biodata::findOrFail($id);
-
-        $biodata->guardian_agree = $request->guardian_agree;
-        $biodata->wife_in_veil = $request->wife_in_veil;
-        $biodata->wife_study_allowed = $request->wife_study_allowed;
-        $biodata->wife_job_allowed = $request->wife_job_allowed;
-        $biodata->residence_after_marriage = $request->residence_after_marriage;
-        $biodata->expect_gift_from_bride = $request->expect_gift_from_bride;
-
-        $biodata->save();
-
-        return redirect()->back()->with('success', 'Marriage & future plan information updated successfully!');
+        Biodata::findOrFail($id)->update($request->only([
+            'guardian_agree', 'wife_in_veil', 'wife_study_allowed', 'wife_job_allowed', 'residence_after_marriage',
+            'expect_gift_from_bride', 'marriage_plan'
+        ]));
+        return back()->with('success', 'Marriage information updated successfully.');
     }
 
     public function updatePartner(Request $request, $id)
-{
-    $biodata = Biodata::findOrFail($id);
+    {
+        $data = $this->normaliseForDatabase($request->only([
+            'partner_age', 'partner_complexion', 'partner_height', 'partner_education', 'partner_district',
+            'partner_marital_status', 'partner_profession', 'partner_financial_condition', 'partner_expectations'
+        ]));
+        Biodata::findOrFail($id)->update($this->filterFillable($data));
+        return back()->with('success', 'Expected partner details updated successfully.');
+    }
 
-    $biodata->update([
-        'partner_age' => $request->partner_age,
-        'partner_complexion' => $request->partner_complexion,
-        'partner_height' => $request->partner_height,
-        'partner_education' => $request->partner_education,
-        'partner_district' => $request->partner_district,
-        'partner_marital_status' => $request->partner_marital_status,
-        'partner_profession' => $request->partner_profession,
-        'partner_financial_condition' => $request->partner_financial_condition,
-        'partner_expectations' => $request->partner_expectations,
-    ]);
+    public function updatePledge(Request $request, $id)
+    {
+        Biodata::findOrFail($id)->update($request->only(['parents_know', 'truth_testify', 'responsibility', 'privacy_consent']));
+        return back()->with('success', 'Pledge information updated successfully.');
+    }
 
-    return redirect()->back()->with('success', 'Expected Life Partner details updated successfully.');
-}
+    public function updateContact(Request $request, $id)
+    {
+        $request->validate([
+            'groom_name' => 'nullable|string|max:255',
+            'guardian_mobile' => 'nullable|string|max:20',
+            'guardian_relationship' => 'nullable|string|max:100',
+            'guardian_email' => 'nullable|email|max:255',
+        ]);
+        Biodata::findOrFail($id)->update($request->only(['groom_name', 'guardian_mobile', 'guardian_relationship', 'guardian_email']));
+        return back()->with('success', 'Contact information updated successfully.');
+    }
 
-public function updatePledge(Request $request, $id)
-{
-    $biodata = Biodata::findOrFail($id);
-
-    $biodata->update([
-        'parents_know' => $request->parents_know,
-        'truth_testify' => $request->truth_testify,
-        'responsibility' => $request->responsibility,
-    ]);
-
-    return redirect()->back()->with('success', 'Pledge information updated successfully.');
-}
-
-public function updateContact(Request $request, $id)
-{
-    $request->validate([
-        'groom_name' => 'nullable|string|max:255',
-        'guardian_mobile' => 'nullable|string|max:20',
-        'guardian_relationship' => 'nullable|string|max:100',
-        'guardian_email' => 'nullable|email|max:255',
-    ]);
-
-    $biodata = Biodata::findOrFail($id);
-
-    $biodata->update([
-        'groom_name' => $request->groom_name,
-        'guardian_mobile' => $request->guardian_mobile,
-        'guardian_relationship' => $request->guardian_relationship,
-        'guardian_email' => $request->guardian_email,
-    ]);
-
-    return redirect()->back()->with('success', 'Contact information updated successfully.');
-}
-
-
-public function downloadPdf($id)
-{
-    $biodata = Biodata::findOrFail($id);
-    $pdf = Pdf::loadView('biodata.pdf', compact('biodata'));
-
-    // Store session flash message
-    session()->flash('success', 'Biodata PDF generated successfully!');
-    
-    // Download PDF
-    return $pdf->download('Biodata_'.$biodata->id.'.pdf');
-}
-
-
-
-
+    public function downloadPdf($id)
+    {
+        $biodata = Biodata::findOrFail($id);
+        $pdf = Pdf::loadView('biodata.pdf', compact('biodata'));
+        session()->flash('success', 'Biodata PDF generated successfully.');
+        return $pdf->download('Biodata_' . $biodata->id . '.pdf');
+    }
 }

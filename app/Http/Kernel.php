@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\SystemMaintenanceMode::class,
         ],
 
         'api' => [
@@ -66,6 +67,7 @@ class Kernel extends HttpKernel
         'verified.user' => \App\Http\Middleware\EnsureUserIsVerified::class,
         'guest.frontend' => \App\Http\Middleware\RedirectIfAuthenticatedUser::class,
         'check.biodata' => \App\Http\Middleware\CheckBiodataCompletion::class,
+        'admin' => \App\Http\Middleware\EnsureAdmin::class,
 
     ];
 }

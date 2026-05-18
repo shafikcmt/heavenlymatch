@@ -7,15 +7,16 @@ use Illuminate\Http\Request;
 
 class EnsureUserIsVerified
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
-     */
     public function handle(Request $request, Closure $next)
     {
+        $user = $request->user();
+
+        if ($user && ! $user->is_email_verified) {
+            return redirect()->route('email.verify.notice', ['email' => $user->email])
+                ->with('email', $user->email)
+                ->with('error', 'Please verify your email before continuing.');
+        }
+
         return $next($request);
     }
 }
