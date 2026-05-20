@@ -36,7 +36,7 @@ class ComputeMatchScoresJob implements ShouldQueue
             ->chunkById(100, function ($users) use ($engine, &$processedCount) {
                 foreach ($users as $user) {
                     try {
-                        $this->computeForUser($user, $engine);
+                        $this->computeForUser($user->load('biodata'), $engine);
                         $processedCount++;
                     } catch (\Throwable $e) {
                         Log::warning("MatchScore computation failed for {$user->registration_id}: {$e->getMessage()}");
@@ -49,7 +49,7 @@ class ComputeMatchScoresJob implements ShouldQueue
 
     private function computeForUser(Registration $user, MatchingEngine $engine): void
     {
-        $topMatches = $engine->topMatches($user, 30);
+        $topMatches = $engine->topMatchesForUser($user, 30);
 
         // Delete stale scores
         MatchScore::where('user_id', $user->registration_id)->delete();

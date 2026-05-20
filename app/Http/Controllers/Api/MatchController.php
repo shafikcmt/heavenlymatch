@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\MatchingScorerInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\MatchScore;
-use App\Services\MatchingEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class MatchController extends Controller
 {
-    public function __construct(private readonly MatchingEngine $engine) {}
+    public function __construct(private readonly MatchingScorerInterface $engine) {}
 
     /**
      * GET /api/matches
@@ -38,8 +38,12 @@ class MatchController extends Controller
                 return $precomputed->map(fn ($ms) => $this->formatMatch($ms->candidate->biodata, $ms->total_score, $ms->score_breakdown));
             }
 
-            // Live fallback for new users
-            return $this->engine->topMatches($user, 20)
+            // Live fallback for new users (loads biodata and scores in PHP memory)
+            $seekerBio = $user->biodata;
+            if (! $seekerBio) {
+                return collect();
+            }
+            return $this->engine->topMatches($seekerBio, 20)
                 ->map(fn ($m) => $this->formatMatch($m['biodata'], $m['total_score'], $m['score_breakdown']));
         });
 
@@ -199,7 +203,11 @@ class MatchController extends Controller
         $cacheKey = "daily_matches:{$user->registration_id}:" . now()->toDateString();
 
         $matches = Cache::remember($cacheKey, now()->endOfDay(), function () use ($user) {
-            return $this->engine->topMatches($user, 5)
+            $seekerBio = $user->biodata;
+            if (! $seekerBio) {
+                return collect();
+            }
+            return $this->engine->topMatches($seekerBio, 5)
                 ->map(fn ($m) => $this->formatMatch($m['biodata'], $m['total_score'], $m['score_breakdown']));
         });
 

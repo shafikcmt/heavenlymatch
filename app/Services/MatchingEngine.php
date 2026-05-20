@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\MatchingScorerInterface;
 use App\Models\Biodata;
 use App\Models\Registration;
 use Illuminate\Support\Collection;
@@ -13,7 +14,7 @@ use Illuminate\Support\Collection;
  * Weights are tuned for the Bangladeshi matrimony context.
  * Adjust WEIGHTS to A/B test scoring strategies.
  */
-class MatchingEngine
+class MatchingEngine implements MatchingScorerInterface
 {
     // ── Scoring weights (must sum to 100) ─────────────────────────────────
     private const WEIGHTS = [
@@ -54,28 +55,25 @@ class MatchingEngine
     }
 
     /**
-     * Compute top-N matches for a given user from the active biodata pool.
-     * Returns a Collection ordered by total_score descending.
+     * Compute top-N matches for a given biodata from the active pool.
+     * Implements MatchingScorerInterface — accepts Biodata directly.
+     * Loads all candidates into PHP memory; fine for ≤ 5 000 profiles.
+     * The nightly job uses chunkById to stay within shared-hosting limits.
      */
-    public function topMatches(Registration $user, int $limit = 20): Collection
+    public function topMatches(Biodata $seekerBio, int $limit = 20): Collection
     {
-        $seekerBio = $user->biodata;
-        if (! $seekerBio) {
-            return collect();
-        }
+        $seekerRegistration = $seekerBio->registration;
+        $oppositeGender     = $seekerRegistration?->gender === 'male' ? 'female' : 'male';
 
-        $oppositeGender = $user->gender === 'male' ? 'female' : 'male';
-
-        // Base query: approved, completed, active, opposite gender
         $candidates = Biodata::with('registration')
-            ->where('gender', $oppositeGender)
             ->where('status', 'approved')
             ->where('is_completed', true)
+            ->where('registration_id', '!=', $seekerBio->registration_id)
             ->whereHas('registration', fn ($q) =>
                 $q->where('account_status', 'active')
                   ->whereNull('deactivated_at')
+                  ->where('gender', $oppositeGender)
             )
-            ->where('registration_id', '!=', $user->registration_id)
             ->get();
 
         return $candidates
@@ -90,6 +88,15 @@ class MatchingEngine
             ->sortByDesc('total_score')
             ->take($limit)
             ->values();
+    }
+
+    /**
+     * Convenience wrapper: resolve biodata from a Registration, then call topMatches().
+     */
+    public function topMatchesForUser(Registration $user, int $limit = 20): Collection
+    {
+        $bio = $user->biodata;
+        return $bio ? $this->topMatches($bio, $limit) : collect();
     }
 
     // ─────────────────────────────────────────────────────────────────────

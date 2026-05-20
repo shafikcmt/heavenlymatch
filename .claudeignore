@@ -63,3 +63,13 @@ dist/
 # PHPUnit / test results
 .phpunit.result.cache
 junit.xml
+
+# Generated avatar images and uploaded media (runtime, not source)
+public/images/uploads/
+storage/app/private/
+storage/app/public/
+
+# Deployment artifacts
+*.zip
+*.tar.gz
+deploy-*.sh
