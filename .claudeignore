@@ -1,0 +1,65 @@
+# Dependency directories
+node_modules/
+vendor/
+
+# Laravel system caches & logs
+public/build/
+public/hot/
+public/storage
+storage/framework/
+storage/logs/
+bootstrap/cache/
+
+# IDE & OS configuration files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment & Private keys
+.env
+.env.*
+*.key
+
+# Version Control & Build outputs
+.git/
+.github/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Web/Next.js frontend (not PHP)
+web/
+docs/
+
+# Test & coverage artifacts
+coverage/
+.phpunit.cache/
+tests/
+
+# Database snapshots
+*.sql
+*.dump
+
+# Compiled PHP / Laravel caches
+*.compiled.php
+bootstrap/cache/*.php
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/app/
+
+# Log files (all formats)
+*.log.*
+storage/logs/
+
+# npm / node build artifacts
+.npm/
+dist/
+.next/
+.nuxt/
+
+# PHPUnit / test results
+.phpunit.result.cache
+junit.xml
