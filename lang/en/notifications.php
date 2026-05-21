@@ -52,6 +52,10 @@ return [
     'profile_viewed_title'      => 'Someone viewed your profile',
     'profile_viewed_body'       => ':count people viewed your profile today.',
 
+    // ── Reports ───────────────────────────────────────────────────────────────
+    'report_resolved_title'     => 'Report reviewed',
+    'report_resolved_body'      => 'Your report has been reviewed by our team. Thank you for helping keep HeavenlyMatch safe.',
+
     // ── Admin / system ────────────────────────────────────────────────────────
     'account_warning_title'     => 'Account Warning',
     'account_warning_body'      => 'Your account has received a warning: :reason',

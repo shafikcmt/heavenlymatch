@@ -161,10 +161,16 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
         Route::get('/biodatas',           [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
         Route::post('/biodatas/{id}/approve', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
         Route::post('/biodatas/{id}/reject',  [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
+        Route::post('/users/{id}/unban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
+        Route::post('/users/{id}/suspend',  [\App\Http\Controllers\Admin\AdminUserController::class, 'suspend'])->name('users.suspend');
+        Route::post('/users/{id}/activate', [\App\Http\Controllers\Admin\AdminUserController::class, 'activate'])->name('users.activate');
         Route::get('/payments',              [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments/{id}/approve',[\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
         Route::post('/payments/{id}/reject', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
-        Route::get('/reports',    fn () => Inertia::render('Admin/Reports'))->name('reports.index');
-        Route::get('/settings',   [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::get('/reports',               [\App\Http\Controllers\Admin\AdminReportController::class, 'index'])->name('reports.index');
+        Route::post('/reports/{id}/resolve', [\App\Http\Controllers\Admin\AdminReportController::class, 'resolve'])->name('reports.resolve');
+        Route::post('/reports/{id}/dismiss', [\App\Http\Controllers\Admin\AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+        Route::get('/settings',              [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings',              [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
     });
 });

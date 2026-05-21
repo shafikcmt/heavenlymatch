@@ -169,4 +169,3 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
   )
 }
 
-function cn(...c: (string | boolean | undefined)[]) { return c.filter(Boolean).join(' ') }
