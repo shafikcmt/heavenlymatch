@@ -18,7 +18,7 @@ class SocialLoginController extends Controller
     {
         if (! $this->isConfigured()) {
             return redirect()->route('login')
-                ->with('error', __('auth.google_not_configured'));
+                ->with('error', __('auth.google_login_not_configured'));
         }
 
         return Socialite::driver('google')->redirect();
@@ -28,14 +28,14 @@ class SocialLoginController extends Controller
     {
         if (! $this->isConfigured()) {
             return redirect()->route('login')
-                ->with('error', __('auth.google_not_configured'));
+                ->with('error', __('auth.google_login_not_configured'));
         }
 
         try {
             $social = Socialite::driver('google')->user();
         } catch (\Throwable) {
             return redirect()->route('login')
-                ->with('error', __('auth.google_login_failed'));
+                ->with('error', __('auth.social_login_failed'));
         }
 
         $registration = Registration::firstOrCreate(

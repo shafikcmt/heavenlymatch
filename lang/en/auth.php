@@ -38,8 +38,8 @@ return [
     'forgot_password'    => 'Forgot Password?',
 
     // ── Google OAuth ──────────────────────────────────────────────────────────
-    'google_not_configured' => 'Google login is not available at this time. Please sign in with your email and password.',
-    'google_login_failed'   => 'Google login failed. Please try again or sign in with your email and password.',
+    'google_login_not_configured' => 'Google login is not available at this time. Please sign in with your email and password.',
+    'social_login_failed'         => 'Google login failed. Please try again or sign in with your email and password.',
     'google_welcome'        => 'Welcome! Please complete your profile to find your match.',
 
     // ── Password reset ────────────────────────────────────────────────────────
