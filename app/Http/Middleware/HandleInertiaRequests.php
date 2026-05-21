@@ -73,8 +73,11 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'locale'       => $locale,
-            'translations' => fn () => $this->loadTranslations($locale),
+            'locale'        => $locale,
+            'translations'  => fn () => $this->loadTranslations($locale),
+            'googleEnabled' => filled(config('services.google.client_id'))
+                && filled(config('services.google.client_secret'))
+                && filled(config('services.google.redirect')),
         ]);
     }
 
