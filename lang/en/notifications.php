@@ -50,6 +50,15 @@ return [
     'identity_verified_title'   => 'Identity verified',
     'identity_verified_body'    => 'Your identity has been verified. Your profile now shows a Verified badge.',
 
+    // ── Daily matches ─────────────────────────────────────────────────────────
+    'daily_match_title'         => ':count new match suggestions for you',
+    'daily_match_title_generic' => 'New match suggestions are ready',
+    'daily_match_body'          => 'Visit your Matches page to see today\'s suggestions.',
+
+    // ── Re-engagement ─────────────────────────────────────────────────────────
+    'reengagement_title'        => 'We miss you on HeavenlyMatch',
+    'reengagement_body'         => 'New profiles are waiting. Log in to see your latest match suggestions.',
+
     // ── Profile views ─────────────────────────────────────────────────────────
     'profile_viewed_title'      => 'Someone viewed your profile',
     'profile_viewed_body'       => ':count people viewed your profile today.',
