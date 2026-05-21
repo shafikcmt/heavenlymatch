@@ -39,6 +39,8 @@ return [
     'membership_rejected_body'  => 'We could not verify your payment. Please contact support or resubmit.',
     'membership_expiring_title' => 'Membership expiring soon',
     'membership_expiring_body'  => 'Your :plan membership expires on :date. Renew now to stay connected.',
+    'membership_expired_title'  => 'Membership expired',
+    'membership_expired_body'   => 'Your :plan membership has expired. Renew to continue accessing premium features.',
 
     // ── Biodata / verification ────────────────────────────────────────────────
     'biodata_approved_title'    => 'Biodata approved',

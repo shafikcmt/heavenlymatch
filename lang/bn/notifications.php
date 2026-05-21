@@ -35,6 +35,8 @@ return [
     'membership_rejected_body'   => 'আমরা আপনার পেমেন্ট যাচাই করতে পারিনি। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন অথবা পুনরায় জমা দিন।',
     'membership_expiring_title'  => 'সদস্যপদ শীঘ্রই শেষ হবে',
     'membership_expiring_body'   => 'আপনার :plan সদস্যপদ :date তারিখে শেষ হবে। সংযুক্ত থাকতে এখনই নবায়ন করুন।',
+    'membership_expired_title'   => 'সদস্যপদ মেয়াদ শেষ হয়েছে',
+    'membership_expired_body'    => 'আপনার :plan সদস্যপদের মেয়াদ শেষ হয়েছে। প্রিমিয়াম সুবিধা পেতে এখনই নবায়ন করুন।',
 
     // ── Biodata / verification ────────────────────────────────────────────────
     'biodata_approved_title'  => 'বায়োডাটা অনুমোদিত হয়েছে',
