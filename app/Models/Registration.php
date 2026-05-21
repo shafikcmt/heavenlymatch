@@ -134,6 +134,28 @@ class Registration extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(PaymentTransaction::class, 'registration_id')->where('status', 'paid')->latestOfMany();
     }
 
+    // ── MustVerifyEmail overrides ────────────────────────────────────────────
+    // The schema uses is_email_verified (boolean) as the authoritative flag,
+    // plus email_verified_at for timestamp. Both are set together on verify.
+
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->is_email_verified === true;
+    }
+
+    public function markEmailAsVerified(): bool
+    {
+        return $this->forceFill([
+            'is_email_verified' => true,
+            'email_verified_at' => now(),
+        ])->save();
+    }
+
+    public function getEmailForVerification(): string
+    {
+        return $this->email;
+    }
+
     public function hasActiveMembership(): bool
     {
         return ($this->membership_status === 'active')

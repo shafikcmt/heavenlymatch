@@ -75,9 +75,13 @@ class LoginController extends Controller
         return redirect('/');
     }
 
-    public function verifyNotice(): Response
+    public function verifyNotice(Request $request): Response
     {
+        /** @var Registration $user */
+        $user = $request->user();
+
         return Inertia::render('Auth/VerifyEmail', [
+            'email'  => $user?->email,
             'status' => session('status'),
         ]);
     }
@@ -86,14 +90,35 @@ class LoginController extends Controller
     {
         /** @var Registration $user */
         $user = $request->user();
-        $user->update(['is_email_verified' => true, 'email_verified_at' => now()]);
 
-        return redirect()->route('dashboard')->with('success', 'Email verified successfully.');
+        // Validate that this link was generated for the authenticated user
+        if (! hash_equals((string) $request->route('id'), (string) $user->getKey())) {
+            abort(403);
+        }
+
+        if (! hash_equals((string) $request->route('hash'), sha1($user->email))) {
+            abort(403);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        return redirect()->route('dashboard')
+            ->with('success', trans('auth.verify_success'));
     }
 
     public function resendVerification(Request $request): RedirectResponse
     {
-        $request->user()->sendEmailVerificationNotification();
-        return back()->with('status', 'Verification link sent!');
+        /** @var Registration $user */
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->route('dashboard');
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return back()->with('status', trans('auth.verify_resent'));
     }
 }

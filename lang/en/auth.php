@@ -49,9 +49,12 @@ return [
     // ── Email verification ────────────────────────────────────────────────────
     'verify_title'       => 'Verify Your Email',
     'verify_subtitle'    => 'We sent a verification link to :email',
+    'verify_check_inbox' => 'Check your inbox and click the verification link to continue.',
     'verify_resend'      => 'Resend Verification Email',
-    'verify_resent'      => 'Verification email sent.',
+    'verify_resent'      => 'Verification email sent. Please check your inbox.',
     'verify_success'     => 'Email verified successfully.',
+    'verify_notice'      => 'Please verify your email address before continuing.',
+    'verify_logout'      => 'Sign out and use a different account',
 
     // ── Platform mode selection ───────────────────────────────────────────────
     'mode_title'            => 'Choose Your Mode',
