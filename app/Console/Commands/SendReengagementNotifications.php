@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Models\Registration;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +60,7 @@ class SendReengagementNotifications extends Command
                 $q->whereNull('last_login_at')
                   ->orWhere('last_login_at', '<', now()->subDays($inactiveDays));
             })
-            ->select(['id', 'registration_id', 'name', 'preferred_language'])
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
             ->chunkById(100, function ($users) use (
                 $dryRun, $recentlySent, $inactiveDays, &$notified, &$skipped, &$failed
             ): void {
@@ -85,6 +86,16 @@ class SendReengagementNotifications extends Command
                             trans('notifications.reengagement_body', [], $lang),
                             ['link' => '/matches'],
                         );
+
+                        $user->notify(new HeavenlyMatchNotification(
+                            subject: trans('notifications.email_subject_reengagement', [], $lang),
+                            greeting: trans('notifications.email_greeting', ['name' => $user->name], $lang),
+                            introLines: [
+                                trans('notifications.reengagement_body', [], $lang),
+                            ],
+                            actionUrl: url('/login'),
+                            actionText: trans('notifications.email_action_login', [], $lang),
+                        ));
 
                         $notified++;
 

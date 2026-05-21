@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\PhotoAccessRequest;
 use App\Models\Registration;
+use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -107,6 +109,31 @@ class PhotoController extends Controller
             'status'       => 'pending',
         ]);
 
+        $owner = Registration::where('registration_id', $registrationId)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($owner) {
+            $lang = $owner->preferred_language ?? 'bn';
+
+            UserNotification::send(
+                $owner->registration_id,
+                'photo_access',
+                trans('notifications.photo_requested_title', ['name' => $viewer->name], $lang),
+                trans('notifications.photo_requested_body', ['name' => $viewer->name], $lang),
+            );
+
+            $owner->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_photo_requested', ['name' => $viewer->name], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $owner->name], $lang),
+                introLines: [
+                    trans('notifications.photo_requested_body', ['name' => $viewer->name], $lang),
+                ],
+                actionUrl: url('/dashboard'),
+                actionText: trans('notifications.email_action_go_dashboard', [], $lang),
+            ));
+        }
+
         return response()->json(['message' => 'Photo access request sent.'], 201);
     }
 
@@ -129,6 +156,48 @@ class PhotoController extends Controller
             'status'       => $request->action === 'grant' ? 'granted' : 'denied',
             'responded_at' => now(),
         ]);
+
+        $requester = Registration::where('registration_id', $accessRequest->requester_id)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($requester) {
+            $lang = $requester->preferred_language ?? 'bn';
+
+            if ($request->action === 'grant') {
+                UserNotification::send(
+                    $requester->registration_id,
+                    'photo_access',
+                    trans('notifications.photo_granted_title', ['name' => $owner->name], $lang),
+                    trans('notifications.photo_granted_body', ['name' => $owner->name], $lang),
+                );
+
+                $requester->notify(new HeavenlyMatchNotification(
+                    subject: trans('notifications.email_subject_photo_granted', [], $lang),
+                    greeting: trans('notifications.email_greeting', ['name' => $requester->name], $lang),
+                    introLines: [
+                        trans('notifications.photo_granted_body', ['name' => $owner->name], $lang),
+                    ],
+                    actionUrl: url('/profile/' . $owner->registration_id),
+                    actionText: trans('notifications.email_action_view_profile', [], $lang),
+                ));
+            } else {
+                UserNotification::send(
+                    $requester->registration_id,
+                    'photo_access',
+                    trans('notifications.photo_denied_title', [], $lang),
+                    trans('notifications.photo_denied_body', ['name' => $owner->name], $lang),
+                );
+
+                $requester->notify(new HeavenlyMatchNotification(
+                    subject: trans('notifications.email_subject_photo_denied', [], $lang),
+                    greeting: trans('notifications.email_greeting', ['name' => $requester->name], $lang),
+                    introLines: [
+                        trans('notifications.photo_denied_body', ['name' => $owner->name], $lang),
+                    ],
+                ));
+            }
+        }
 
         return response()->json(['message' => 'Response recorded.']);
     }

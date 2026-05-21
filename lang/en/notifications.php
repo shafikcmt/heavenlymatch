@@ -74,12 +74,33 @@ return [
     'account_suspended_body'    => 'Your account has been suspended. Reason: :reason. Contact support to appeal.',
 
     // ── Email subjects (used in Mailable subject lines) ───────────────────────
-    'email_subject_verify'       => 'Verify your HeavenlyMatch email address',
-    'email_subject_reset'        => 'Reset your HeavenlyMatch password',
-    'email_subject_interest'     => ':name sent you a marriage interest',
-    'email_subject_accepted'     => 'Your interest has been accepted',
-    'email_subject_membership'   => 'Your HeavenlyMatch :plan membership is active',
-    'email_subject_biodata'      => 'Your biodata status update',
-    'email_subject_daily'        => 'Your daily match suggestions are ready',
+    'email_subject_verify'              => 'Verify your HeavenlyMatch email address',
+    'email_subject_reset'               => 'Reset your HeavenlyMatch password',
+    'email_subject_interest'            => ':name sent you a marriage interest',
+    'email_subject_accepted'            => 'Your interest has been accepted',
+    'email_subject_declined'            => 'Interest update',
+    'email_subject_membership'          => 'Your HeavenlyMatch :plan membership is active',
+    'email_subject_payment_submitted'   => 'Payment received — awaiting review',
+    'email_subject_payment_rejected'    => 'Your payment could not be verified',
+    'email_subject_membership_expired'  => 'Your HeavenlyMatch membership has expired',
+    'email_subject_biodata'             => 'Your biodata status update',
+    'email_subject_daily'               => 'Your daily match suggestions are ready',
+    'email_subject_reengagement'        => 'We miss you on HeavenlyMatch',
+    'email_subject_photo_requested'     => ':name requested access to your photos',
+    'email_subject_photo_granted'       => 'Photo access granted',
+    'email_subject_photo_denied'        => 'Photo access not approved',
+
+    // ── Email greeting ────────────────────────────────────────────────────────
+    'email_greeting'                    => 'Hello, :name!',
+
+    // ── Email CTA button labels ───────────────────────────────────────────────
+    'email_action_view_interests'       => 'View Interests',
+    'email_action_view_profile'         => 'View Profile',
+    'email_action_check_status'         => 'Check Payment Status',
+    'email_action_go_dashboard'         => 'Go to Dashboard',
+    'email_action_renew'                => 'Renew Membership',
+    'email_action_edit_biodata'         => 'Update Biodata',
+    'email_action_view_matches'         => 'View Matches',
+    'email_action_login'                => 'Log In Now',
 
 ];

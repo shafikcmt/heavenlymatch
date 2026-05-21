@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
+use App\Models\Registration;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +69,24 @@ class AdminBiodataController extends Controller
             __('notifications.biodata_approved_body'),
         );
 
+        $member = Registration::where('registration_id', $biodata->registration_id)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($member) {
+            $lang = $member->preferred_language ?? 'bn';
+            $member->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_biodata', [], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $member->name], $lang),
+                introLines: [
+                    trans('notifications.biodata_approved_title', [], $lang),
+                    trans('notifications.biodata_approved_body', [], $lang),
+                ],
+                actionUrl: url('/dashboard'),
+                actionText: trans('notifications.email_action_go_dashboard', [], $lang),
+            ));
+        }
+
         return back()->with('success', __('admin.biodata_approved'));
     }
 
@@ -97,6 +117,24 @@ class AdminBiodataController extends Controller
             __('notifications.biodata_rejected_title'),
             __('notifications.biodata_rejected_body', ['reason' => $request->input('note')]),
         );
+
+        $member = Registration::where('registration_id', $biodata->registration_id)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($member) {
+            $lang = $member->preferred_language ?? 'bn';
+            $member->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_biodata', [], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $member->name], $lang),
+                introLines: [
+                    trans('notifications.biodata_rejected_title', [], $lang),
+                    trans('notifications.biodata_rejected_body', ['reason' => $request->input('note')], $lang),
+                ],
+                actionUrl: url('/biodata/wizard'),
+                actionText: trans('notifications.email_action_edit_biodata', [], $lang),
+            ));
+        }
 
         return back()->with('success', __('admin.biodata_rejected'));
     }

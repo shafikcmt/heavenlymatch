@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Models\Registration;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +55,7 @@ class SendDailyMatchNotifications extends Command
         Registration::query()
             ->where('account_status', 'active')
             ->whereHas('biodata', fn ($q) => $q->where('status', 'approved'))
-            ->select(['id', 'registration_id', 'name', 'preferred_language'])
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
             ->chunkById(100, function ($users) use (
                 $dryRun, $alreadyNotified, &$notified, &$skipped, &$failed
             ): void {
@@ -92,6 +93,14 @@ class SendDailyMatchNotifications extends Command
                             $body,
                             ['match_count' => $matchCount, 'link' => '/matches'],
                         );
+
+                        $user->notify(new HeavenlyMatchNotification(
+                            subject: trans('notifications.email_subject_daily', [], $lang),
+                            greeting: trans('notifications.email_greeting', ['name' => $user->name], $lang),
+                            introLines: [$body],
+                            actionUrl: url('/matches'),
+                            actionText: trans('notifications.email_action_view_matches', [], $lang),
+                        ));
 
                         $notified++;
 

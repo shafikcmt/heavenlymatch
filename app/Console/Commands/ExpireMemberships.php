@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Models\Registration;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use App\Services\MembershipService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -46,7 +47,7 @@ class ExpireMemberships extends Command
         Registration::query()
             ->where('membership_status', 'active')
             ->where('membership_expires_at', '<=', now())
-            ->select(['id', 'registration_id', 'membership_plan_name', 'membership_expires_at'])
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language', 'membership_plan_name', 'membership_expires_at'])
             ->chunkById(100, function ($users) use ($dryRun, &$expired, &$failed): void {
                 foreach ($users as $user) {
                     $label = "{$user->registration_id} (plan: {$user->membership_plan_name}, expired: {$user->membership_expires_at})";
@@ -62,12 +63,25 @@ class ExpireMemberships extends Command
 
                         $this->membership->expire($user);
 
+                        $lang = $user->preferred_language ?? 'bn';
+
                         UserNotification::send(
                             $user->registration_id,
                             'membership_expired',
-                            __('notifications.membership_expired_title'),
-                            __('notifications.membership_expired_body', ['plan' => $planName]),
+                            trans('notifications.membership_expired_title', [], $lang),
+                            trans('notifications.membership_expired_body', ['plan' => $planName], $lang),
                         );
+
+                        $user->notify(new HeavenlyMatchNotification(
+                            subject: trans('notifications.email_subject_membership_expired', [], $lang),
+                            greeting: trans('notifications.email_greeting', ['name' => $user->name], $lang),
+                            introLines: [
+                                trans('notifications.membership_expired_title', [], $lang),
+                                trans('notifications.membership_expired_body', ['plan' => $planName], $lang),
+                            ],
+                            actionUrl: url('/upgrade'),
+                            actionText: trans('notifications.email_action_renew', [], $lang),
+                        ));
 
                         $this->line("  Expired: {$label}");
                         $expired++;

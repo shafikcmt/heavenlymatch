@@ -10,6 +10,7 @@ use App\Models\PaymentGateway;
 use App\Models\PaymentTransaction;
 use App\Models\SystemSetting;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -184,12 +185,25 @@ class PaymentController extends Controller
             'screenshot_path'         => $screenshotPath,
         ]);
 
+        $lang = $user->preferred_language ?? 'bn';
+
         UserNotification::send(
             $user->registration_id,
             'payment',
             __('notifications.payment_received_title'),
             __('notifications.payment_received_body', ['plan' => $txn->plan_name]),
         );
+
+        $user->notify(new HeavenlyMatchNotification(
+            subject: trans('notifications.email_subject_payment_submitted', [], $lang),
+            greeting: trans('notifications.email_greeting', ['name' => $user->name], $lang),
+            introLines: [
+                trans('notifications.payment_received_title', [], $lang),
+                trans('notifications.payment_received_body', ['plan' => $txn->plan_name], $lang),
+            ],
+            actionUrl: url('/upgrade/status'),
+            actionText: trans('notifications.email_action_check_status', [], $lang),
+        ));
 
         return redirect()->route('upgrade.status')
             ->with('success', __('pricing.payment_submitted'));

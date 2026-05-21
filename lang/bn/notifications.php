@@ -70,12 +70,33 @@ return [
     'account_suspended_body'  => 'আপনার অ্যাকাউন্ট সাসপেন্ড করা হয়েছে। কারণ: :reason। আপিলের জন্য সাপোর্টে যোগাযোগ করুন।',
 
     // ── Email subjects ───────────────────────────────────────────────────────
-    'email_subject_verify'     => 'আপনার HeavenlyMatch ইমেইল ঠিকানা যাচাই করুন',
-    'email_subject_reset'      => 'আপনার HeavenlyMatch পাসওয়ার্ড রিসেট করুন',
-    'email_subject_interest'   => ':name আপনাকে বিবাহের আগ্রহ পাঠিয়েছেন',
-    'email_subject_accepted'   => 'আপনার আগ্রহ গৃহীত হয়েছে',
-    'email_subject_membership' => 'আপনার HeavenlyMatch :plan সদস্যপদ সক্রিয়',
-    'email_subject_biodata'    => 'আপনার বায়োডাটার অবস্থা আপডেট',
-    'email_subject_daily'      => 'আপনার দৈনিক ম্যাচ পরামর্শ প্রস্তুত',
+    'email_subject_verify'             => 'আপনার HeavenlyMatch ইমেইল ঠিকানা যাচাই করুন',
+    'email_subject_reset'              => 'আপনার HeavenlyMatch পাসওয়ার্ড রিসেট করুন',
+    'email_subject_interest'           => ':name আপনাকে বিবাহের আগ্রহ পাঠিয়েছেন',
+    'email_subject_accepted'           => 'আপনার আগ্রহ গৃহীত হয়েছে',
+    'email_subject_declined'           => 'আগ্রহের আপডেট',
+    'email_subject_membership'         => 'আপনার HeavenlyMatch :plan সদস্যপদ সক্রিয়',
+    'email_subject_payment_submitted'  => 'পেমেন্ট প্রাপ্ত — পর্যালোচনাধীন',
+    'email_subject_payment_rejected'   => 'আপনার পেমেন্ট যাচাই হয়নি',
+    'email_subject_membership_expired' => 'আপনার HeavenlyMatch সদস্যপদের মেয়াদ শেষ হয়েছে',
+    'email_subject_biodata'            => 'আপনার বায়োডাটার অবস্থা আপডেট',
+    'email_subject_daily'              => 'আপনার দৈনিক ম্যাচ পরামর্শ প্রস্তুত',
+    'email_subject_reengagement'       => 'আপনাকে HeavenlyMatch-এ মিস করছি',
+    'email_subject_photo_requested'    => ':name আপনার ছবি দেখতে চেয়েছেন',
+    'email_subject_photo_granted'      => 'ছবি দেখার অনুমতি দেওয়া হয়েছে',
+    'email_subject_photo_denied'       => 'ছবির অনুরোধ অনুমোদন হয়নি',
+
+    // ── Email greeting ────────────────────────────────────────────────────────
+    'email_greeting'                   => 'আস-সালামু আলাইকুম, :name!',
+
+    // ── Email CTA button labels ───────────────────────────────────────────────
+    'email_action_view_interests'      => 'আগ্রহ দেখুন',
+    'email_action_view_profile'        => 'প্রোফাইল দেখুন',
+    'email_action_check_status'        => 'পেমেন্টের অবস্থা দেখুন',
+    'email_action_go_dashboard'        => 'ড্যাশবোর্ডে যান',
+    'email_action_renew'               => 'সদস্যপদ নবায়ন করুন',
+    'email_action_edit_biodata'        => 'বায়োডাটা আপডেট করুন',
+    'email_action_view_matches'        => 'ম্যাচ দেখুন',
+    'email_action_login'               => 'এখনই লগইন করুন',
 
 ];

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentTransaction;
 use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use App\Services\MembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,8 +98,11 @@ class AdminPaymentController extends Controller
         $this->membership->activate($txn->registration, $txn);
 
         if ($txn->registration) {
+            $member = $txn->registration;
+            $lang   = $member->preferred_language ?? 'bn';
+
             UserNotification::send(
-                $txn->registration->registration_id,
+                $member->registration_id,
                 'membership',
                 __('notifications.membership_activated_title', ['plan' => $txn->plan_name]),
                 __('notifications.membership_activated_body', [
@@ -107,6 +111,20 @@ class AdminPaymentController extends Controller
                 ]),
                 ['transaction_no' => $txn->transaction_no],
             );
+
+            $member->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_membership', ['plan' => $txn->plan_name], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $member->name], $lang),
+                introLines: [
+                    trans('notifications.membership_activated_title', ['plan' => $txn->plan_name], $lang),
+                    trans('notifications.membership_activated_body', [
+                        'plan' => $txn->plan_name,
+                        'date' => $txn->expires_at?->format('d M Y') ?? '',
+                    ], $lang),
+                ],
+                actionUrl: url('/dashboard'),
+                actionText: trans('notifications.email_action_go_dashboard', [], $lang),
+            ));
         }
 
         return back()->with('success', __('admin.payment_approved'));
@@ -132,13 +150,27 @@ class AdminPaymentController extends Controller
         ])->save();
 
         if ($txn->registration) {
+            $member = $txn->registration;
+            $lang   = $member->preferred_language ?? 'bn';
+
             UserNotification::send(
-                $txn->registration->registration_id,
+                $member->registration_id,
                 'membership',
                 __('notifications.membership_rejected_title'),
                 __('notifications.membership_rejected_body'),
                 ['reason' => $request->input('admin_note')],
             );
+
+            $member->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_payment_rejected', [], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $member->name], $lang),
+                introLines: [
+                    trans('notifications.membership_rejected_title', [], $lang),
+                    trans('notifications.membership_rejected_body', [], $lang),
+                ],
+                actionUrl: url('/upgrade/status'),
+                actionText: trans('notifications.email_action_check_status', [], $lang),
+            ));
         }
 
         return back()->with('success', __('admin.payment_rejected'));

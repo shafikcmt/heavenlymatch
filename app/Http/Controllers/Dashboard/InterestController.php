@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\ConnectionRequest;
 use App\Models\Registration;
+use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,6 +75,32 @@ class InterestController extends Controller
             'status'      => 'pending',
         ]);
 
+        $receiver = Registration::where('registration_id', $validated['receiver_id'])
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($receiver) {
+            $lang = $receiver->preferred_language ?? 'bn';
+
+            UserNotification::send(
+                $receiver->registration_id,
+                'interest',
+                trans('notifications.interest_received_title', ['name' => $user->name], $lang),
+                trans('notifications.interest_received_body', ['name' => $user->name], $lang),
+                ['from' => $user->registration_id],
+            );
+
+            $receiver->notify(new HeavenlyMatchNotification(
+                subject: trans('notifications.email_subject_interest', ['name' => $user->name], $lang),
+                greeting: trans('notifications.email_greeting', ['name' => $receiver->name], $lang),
+                introLines: [
+                    trans('notifications.interest_received_body', ['name' => $user->name], $lang),
+                ],
+                actionUrl: url('/interests/received'),
+                actionText: trans('notifications.email_action_view_interests', [], $lang),
+            ));
+        }
+
         return back()->with('success', 'Interest sent successfully!');
     }
 
@@ -94,6 +122,48 @@ class InterestController extends Controller
             'status'      => $validated['action'] === 'accept' ? 'accepted' : 'rejected',
             'responded_at'=> now(),
         ]);
+
+        $sender = Registration::where('registration_id', $interest->sender_id)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($sender) {
+            $lang = $sender->preferred_language ?? 'bn';
+
+            if ($validated['action'] === 'accept') {
+                UserNotification::send(
+                    $sender->registration_id,
+                    'interest',
+                    trans('notifications.interest_accepted_title', ['name' => $user->name], $lang),
+                    trans('notifications.interest_accepted_body', ['name' => $user->name], $lang),
+                );
+
+                $sender->notify(new HeavenlyMatchNotification(
+                    subject: trans('notifications.email_subject_accepted', [], $lang),
+                    greeting: trans('notifications.email_greeting', ['name' => $sender->name], $lang),
+                    introLines: [
+                        trans('notifications.interest_accepted_body', ['name' => $user->name], $lang),
+                    ],
+                    actionUrl: url('/interests/sent'),
+                    actionText: trans('notifications.email_action_view_interests', [], $lang),
+                ));
+            } else {
+                UserNotification::send(
+                    $sender->registration_id,
+                    'interest',
+                    trans('notifications.interest_declined_title', ['name' => $user->name], $lang),
+                    trans('notifications.interest_declined_body', ['name' => $user->name], $lang),
+                );
+
+                $sender->notify(new HeavenlyMatchNotification(
+                    subject: trans('notifications.email_subject_declined', [], $lang),
+                    greeting: trans('notifications.email_greeting', ['name' => $sender->name], $lang),
+                    introLines: [
+                        trans('notifications.interest_declined_body', ['name' => $user->name], $lang),
+                    ],
+                ));
+            }
+        }
 
         $message = $validated['action'] === 'accept' ? 'Interest accepted!' : 'Interest declined.';
 
