@@ -125,21 +125,28 @@ class Biodata extends Model
         'is_featured',
         'featured_at',
         'profile_score',
+
+        // Photos — stored as JSON array: [{path, is_primary, visibility, uploaded_at}]
+        'photos',
+        'photo_verified',
+        'completeness_score',
+        'last_active_at',
     ];
 
     protected $casts = [
-        'is_completed' => 'boolean',
-        'is_featured' => 'boolean',
-        'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
-        'featured_at' => 'datetime',
+        'is_completed'       => 'boolean',
+        'is_featured'        => 'boolean',
+        'photo_verified'     => 'boolean',
+        'photos'             => 'array',
+        'completeness_score' => 'integer',
+        'approved_at'        => 'datetime',
+        'rejected_at'        => 'datetime',
+        'featured_at'        => 'datetime',
+        'last_active_at'     => 'datetime',
     ];
 
-    /**
-     * Relationship: Biodata belongs to one Registration
-     */
-        public function registration()
-        {
-            return $this->belongsTo(Registration::class, 'registration_id', 'registration_id');
-        }
+    public function registration()
+    {
+        return $this->belongsTo(Registration::class, 'registration_id', 'registration_id');
+    }
 }

@@ -137,6 +137,15 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
         Route::get('/upgrade/callback',      [\App\Http\Controllers\Payment\PaymentController::class, 'callback'])->name('upgrade.callback');
         Route::get('/upgrade/success',       [\App\Http\Controllers\Payment\PaymentController::class, 'success'])->name('upgrade.success');
 
+        // Photo management (own photos)
+        Route::prefix('profile/photos')->name('profile.photos.')->group(function () {
+            Route::get('/',                          [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'index'])->name('index');
+            Route::post('/',                         [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'store'])->name('store');
+            Route::put('/visibility',                [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'updateVisibility'])->name('visibility');
+            Route::delete('/{index}',                [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'destroy'])->name('destroy')->whereNumber('index');
+            Route::put('/{index}/primary',           [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'setPrimary'])->name('primary')->whereNumber('index');
+        });
+
         // Settings
         Route::get('/settings',             [SettingsController::class, 'index'])->name('settings.index');
         Route::put('/settings/profile',     [SettingsController::class, 'updateProfile'])->name('settings.profile');

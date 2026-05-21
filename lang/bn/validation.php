@@ -143,6 +143,16 @@ return [
         'amount'              => 'পরিমাণ',
         'note'                => 'প্রত্যাখ্যানের কারণ',
         'reason'              => 'কারণ',
+
+        // Photo
+        'photo' => 'ছবি',
     ],
+
+    // Photo upload specific messages
+    'photo_required'   => 'অনুগ্রহ করে আপলোড করার জন্য একটি ছবি নির্বাচন করুন।',
+    'photo_image'      => 'ফাইলটি একটি ছবি হতে হবে।',
+    'photo_mimes'      => 'শুধুমাত্র JPG, JPEG, PNG এবং WebP ছবি অনুমোদিত।',
+    'photo_max_size'   => 'ছবিটি ৪ MB-এর বেশি হতে পারবে না।',
+    'photo_dimensions' => 'ছবিটি কমপক্ষে ২০০×২০০ পিক্সেল হতে হবে।',
 
 ];

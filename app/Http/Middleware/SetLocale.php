@@ -16,28 +16,43 @@ class SetLocale
 
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $this->resolveLocale($request);
-
-        App::setLocale($locale);
-
+        App::setLocale($this->resolveLocale($request));
         return $next($request);
     }
 
     private function resolveLocale(Request $request): string
     {
-        // 1. Session (set by language switcher)
-        $fromSession = $request->session()->get('locale');
-        if ($fromSession && in_array($fromSession, self::SUPPORTED, true)) {
-            return $fromSession;
+        // 1. Explicit route parameter (e.g. /en/... or /bn/... prefix routes)
+        $fromRoute = $request->route('locale');
+        if (is_string($fromRoute) && in_array($fromRoute, self::SUPPORTED, true)) {
+            return $fromRoute;
         }
 
-        // 2. Authenticated user's saved preference
+        // 2. Session — ONLY if StartSession has already run (guard prevents
+        //    "Session store not set on request" when middleware runs early)
+        if ($request->hasSession()) {
+            $fromSession = $request->session()->get('locale');
+            if (is_string($fromSession) && in_array($fromSession, self::SUPPORTED, true)) {
+                return $fromSession;
+            }
+        }
+
+        // 3. Authenticated user's saved preference
         $user = $request->user();
-        if ($user && isset($user->preferred_locale) && in_array($user->preferred_locale, self::SUPPORTED, true)) {
+        if ($user
+            && isset($user->preferred_locale)
+            && is_string($user->preferred_locale)
+            && in_array($user->preferred_locale, self::SUPPORTED, true)) {
             return $user->preferred_locale;
         }
 
-        // 3. Browser Accept-Language header (best supported match)
+        // 4. Cookie (persists locale across sessions without requiring login)
+        $fromCookie = $request->cookie('locale');
+        if (is_string($fromCookie) && in_array($fromCookie, self::SUPPORTED, true)) {
+            return $fromCookie;
+        }
+
+        // 5. Browser Accept-Language header
         foreach ($request->getLanguages() as $lang) {
             $code = substr($lang, 0, 2);
             if (in_array($code, self::SUPPORTED, true)) {

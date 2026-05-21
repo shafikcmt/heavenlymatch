@@ -234,6 +234,16 @@ return [
         'amount'              => 'Amount',
         'note'                => 'Rejection Note',
         'reason'              => 'Reason',
+
+        // Photo
+        'photo' => 'Photo',
     ],
+
+    // Photo upload specific messages
+    'photo_required'   => 'Please select a photo to upload.',
+    'photo_image'      => 'The file must be an image.',
+    'photo_mimes'      => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+    'photo_max_size'   => 'The photo must not be larger than 4 MB.',
+    'photo_dimensions' => 'The photo must be at least 200×200 pixels.',
 
 ];

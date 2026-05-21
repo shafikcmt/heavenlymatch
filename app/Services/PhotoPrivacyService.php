@@ -31,13 +31,18 @@ class PhotoPrivacyService
      */
     public function shouldBlur(Registration $profile, ?Registration $viewer): bool
     {
+        // Owner always sees their own photos without blur or restriction
+        if ($viewer && $viewer->registration_id === $profile->registration_id) {
+            return false;
+        }
+
         $visibility = $profile->photo_visibility;
 
         if ($visibility === 'blurred') {
             return true;
         }
 
-        if ($profile->platform_mode === 'ISLAMIC') {
+        if ($profile->platform_mode === 'islamic') {
             if (! $viewer) {
                 return true;
             }

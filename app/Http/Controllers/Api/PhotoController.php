@@ -1,86 +1,86 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\PhotoAccessRequest;
 use App\Models\Registration;
+use App\Services\PhotoPrivacyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
 class PhotoController extends Controller
 {
+    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+
     /**
-     * GET /api/photo/{registration_id}/{photo_index}?token=xxx
+     * GET /photo/{registrationId}/{photoIndex}?token=xxx
      *
-     * Serves profile images through the application (never directly from storage)
-     * so we can enforce privacy rules server-side on every request.
-     * The signed token prevents hotlinking and URL scraping.
+     * Serves photos through the application — privacy enforced server-side on every request.
+     * Raw storage paths are never exposed to the frontend.
      */
     public function serve(Request $request, string $registrationId, int $photoIndex = 0): Response
     {
         $request->validate(['token' => 'required|string']);
 
-        // Verify signed URL token (prevents hotlinking)
-        if (! $this->verifyPhotoToken($request->token, $registrationId, $request->user()?->registration_id)) {
+        if (! $this->photoPrivacy->verifyToken($request->token, $registrationId)) {
             abort(403, 'Invalid or expired photo token.');
         }
 
-        $biodata = Biodata::where('registration_id', $registrationId)->firstOrFail();
+        $biodata = Biodata::where('registration_id', $registrationId)->first();
         $reg     = Registration::where('registration_id', $registrationId)->firstOrFail();
 
-        $photos  = $biodata->photos ?? [];
-        $photo   = $photos[$photoIndex] ?? null;
+        $photos = $biodata?->photos ?? [];
+        $photo  = $photos[$photoIndex] ?? null;
 
-        if (! $photo) {
-            return $this->defaultAvatar($biodata->gender);
+        if (! $photo || empty($photo['path'])) {
+            // Use gender from Registration (not Biodata — Biodata has no gender column)
+            return $this->defaultAvatar($reg->gender);
         }
-
-        $viewer     = $request->user();
-        $shouldBlur = $this->resolveBlur($reg, $biodata, $viewer);
 
         $path = Storage::disk('private')->path($photo['path']);
 
         if (! file_exists($path)) {
-            return $this->defaultAvatar($biodata->gender);
+            return $this->defaultAvatar($reg->gender);
         }
+
+        $viewer     = $request->user();
+        $shouldBlur = $this->photoPrivacy->shouldBlur($reg, $viewer);
 
         $image = Image::make($path);
 
         if ($shouldBlur) {
-            // Heavy blur (20px) — data-URL is still sent so no server path is exposed
             $image->blur(20)->pixelate(12);
-        }
-
-        // Watermark with registration ID to deter screenshotting
-        if (! $shouldBlur) {
+        } else {
+            // Subtle watermark to deter screenshotting (only for visible photos)
             $image->text(
                 $registrationId . ' | HeavenlyMatch',
-                $image->width() / 2,
+                (int) ($image->width() / 2),
                 $image->height() - 20,
                 function ($font) {
-                    $font->size(12);
-                    $font->color([255, 255, 255, 80]); // semi-transparent white
+                    $font->size(11);
+                    $font->color([255, 255, 255, 60]);
                     $font->align('center');
                 }
             );
         }
 
-        return response($image->encode('jpg', 85), 200)
+        return response((string) $image->encode('jpg', 85), 200)
             ->header('Content-Type', 'image/jpeg')
-            ->header('Cache-Control', 'private, max-age=300')  // 5-min browser cache only
+            ->header('Cache-Control', 'private, max-age=300')
             ->header('X-Content-Type-Options', 'nosniff')
-            ->header('Content-Disposition', 'inline');          // no download prompt
+            ->header('Content-Disposition', 'inline');
     }
 
     /**
-     * POST /api/photo/request-access/{registration_id}
-     * Islamic mode: viewer requests to see blurred photos; profile owner must approve.
+     * POST /api/photo/request-access/{registrationId}
+     * Islamic mode: viewer requests permission to see blurred photos.
      */
     public function requestAccess(Request $request, string $registrationId): JsonResponse
     {
@@ -107,15 +107,12 @@ class PhotoController extends Controller
             'status'       => 'pending',
         ]);
 
-        // Notify the profile owner
-        event(new \App\Events\PhotoAccessRequested($viewer->registration_id, $registrationId));
-
         return response()->json(['message' => 'Photo access request sent.'], 201);
     }
 
     /**
-     * POST /api/photo/respond-access/{request_id}
-     * Profile owner grants or denies the access request.
+     * POST /api/photo/respond-access/{requestId}
+     * Profile owner grants or denies a photo access request.
      */
     public function respondAccess(Request $request, int $requestId): JsonResponse
     {
@@ -125,7 +122,7 @@ class PhotoController extends Controller
         $owner         = $request->user();
 
         if ($accessRequest->profile_id !== $owner->registration_id) {
-            abort(403, 'Not your photo access request.');
+            abort(403);
         }
 
         $accessRequest->update([
@@ -133,109 +130,42 @@ class PhotoController extends Controller
             'responded_at' => now(),
         ]);
 
-        event(new \App\Events\PhotoAccessResponded($accessRequest));
-
         return response()->json(['message' => 'Response recorded.']);
     }
 
     /**
      * POST /api/photo/token
-     * Issues a short-lived signed token for the frontend to embed in image URLs.
-     * Called once per profile view, valid for 15 minutes.
+     * Issues a short-lived HMAC token for embedding in photo URLs.
+     * Valid for 15 minutes.
      */
     public function issueToken(Request $request): JsonResponse
     {
         $request->validate(['profile_id' => 'required|string']);
 
         $viewerId = $request->user()?->registration_id ?? 'guest';
-        $token = $this->generatePhotoToken($request->profile_id, $viewerId);
+        $token    = $this->photoPrivacy->issueToken($request->profile_id, $viewerId);
 
         return response()->json([
             'token'      => $token,
-            'expires_in' => 900, // 15 minutes
+            'expires_in' => 900,
         ]);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────
-    // Private helpers
-    // ─────────────────────────────────────────────────────────────────────
-
-    private function resolveBlur(Registration $reg, Biodata $biodata, ?Registration $viewer): bool
-    {
-        $visibility = $reg->photo_visibility;
-
-        // Always blur if set to 'blurred'
-        if ($visibility === 'blurred') {
-            return true;
-        }
-
-        // Islamic mode: blur unless photo access explicitly granted
-        if ($reg->platform_mode === 'islamic') {
-            if (! $viewer) {
-                return true;
-            }
-            $hasAccess = PhotoAccessRequest::where('requester_id', $viewer->registration_id)
-                ->where('profile_id', $reg->registration_id)
-                ->where('status', 'granted')
-                ->exists();
-            return ! $hasAccess;
-        }
-
-        // 'members_only': show clearly only if viewer has accepted connection
-        if ($visibility === 'members_only') {
-            if (! $viewer) {
-                return true;
-            }
-            $isConnected = \App\Models\ConnectionRequest::where(function ($q) use ($viewer, $reg) {
-                $q->where('sender_id', $viewer->registration_id)
-                  ->where('receiver_id', $reg->registration_id);
-            })->orWhere(function ($q) use ($viewer, $reg) {
-                $q->where('sender_id', $reg->registration_id)
-                  ->where('receiver_id', $viewer->registration_id);
-            })->where('status', 'accepted')->exists();
-
-            return ! $isConnected;
-        }
-
-        // 'public' — never blur
-        return false;
-    }
-
-    private function generatePhotoToken(string $profileId, string $viewerId): string
-    {
-        $payload = $profileId . '|' . $viewerId . '|' . now()->addMinutes(15)->timestamp;
-        $signature = hash_hmac('sha256', $payload, config('app.key'));
-        return base64_encode($payload . '|' . $signature);
-    }
-
-    private function verifyPhotoToken(string $token, string $profileId, ?string $viewerId): bool
-    {
-        $decoded = base64_decode($token);
-        $parts   = explode('|', $decoded);
-
-        if (count($parts) !== 4) {
-            return false;
-        }
-
-        [$tokenProfileId, $tokenViewerId, $expiry, $signature] = $parts;
-
-        if ($tokenProfileId !== $profileId) {
-            return false;
-        }
-
-        if (time() > (int) $expiry) {
-            return false;
-        }
-
-        $payload  = $tokenProfileId . '|' . $tokenViewerId . '|' . $expiry;
-        $expected = hash_hmac('sha256', $payload, config('app.key'));
-
-        return hash_equals($expected, $signature);
     }
 
     private function defaultAvatar(string $gender): Response
     {
-        $path = public_path("images/avatar-{$gender}.svg");
+        $path = public_path('images/avatar-' . ($gender === 'female' ? 'female' : 'male') . '.svg');
+
+        if (! file_exists($path)) {
+            // Inline fallback SVG if the file doesn't exist yet
+            $color = $gender === 'female' ? '#f9a8d4' : '#93c5fd';
+            $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+                . '<circle cx="50" cy="50" r="50" fill="' . $color . '"/>'
+                . '<circle cx="50" cy="38" r="16" fill="#fff"/>'
+                . '<ellipse cx="50" cy="85" rx="28" ry="20" fill="#fff"/>'
+                . '</svg>';
+            return response($svg, 200)->header('Content-Type', 'image/svg+xml');
+        }
+
         return response(file_get_contents($path), 200)->header('Content-Type', 'image/svg+xml');
     }
 }
