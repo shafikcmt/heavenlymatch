@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +13,6 @@ class PaymentTransaction extends Model
 
     protected $fillable = [
         'registration_id',
-        'registration_code',
         'membership_plan_id',
         'payment_gateway_id',
         'transaction_no',
@@ -25,7 +26,8 @@ class PaymentTransaction extends Model
         'customer_name',
         'customer_email',
         'customer_phone',
-        'redirect_url',
+        'sender_number',
+        'screenshot_path',
         'reference_note',
         'payload',
         'paid_at',
@@ -33,11 +35,12 @@ class PaymentTransaction extends Model
     ];
 
     protected $casts = [
-        'payload' => 'array',
-        'amount' => 'decimal:2',
-        'duration_months' => 'integer',
-        'paid_at' => 'datetime',
-        'expires_at' => 'datetime',
+        'payload'        => 'array',
+        'amount'         => 'decimal:2',
+        'duration_months'=> 'integer',
+        'paid_at'        => 'datetime',
+        'expires_at'     => 'datetime',
+        'reviewed_at'    => 'datetime',
     ];
 
     public function getRouteKeyName(): string
@@ -47,7 +50,7 @@ class PaymentTransaction extends Model
 
     public function registration()
     {
-        return $this->belongsTo(Registration::class, 'registration_id');
+        return $this->belongsTo(Registration::class, 'registration_id', 'registration_id');
     }
 
     public function plan()
@@ -67,6 +70,18 @@ class PaymentTransaction extends Model
             ? number_format($amount, 0)
             : number_format($amount, 2);
 
-        return trim(($this->currency ?: 'BDT') . ' ' . $formatted);
+        return '৳' . $formatted;
+    }
+
+    /** Scope: only transactions that have been submitted by the user (have sender details). */
+    public function scopeSubmitted($query)
+    {
+        return $query->whereNotNull('external_transaction_id');
+    }
+
+    /** Scope: transactions awaiting admin review. */
+    public function scopePendingReview($query)
+    {
+        return $query->where('status', 'pending')->submitted();
     }
 }

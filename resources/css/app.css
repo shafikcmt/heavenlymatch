@@ -1,3 +1,28 @@
-body {
-    background-color: #333;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+  }
+}
+
+@layer utilities {
+  .private-photo {
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .diamond-glow {
+    box-shadow: 0 0 0 2px #2563eb, 0 0 16px 2px #3b82f640;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }

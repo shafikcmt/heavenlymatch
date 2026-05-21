@@ -1,19 +1,33 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+declare(strict_types=1);
 
-/*
-|--------------------------------------------------------------------------
-| Console Routes
-|--------------------------------------------------------------------------
-|
-| This file is where you may define all of your Closure based console
-| commands. Each Closure is bound to a command instance allowing a
-| simple approach to interacting with each command's IO methods.
-|
-*/
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// ── Laravel Scheduler ────────────────────────────────────────────────────────
+// cPanel cron: * * * * * php /home/user/heavenlymatch/artisan schedule:run >> /dev/null 2>&1
+
+// Nightly match score computation at 02:00 BDT (20:00 UTC)
+Schedule::job(new \App\Jobs\ComputeMatchScoresJob)
+    ->dailyAt('20:00')
+    ->withoutOverlapping();
+
+// Deactivate expired profile boosts every 30 minutes
+Schedule::command('boosts:expire')
+    ->everyThirtyMinutes()
+    ->withoutOverlapping();
+
+// Daily match notification emails at 09:00 BDT (03:00 UTC)
+Schedule::command('notify:daily-matches')
+    ->dailyAt('03:00')
+    ->withoutOverlapping();
+
+// Weekly re-engagement email — Sunday 10:00 BDT (04:00 UTC)
+Schedule::command('notify:reengagement')
+    ->weeklyOn(0, '04:00')
+    ->withoutOverlapping();
+
+// Purge soft-deleted messages older than 90 days
+Schedule::command('messages:purge --days=90')
+    ->weekly()
+    ->withoutOverlapping();

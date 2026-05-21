@@ -16,10 +16,9 @@ Route::prefix('auth')->group(function () {
 });
 
 // Photo serving — signed token enforces privacy server-side; no auth required
-Route::post('/photo/token', [PhotoController::class, 'issueToken']);
-Route::get('/photo/{registrationId}/{photoIndex?}', [PhotoController::class, 'serve'])
-    ->where('photoIndex', '[0-9]+')
-    ->name('api.photo.serve');
+Route::post('/photo/token', [PhotoController::class, 'issueToken'])->name('api.photo.token');
+// Note: photo serve is handled by the web route (api.photo.serve) to support both
+// session-auth (Inertia) and token-auth (mobile) via the same HMAC-signed URL.
 
 // Public biodata profile view (approved only)
 Route::get('/profile/{registrationId}', [BiodataController::class, 'profile']);

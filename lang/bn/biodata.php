@@ -1,0 +1,233 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+
+    // ── Wizard navigation ─────────────────────────────────────────────────────
+    'wizard_title'      => 'আপনার বায়োডাটা পূরণ করুন',
+    'wizard_subtitle'   => 'ধাপ :step / :total',
+    'wizard_save_draft' => 'ড্রাফট সংরক্ষণ করুন',
+    'wizard_complete'   => 'সম্পন্ন করুন ও জমা দিন',
+    'wizard_progress'   => ':percent% সম্পন্ন',
+    'step_labels' => [
+        1 => 'সাধারণ তথ্য',
+        2 => 'অবস্থান',
+        3 => 'ধর্ম',
+        4 => 'শিক্ষা',
+        5 => 'পরিবার',
+        6 => 'পেশা',
+        7 => 'জীবনযাত্রা',
+        8 => 'বিবাহ',
+        9 => 'জীবনসঙ্গী',
+    ],
+
+    // ── Section headers ───────────────────────────────────────────────────────
+    'section_general'    => 'সাধারণ তথ্য',
+    'section_location'   => 'অবস্থান',
+    'section_religion'   => 'ধর্ম ও ইসলামিক অনুশীলন',
+    'section_education'  => 'শিক্ষাগত তথ্য',
+    'section_family'     => 'পারিবারিক পটভূমি',
+    'section_profession' => 'পেশা ও আয়',
+    'section_lifestyle'  => 'জীবনযাত্রা',
+    'section_marriage'   => 'বিবাহ সংক্রান্ত পছন্দ',
+    'section_partner'    => 'পছন্দের জীবনসঙ্গী',
+    'section_photos'     => 'ছবি',
+    'section_contact'    => 'যোগাযোগ ও অভিভাবক',
+
+    // ── General fields ────────────────────────────────────────────────────────
+    'marital_status'       => 'বৈবাহিক অবস্থা',
+    'birth_date'           => 'জন্ম তারিখ',
+    'age'                  => 'বয়স',
+    'height'               => 'উচ্চতা',
+    'weight'               => 'ওজন',
+    'complexion'           => 'গায়ের রঙ',
+    'blood_group'          => 'রক্তের গ্রুপ',
+    'about_me'             => 'নিজের সম্পর্কে',
+    'profile_headline'     => 'সংক্ষিপ্ত পরিচিতি',
+    'profile_created_for'  => 'প্রোফাইল কার জন্য',
+
+    // Marital status options
+    'never_married' => 'অবিবাহিত',
+    'divorced'      => 'তালাকপ্রাপ্ত',
+    'widowed'       => 'বিধবা/বিপত্নীক',
+
+    // Complexion options
+    'very_fair'  => 'অতি ফর্সা',
+    'fair'       => 'ফর্সা',
+    'wheatish'   => 'শ্যামলা',
+    'medium'     => 'মাঝারি',
+    'dark'       => 'কালো',
+
+    // Profile created for options
+    'for_self'    => 'নিজের জন্য',
+    'for_son'     => 'ছেলের জন্য',
+    'for_daughter'=> 'মেয়ের জন্য',
+    'for_brother' => 'ভাইয়ের জন্য',
+    'for_sister'  => 'বোনের জন্য',
+    'for_relative'=> 'আত্মীয়ের জন্য',
+
+    // ── Location fields ───────────────────────────────────────────────────────
+    'nationality'       => 'জাতীয়তা',
+    'division'          => 'বিভাগ',
+    'district'          => 'জেলা',
+    'upazila'           => 'উপজেলা / থানা',
+    'present_address'   => 'বর্তমান ঠিকানা',
+    'permanent_address' => 'স্থায়ী ঠিকানা',
+    'village_area'      => 'গ্রাম / এলাকা',
+    'grew_up_in'        => 'বড় হয়েছেন কোথায়',
+    'residing_country'  => 'বর্তমানে যে দেশে আছেন',
+    'residing_city'     => 'শহর',
+    'is_nrb'            => 'প্রবাসী বাংলাদেশি (NRB)',
+    'mother_tongue'     => 'মাতৃভাষা',
+    'visa_status'       => 'ভিসা / আবাসন অবস্থা',
+
+    // ── Religion & practice ───────────────────────────────────────────────────
+    'religion'                => 'ধর্ম',
+    'sect'                    => 'মাযহাব / সম্প্রদায়',
+    'is_practicing'           => 'অনুশীলনকারী মুসলিম',
+    'prayers_info'            => 'নামাজের অভ্যাস',
+    'quran_recitation'        => 'কুরআন তেলাওয়াত',
+    'clothing_style'          => 'পোশাকের ধরন',
+    'beard_info'              => 'দাড়ি',
+    'hijab_info'              => 'হিজাব / নেকাব',
+    'is_islamically_educated' => 'ইসলামি শিক্ষা',
+    'wali_approval'           => 'অভিভাবক (ওয়ালি) সম্পৃক্ততা',
+    'beliefs_on_mazar'        => 'মাযার সম্পর্কে মতামত',
+    'favorite_scholars'       => 'পছন্দের ইসলামি আলেম',
+    'religious_work'          => 'দ্বীনি কাজে সম্পৃক্ততা',
+    'sunni_scale'             => 'ইসলামি অনুশীলনের মাত্রা (১–১০)',
+    'fiqh'                    => 'ফিকহ / চিন্তাধারা',
+
+    // Prayer options
+    'prayers_5_times'   => 'দৈনিক ৫ ওয়াক্ত',
+    'prayers_4_times'   => 'দৈনিক ৪ ওয়াক্ত',
+    'prayers_sometimes' => 'মাঝে মাঝে',
+    'prayers_rarely'    => 'কদাচিৎ',
+    'prayers_never'     => 'নামাজ পড়েন না',
+
+    // Quran options
+    'quran_fluent'   => 'সাবলীলভাবে পারেন',
+    'quran_basic'    => 'প্রাথমিক',
+    'quran_learning' => 'শিখছেন',
+    'quran_no'       => 'পারেন না',
+
+    // ── Education ─────────────────────────────────────────────────────────────
+    'education_method'       => 'শিক্ষা পদ্ধতি',
+    'highest_qualification'  => 'সর্বোচ্চ শিক্ষাগত যোগ্যতা',
+    'education_details'      => 'শিক্ষার বিস্তারিত',
+    'institution'            => 'প্রতিষ্ঠান / বিশ্ববিদ্যালয়',
+    'passing_year'           => 'পাশের সাল',
+
+    // Qualification options
+    'qual_below_ssc'      => 'এসএসসির নিচে',
+    'qual_ssc'            => 'এসএসসি / ও-লেভেল',
+    'qual_hsc'            => 'এইচএসসি / এ-লেভেল',
+    'qual_diploma'        => 'ডিপ্লোমা',
+    'qual_graduation'     => 'স্নাতক (ব্যাচেলর)',
+    'qual_post_graduation'=> 'স্নাতকোত্তর (মাস্টার্স)',
+    'qual_phd'            => 'পিএইচডি / ডক্টরেট',
+    'qual_hafez'          => 'হাফেজে কুরআন',
+    'qual_alim'           => 'আলিম',
+    'qual_fazil'          => 'ফাজিল',
+    'qual_kamil'          => 'কামিল',
+
+    // ── Family ────────────────────────────────────────────────────────────────
+    'father_name'           => 'পিতার নাম',
+    'father_alive'          => 'পিতা জীবিত',
+    'father_profession'     => 'পিতার পেশা',
+    'mother_name'           => 'মাতার নাম',
+    'mother_alive'          => 'মাতা জীবিত',
+    'mother_profession'     => 'মাতার পেশা',
+    'brothers'              => 'ভাইয়ের সংখ্যা',
+    'sisters'               => 'বোনের সংখ্যা',
+    'family_type'           => 'পরিবারের ধরন',
+    'family_financial_status' => 'পারিবারিক আর্থিক অবস্থা',
+    'home_ownership'        => 'বাড়ির মালিকানা',
+    'family_details'        => 'পরিবার সম্পর্কে তথ্য',
+    'family_religious_condition' => 'পারিবারিক ধর্মীয় পরিবেশ',
+
+    // Family type options
+    'family_joint'    => 'যৌথ পরিবার',
+    'family_nuclear'  => 'একক পরিবার',
+    'family_flexible' => 'নমনীয়',
+
+    // Financial status
+    'finance_lower'        => 'নিম্নবিত্ত',
+    'finance_lower_middle' => 'নিম্ন-মধ্যবিত্ত',
+    'finance_middle'       => 'মধ্যবিত্ত',
+    'finance_upper_middle' => 'উচ্চ-মধ্যবিত্ত',
+    'finance_upper'        => 'উচ্চবিত্ত',
+
+    // ── Profession ────────────────────────────────────────────────────────────
+    'occupation'              => 'পেশা',
+    'occupation_category'     => 'পেশার ধরন',
+    'profession_details'      => 'পেশার বিস্তারিত',
+    'monthly_income'          => 'মাসিক আয় (টাকা)',
+    'profession_halal_status' => 'পেশা কি হালাল?',
+
+    // ── Lifestyle ─────────────────────────────────────────────────────────────
+    'diet'               => 'খাদ্যাভ্যাস',
+    'smoking'            => 'ধূমপান',
+    'watch_entertainment'=> 'বিনোদন পছন্দ',
+    'hobbies'            => 'শখ ও আগ্রহ',
+    'health_status'      => 'স্বাস্থ্য অবস্থা',
+    'health_details'     => 'স্বাস্থ্য সংক্রান্ত তথ্য',
+
+    // ── Marriage ─────────────────────────────────────────────────────────────
+    'guardian_agree'          => 'অভিভাবক অবগত ও সম্মত',
+    'wife_in_veil'            => 'স্ত্রীকে পর্দা করতে হবে',
+    'wife_study_allowed'      => 'বিয়ের পরেও পড়াশোনা চালিয়ে যেতে পারবেন',
+    'wife_job_allowed'        => 'বিয়ের পরেও চাকরি করতে পারবেন',
+    'residence_after_marriage'=> 'বিয়ের পর বাসস্থান',
+    'expect_gift_from_bride'  => 'কনের পক্ষ থেকে উপহার (মোহর) প্রত্যাশা',
+    'post_marriage_plan'      => 'বিবাহ পরবর্তী পরিকল্পনা',
+    'polygamy_open'           => 'একাধিক বিবাহে আগ্রহী',
+    'children_count'          => 'সন্তানের সংখ্যা',
+
+    // ── Partner preferences ───────────────────────────────────────────────────
+    'partner_age_range'        => 'পছন্দের বয়সসীমা',
+    'partner_age_min'          => 'সর্বনিম্ন বয়স',
+    'partner_age_max'          => 'সর্বোচ্চ বয়স',
+    'partner_height_range'     => 'পছন্দের উচ্চতা',
+    'partner_complexion'       => 'পছন্দের গায়ের রঙ',
+    'partner_marital_status'   => 'পছন্দের বৈবাহিক অবস্থা',
+    'partner_education'        => 'পছন্দের শিক্ষাগত যোগ্যতা',
+    'partner_occupation_pref'  => 'পছন্দের পেশা',
+    'partner_income_min'       => 'সর্বনিম্ন আয়',
+    'partner_division'         => 'পছন্দের বিভাগ',
+    'partner_district'         => 'পছন্দের জেলা',
+    'partner_family_type'      => 'পছন্দের পরিবারের ধরন',
+    'partner_expectations'     => 'জীবনসঙ্গী সম্পর্কে বিশেষ প্রত্যাশা',
+
+    // ── Contact / Guardian ────────────────────────────────────────────────────
+    'guardian_mobile'       => 'অভিভাবকের মোবাইল নম্বর',
+    'guardian_relationship' => 'অভিভাবকের সাথে সম্পর্ক',
+    'guardian_email'        => 'অভিভাবকের ইমেইল (ঐচ্ছিক)',
+
+    // ── Photos ────────────────────────────────────────────────────────────────
+    'photos_title'       => 'প্রোফাইল ছবি',
+    'photos_hint'        => 'পরিষ্কার ও সাম্প্রতিক ছবি আপলোড করুন। সর্বোচ্চ ৫টি ছবি।',
+    'photo_visibility'   => 'ছবির দৃশ্যমানতা',
+    'photo_public'       => 'সবার জন্য দৃশ্যমান',
+    'photo_members'      => 'শুধু সদস্যদের জন্য',
+    'photo_blurred'      => 'ব্লার (ইসলামিক মোড)',
+    'photo_request'      => 'ছবি দেখার অনুরোধ করুন',
+    'photo_requested'    => 'অনুরোধ পাঠানো হয়েছে',
+    'photo_grant'        => 'ছবি দেখার অনুমতি দিন',
+    'photo_deny'         => 'অনুরোধ প্রত্যাখ্যান করুন',
+
+    // ── Completion score ─────────────────────────────────────────────────────
+    'completion_score'     => 'প্রোফাইল :percent% সম্পন্ন',
+    'completion_incomplete'=> 'আরো ভালো ম্যাচ পেতে বায়োডাটা সম্পূর্ণ করুন',
+    'completion_good'      => 'ভালো প্রোফাইল! আরো তথ্য যোগ করুন',
+    'completion_excellent' => 'চমৎকার প্রোফাইল!',
+
+    // ── Status messages ───────────────────────────────────────────────────────
+    'draft_saved'       => 'ড্রাফট সংরক্ষণ হয়েছে।',
+    'submitted'         => 'বায়োডাটা পর্যালোচনার জন্য জমা দেওয়া হয়েছে।',
+    'approved'          => 'আপনার বায়োডাটা অনুমোদিত হয়েছে।',
+    'rejected'          => 'আপনার বায়োডাটায় সংশোধন প্রয়োজন।',
+    'pending_review'    => 'পর্যালোচনাধীন',
+
+];

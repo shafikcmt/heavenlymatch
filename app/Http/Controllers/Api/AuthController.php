@@ -22,7 +22,7 @@ class AuthController extends Controller
             'email'         => 'required|email|unique:registrations,email',
             'password'      => ['required', 'confirmed', Password::min(8)],
             'gender'        => 'required|in:male,female',
-            'platform_mode' => 'required|in:GENERAL,ISLAMIC',
+            'platform_mode' => 'required|in:general,islamic',   // lowercase — matches DB enum
             'mobile_number' => 'nullable|string|max:20',
             'country_code'  => 'nullable|string|max:5',
         ]);
@@ -36,11 +36,12 @@ class AuthController extends Controller
             'email'         => $request->email,
             'password'      => Hash::make($request->password),
             'gender'        => $request->gender,
+            'looking_for'   => $request->gender === 'male' ? 'bride' : 'groom',
             'platform_mode' => $request->platform_mode,
+            'photo_visibility' => $request->platform_mode === 'islamic' ? 'blurred' : 'members_only',
             'mobile_number' => $request->mobile_number,
             'country_code'  => $request->country_code ?? '+880',
-            'account_status'=> 'active',
-            'role'          => 'user',
+            // account_status and role omitted — migration defaults: 'active' / 'user'
         ]);
 
         $token = $reg->createToken('api')->plainTextToken;
@@ -86,7 +87,8 @@ class AuthController extends Controller
             'gender'          => $reg->gender,
             'platform_mode'   => $reg->platform_mode,
             'membership'      => [
-                'plan'    => $reg->membership_plan_name,
+                // membership_plan_name column does not exist — use plan_id instead
+                'plan_id' => $reg->membership_plan_id,
                 'status'  => $reg->membership_status,
                 'expires' => $reg->membership_expires_at,
             ],
@@ -119,7 +121,7 @@ class AuthController extends Controller
             'photo_visibility' => $user->photo_visibility,
             'account_status'   => $user->account_status,
             'membership'       => [
-                'plan'    => $user->membership_plan_name,
+                'plan_id' => $user->membership_plan_id,
                 'status'  => $user->membership_status,
                 'expires' => $user->membership_expires_at,
             ],

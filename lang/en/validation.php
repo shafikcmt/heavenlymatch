@@ -179,6 +179,61 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        // Auth
+        'name'                => 'Full Name',
+        'email'               => 'Email Address',
+        'password'            => 'Password',
+        'mobile_number'       => 'Mobile Number',
+        'gender'              => 'Gender',
+        'profile_created_for' => 'Profile Created For',
+        'platform_mode'       => 'Platform Mode',
+        'terms_accepted'      => 'Terms of Service',
+
+        // Biodata — General
+        'birth_date'          => 'Date of Birth',
+        'marital_status'      => 'Marital Status',
+        'height_cm'           => 'Height',
+        'weight_kg'           => 'Weight',
+        'complexion'          => 'Complexion',
+        'blood_group'         => 'Blood Group',
+        'about_me'            => 'About Me',
+        'profile_headline'    => 'Profile Headline',
+
+        // Biodata — Location
+        'division'            => 'Division',
+        'district'            => 'District',
+        'residing_country'    => 'Country of Residence',
+
+        // Biodata — Religion
+        'sect'                => 'Sect / Madhhab',
+        'prayers_info'        => 'Prayer Habits',
+        'quran_recitation'    => 'Quran Recitation',
+
+        // Biodata — Education
+        'highest_qualification' => 'Highest Qualification',
+
+        // Biodata — Family
+        'father_name'         => "Father's Name",
+        'mother_name'         => "Mother's Name",
+        'brothers'            => 'Number of Brothers',
+        'sisters'             => 'Number of Sisters',
+
+        // Biodata — Profession
+        'occupation'          => 'Occupation',
+        'monthly_income'      => 'Monthly Income',
+
+        // Partner prefs
+        'partner_age_min'     => 'Minimum Partner Age',
+        'partner_age_max'     => 'Maximum Partner Age',
+        'partner_expectations'=> 'Partner Expectations',
+
+        // Payment
+        'sender_number'       => 'Sender Number',
+        'transaction_id'      => 'Transaction ID',
+        'amount'              => 'Amount',
+        'note'                => 'Rejection Note',
+        'reason'              => 'Reason',
+    ],
 
 ];

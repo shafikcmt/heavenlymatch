@@ -1,209 +1,170 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\Auth\CustomLoginController;
+declare(strict_types=1);
+
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SocialLoginController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\BiodataController;
-use App\Http\Controllers\EmailVerificationController;
-use App\Http\Controllers\PhoneVerificationController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\ProfileInteractionController;
-use App\Http\Controllers\DemoController;
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AdminBiodataController;
-use App\Http\Controllers\Admin\AdminSettingsController;
-use App\Http\Controllers\Admin\AdminFeatureController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\MatchController;
+use App\Http\Controllers\Dashboard\SearchController;
+use App\Http\Controllers\Dashboard\InterestController;
+use App\Http\Controllers\Dashboard\InboxController;
+use App\Http\Controllers\Dashboard\ShortlistController;
+use App\Http\Controllers\Dashboard\NotificationController;
+use App\Http\Controllers\Dashboard\SettingsController;
+use App\Http\Controllers\Biodata\BiodataWizardController;
+use App\Http\Controllers\ProfileViewController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
+// ── Public marketing pages ────────────────────────────────────────────────────
+Route::get('/', fn () => Inertia::render('Marketing/Home'))->name('home');
+Route::get('/how-it-works', fn () => Inertia::render('Marketing/HowItWorks'))->name('how-it-works');
+Route::get('/pricing', fn () => Inertia::render('Marketing/Pricing'))->name('pricing');
+Route::get('/about', fn () => Inertia::render('Marketing/About'))->name('about');
+Route::get('/contact', fn () => Inertia::render('Marketing/Contact'))->name('contact');
+Route::get('/blog', fn () => Inertia::render('Blog/Index'))->name('blog.index');
+Route::get('/blog/{slug}', fn (string $slug) => Inertia::render('Blog/Show', ['slug' => $slug]))->name('blog.show');
+Route::get('/terms', fn () => Inertia::render('Legal/Terms'))->name('terms');
+Route::get('/privacy', fn () => Inertia::render('Legal/Privacy'))->name('privacy');
 
-// --------------------------------------------------------
-// Guest Routes (Accessible only if not logged in)
-// --------------------------------------------------------
+// Public photo serving (HMAC-signed, privacy enforced)
+Route::get('/photo/{registrationId}/{photoIndex?}', [\App\Http\Controllers\Api\PhotoController::class, 'serve'])
+    ->where('photoIndex', '[0-9]+')
+    ->name('api.photo.serve');
+
+// ── Language switcher (guests + authenticated) ────────────────────────────────
+Route::post('/language/{locale}', function (string $locale) {
+    $supported = ['en', 'bn'];
+    if (! in_array($locale, $supported, true)) {
+        abort(422, 'Unsupported locale.');
+    }
+
+    session(['locale' => $locale]);
+
+    // Persist to user profile when logged in
+    if ($user = auth()->user()) {
+        // only update if the column exists on the model
+        if (isset($user->preferred_locale) || array_key_exists('preferred_locale', $user->getAttributes())) {
+            $user->forceFill(['preferred_locale' => $locale])->save();
+        }
+    }
+
+    return back();
+})->middleware('web')->name('language.switch');
+
+// ── Guest-only auth ───────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
+    Route::get('/login',    [LoginController::class, 'show'])->name('login');
+    Route::post('/login',   [LoginController::class, 'store'])->name('login.store');
 
-    // Registration
-    Route::get('/register', [RegistrationController::class, 'showForm'])->name('register.show');
-    Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
+    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::post('/register',[RegisterController::class, 'store'])->name('register.store');
 
-    // Email Verification
-    Route::get('/verify-email', [EmailVerificationController::class, 'showVerifyForm'])->name('email.verify.notice');
-    Route::post('/verify-email-code', [EmailVerificationController::class, 'verifyCode'])->name('email.verify.code');
-    Route::post('/send-verification-code', [EmailVerificationController::class, 'sendCode'])->name('email.send.code');
-    Route::get('/verify-email/{token}', [EmailVerificationController::class, 'verifyLink'])->name('email.verify.link');
-
-    // Login
-    Route::get('/login', [CustomLoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [CustomLoginController::class, 'login']);
+    Route::get('/forgot-password',        [PasswordController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password',       [PasswordController::class, 'email'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordController::class, 'reset'])->name('password.reset');
+    Route::post('/reset-password',        [PasswordController::class, 'update'])->name('password.update');
 });
 
-// --------------------------------------------------------
-// Authenticated Routes (Logged-in users)
-// --------------------------------------------------------
+// Google OAuth
+Route::get('/auth/google',          [SocialLoginController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [SocialLoginController::class, 'callback'])->name('auth.google.callback');
+
+// Email verification
+Route::get('/verify-email',                    [LoginController::class, 'verifyNotice'])->name('verification.notice')->middleware('auth');
+Route::get('/verify-email/{id}/{hash}',        [LoginController::class, 'verifyEmail'])->name('verification.verify')->middleware(['auth', 'signed']);
+Route::post('/verify-email/resend',            [LoginController::class, 'resendVerification'])->name('verification.send')->middleware(['auth', 'throttle:6,1']);
+
+// ── Authenticated routes ───────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified.user'])->group(function () {
 
-    // ------------------------
-    // Biodata Routes (Always accessible to logged-in users)
-    // ------------------------
-    Route::prefix('biodata')->group(function () {
-        Route::get('/create/{step?}', [BiodataController::class, 'create'])->name('biodata.create');
-        Route::post('/store/{step}', [BiodataController::class, 'store'])->name('biodata.store');
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // ── Biodata wizard (accessible before biodata is complete) ────────────────
+    Route::prefix('biodata')->name('biodata.')->group(function () {
+        Route::get('/wizard/{step?}', [BiodataWizardController::class, 'show'])
+            ->where('step', '[1-9]')
+            ->name('wizard');
+        Route::post('/wizard/{step}', [BiodataWizardController::class, 'save'])
+            ->where('step', '[1-9]')
+            ->name('save');
     });
 
-    // ------------------------
-    // Dashboard Routes (Accessible only if biodata completed)
-    // ------------------------
+    // ── Dashboard routes (biodata must be completed) ───────────────────────────
     Route::middleware('check.biodata')->group(function () {
-        Route::get('/myhome', fn() => view('pages.user-dashboard.myhome'))->name('myhome');
-        Route::get('/profiledetail', [UserProfileController::class, 'showProfile'])
-        ->middleware(['auth', 'check.biodata'])
-        ->name('profiledetail');
-        Route::get('/profiledetail/{id}', [UserProfileController::class, 'showProfile'])
-        ->middleware(['auth', 'check.biodata'])
-        ->name('profiledetail.show');
-        Route::post('/profiles/{biodata}/shortlist', [ProfileInteractionController::class, 'shortlist'])->name('profiles.shortlist');
-        Route::post('/profiles/{biodata}/interest', [ProfileInteractionController::class, 'interest'])->name('profiles.interest');
-        Route::post('/profiles/{biodata}/chat', [ProfileInteractionController::class, 'chat'])->name('profiles.chat');
-        Route::put('/biodata/update-general-info/{id}', [BiodataController::class, 'updateGeneralInfo'])
-    ->name('biodata.updateGeneralInfo');
-    Route::put('/biodata/update-address/{id}', [BiodataController::class, 'updateAddress'])->name('biodata.updateAddress');
-    Route::put('/biodata/update-education/{id}', [App\Http\Controllers\BiodataController::class, 'updateEducation'])
-    ->name('biodata.update.education');
-    Route::put('/biodata/update-family/{id}', [App\Http\Controllers\BiodataController::class, 'updateFamily'])
-    ->name('biodata.update.family');
-   Route::put('/biodata/personal/{id}', [BiodataController::class, 'updatePersonal'])
-    ->name('biodata.update.personal');
-    Route::put('/biodata/occupation/{id}', [BiodataController::class, 'updateOccupation'])
-    ->name('biodata.update.occupation');
-    Route::put('/biodata/marriage/{id}', [BiodataController::class, 'updateMarriage'])
-    ->name('biodata.update.marriage');
-    Route::put('/biodata/{id}/update-partner', [BiodataController::class, 'updatePartner'])->name('biodata.update.partner');
-Route::put('/biodata/{id}/update-pledge', [BiodataController::class, 'updatePledge'])->name('biodata.update.pledge');
-Route::put('/biodata/update/contact/{id}', [BiodataController::class, 'updateContact'])->name('biodata.update.contact');
 
-Route::get('/biodata/download/{id}', [BiodataController::class, 'downloadPdf'])->name('biodata.download');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+        // Matches & Search
+        Route::get('/matches',   [MatchController::class, 'index'])->name('matches.index');
+        Route::get('/search',    [SearchController::class, 'index'])->name('search.index');
 
+        // Interests / connection requests
+        Route::get('/interests/received',        [InterestController::class, 'received'])->name('interests.received');
+        Route::get('/interests/sent',            [InterestController::class, 'sent'])->name('interests.sent');
+        Route::post('/interests',                [InterestController::class, 'store'])->name('interests.store');
+        Route::post('/interests/{id}/respond',   [InterestController::class, 'respond'])->name('interests.respond');
+        Route::delete('/interests/{id}',         [InterestController::class, 'withdraw'])->name('interests.withdraw');
 
+        // Inbox / messaging
+        Route::get('/inbox',                             [InboxController::class, 'index'])->name('inbox.index');
+        Route::get('/inbox/{conversationId}',            [InboxController::class, 'show'])->name('inbox.show');
+        Route::post('/inbox/{conversationId}/send',      [InboxController::class, 'send'])->name('inbox.send');
+        Route::get('/inbox/{conversationId}/poll/{afterId}', [InboxController::class, 'poll'])->name('inbox.poll');
 
+        // Shortlist
+        Route::get('/shortlist',   [ShortlistController::class, 'index'])->name('shortlist.index');
+        Route::post('/shortlist',  [ShortlistController::class, 'toggle'])->name('shortlist.toggle');
 
+        // Notifications
+        Route::get('/notifications',           [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{id}/read',[NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
+        // Profile pages
+        Route::get('/profile/{registrationId}', [ProfileViewController::class, 'show'])->name('profile.show');
+        Route::get('/who-viewed',               [ProfileViewController::class, 'whoViewed'])->name('profile.who-viewed');
 
-        Route::middleware(['auth', 'check.biodata'])->group(function () {
-   
-});
+        // Upgrade / Payments
+        Route::get('/upgrade',               [\App\Http\Controllers\Payment\PaymentController::class, 'plans'])->name('upgrade.plans');
+        Route::post('/upgrade/checkout',     [\App\Http\Controllers\Payment\PaymentController::class, 'checkout'])->name('upgrade.checkout');
+        Route::get('/upgrade/manual/{txn}',  [\App\Http\Controllers\Payment\PaymentController::class, 'manualForm'])->name('upgrade.manual');
+        Route::post('/upgrade/manual/{txn}', [\App\Http\Controllers\Payment\PaymentController::class, 'manualSubmit'])->name('upgrade.manual.submit');
+        Route::get('/upgrade/status',        [\App\Http\Controllers\Payment\PaymentController::class, 'status'])->name('upgrade.status');
+        Route::get('/upgrade/callback',      [\App\Http\Controllers\Payment\PaymentController::class, 'callback'])->name('upgrade.callback');
+        Route::get('/upgrade/success',       [\App\Http\Controllers\Payment\PaymentController::class, 'success'])->name('upgrade.success');
 
-        Route::get('/matches', fn() => view('pages.user-dashboard.matches'))->name('matches');
-        Route::get('/shortlist', fn() => view('pages.user-dashboard.shortlist'))->name('shortlist');
-        Route::get('/inbox', fn() => view('pages.user-dashboard.inbox'))->name('inbox');
-        Route::get('/sent', fn() => view('pages.user-dashboard.sent'))->name('sent');
-        Route::get('/search', fn() => view('pages.user-dashboard.search'))->name('search');
-        Route::get('/upgrade', fn() => view('pages.user-dashboard.upgrade'))->name('upgrade');
+        // Settings
+        Route::get('/settings',             [SettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings/profile',     [SettingsController::class, 'updateProfile'])->name('settings.profile');
+        Route::put('/settings/password',    [SettingsController::class, 'updatePassword'])->name('settings.password');
+        Route::delete('/settings/account',  [SettingsController::class, 'deleteAccount'])->name('settings.delete');
+
+        // Photo access (Islamic mode)
+        Route::post('/photo/request-access/{registrationId}', [\App\Http\Controllers\Api\PhotoController::class, 'requestAccess'])->name('photo.request-access');
+        Route::post('/photo/respond-access/{requestId}',      [\App\Http\Controllers\Api\PhotoController::class, 'respondAccess'])->name('photo.respond-access');
+
+        // Reports
+        Route::post('/report/{registrationId}', [\App\Http\Controllers\ReportController::class, 'store'])->name('report.store');
     });
 
-    // Logout
-    Route::post('/logout', [CustomLoginController::class, 'logout'])->name('logout');
-    Route::get('/demo', [DemoController::class, 'index'])->name('demo');
-});
-
-
-// --------------------------------------------------------
-// Admin Routes
-// /admin now opens the admin login page instead of 404.
-// --------------------------------------------------------
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminAuthController::class, 'showLogin'])->name('login');
-    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login.form');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
-
-    Route::middleware(['auth', 'admin'])->group(function () {
-        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
-        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
-        Route::patch('/users/{user}/verify-email', [AdminUserController::class, 'verifyEmail'])->name('users.verify-email');
-        Route::patch('/users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
-        Route::patch('/users/{user}/remove-admin', [AdminUserController::class, 'removeAdmin'])->name('users.remove-admin');
-        Route::patch('/users/{user}/block', [AdminUserController::class, 'block'])->name('users.block');
-        Route::patch('/users/{user}/unblock', [AdminUserController::class, 'unblock'])->name('users.unblock');
-        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-
-        Route::get('/biodatas', [AdminBiodataController::class, 'index'])->name('biodatas.index');
-        Route::get('/biodatas/{biodata}', [AdminBiodataController::class, 'show'])->name('biodatas.show');
-        Route::patch('/biodatas/{biodata}/approve', [AdminBiodataController::class, 'approve'])->name('biodatas.approve');
-        Route::patch('/biodatas/{biodata}/reject', [AdminBiodataController::class, 'reject'])->name('biodatas.reject');
-        Route::patch('/biodatas/{biodata}/pending', [AdminBiodataController::class, 'pending'])->name('biodatas.pending');
-        Route::patch('/biodatas/{biodata}/feature', [AdminBiodataController::class, 'feature'])->name('biodatas.feature');
-        Route::patch('/biodatas/{biodata}/unfeature', [AdminBiodataController::class, 'unfeature'])->name('biodatas.unfeature');
-        Route::delete('/biodatas/{biodata}', [AdminBiodataController::class, 'destroy'])->name('biodatas.destroy');
-
-        Route::get('/payments/{scope?}', [AdminFeatureController::class, 'payments'])->name('payments.index');
-        Route::patch('/payments/{payment}/status', [AdminSettingsController::class, 'updatePaymentStatus'])->name('payments.update-status');
-
-        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
-        Route::get('/settings/packages', [AdminSettingsController::class, 'packages'])->name('settings.packages');
-        Route::post('/settings/plans', [AdminSettingsController::class, 'storePlan'])->name('settings.plans.store');
-        Route::put('/settings/plans/{plan}', [AdminSettingsController::class, 'updatePlan'])->name('settings.plans.update');
-        Route::patch('/settings/plans/{plan}/toggle-status', [AdminSettingsController::class, 'togglePlanStatus'])->name('settings.plans.toggle-status');
-        Route::delete('/settings/plans/{plan}', [AdminSettingsController::class, 'destroyPlan'])->name('settings.plans.destroy');
-        Route::post('/settings/gateways', [AdminSettingsController::class, 'storeGateway'])->name('settings.gateways.store');
-        Route::put('/settings/gateways/{gateway}', [AdminSettingsController::class, 'updateGateway'])->name('settings.gateways.update');
-        Route::delete('/settings/gateways/{gateway}', [AdminSettingsController::class, 'destroyGateway'])->name('settings.gateways.destroy');
-        Route::post('/settings/system/{feature}/toggle', [AdminSettingsController::class, 'toggleSystemFeature'])->name('settings.system.toggle');
-        Route::get('/settings/{section}', [AdminSettingsController::class, 'edit'])->name('settings.edit');
-        Route::post('/settings/{section}', [AdminSettingsController::class, 'update'])->name('settings.update');
-
-        Route::get('/attributes/{type}', [AdminFeatureController::class, 'attributes'])->name('attributes.show');
-        Route::post('/attributes/{type}', [AdminFeatureController::class, 'storeAttribute'])->name('attributes.store');
-        Route::put('/attributes/{type}/{attribute}', [AdminFeatureController::class, 'updateAttribute'])->name('attributes.update');
-        Route::delete('/attributes/{type}/{attribute}', [AdminFeatureController::class, 'destroyAttribute'])->name('attributes.destroy');
-
-        Route::get('/interactions/{type}', [AdminFeatureController::class, 'interactions'])->name('interactions.show');
-        Route::get('/tickets/{scope?}', [AdminFeatureController::class, 'tickets'])->name('tickets.show');
-        Route::get('/reports/{type}', [AdminFeatureController::class, 'reports'])->name('reports.show');
-        Route::get('/extra/{type}', [AdminFeatureController::class, 'extra'])->name('extra.show');
-        Route::get('/notifications/send', [AdminFeatureController::class, 'notifications'])->name('notifications.send');
+    // ── Admin panel ───────────────────────────────────────────────────────────
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/',           [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/users',      [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{id}', [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
+        Route::post('/users/{id}/ban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
+        Route::post('/users/{id}/verify', [\App\Http\Controllers\Admin\AdminUserController::class, 'verify'])->name('users.verify');
+        Route::get('/biodatas',           [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
+        Route::post('/biodatas/{id}/approve', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
+        Route::post('/biodatas/{id}/reject',  [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
+        Route::get('/payments',              [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::post('/payments/{id}/approve',[\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
+        Route::post('/payments/{id}/reject', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
+        Route::get('/reports',    fn () => Inertia::render('Admin/Reports'))->name('reports.index');
+        Route::get('/settings',   [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
     });
 });
-
-// --------------------------------------------------------
-// Frontend Routes (Public pages)
-// These pages should be visible for both guests and logged-in users.
-// --------------------------------------------------------
-Route::get('/', fn() => view('welcome'))->name('welcome');
-Route::get('/profile', fn() => view('profile'))->name('profile');
-Route::get('/settings', fn() => view('settings'))->name('settings');
-Route::get('/about', fn() => view('pages.frontend.about'))->name('about');
-Route::get('/guide', fn() => view('pages.frontend.guide'))->name('guide');
-Route::get('/faq', fn() => view('pages.frontend.faq'))->name('faq');
-Route::get('/contact', fn() => view('pages.frontend.contact'))->name('contact');
-Route::post('/contact', function (Request $request) {
-    $request->validate([
-        'name' => ['required', 'string', 'max:120'],
-        'email' => ['required', 'email', 'max:180'],
-        'subject' => ['required', 'string', 'max:180'],
-        'message' => ['required', 'string', 'max:3000'],
-    ]);
-
-    // Mail/storage integration can be added here later. For now this prevents a 405 error
-    // and gives users clear feedback that their message was received.
-    return back()->with('success', 'Your message has been received. We will contact you soon InShaAllah.');
-})->name('contact.submit');
-
-// --------------------------------------------------------
-// Social Login Routes
-// --------------------------------------------------------
-Route::prefix('auth')->group(function () {
-    Route::get('/login/google', [SocialLoginController::class, 'redirectToGoogle'])->name('login.google');
-    Route::get('/login/google/callback', [SocialLoginController::class, 'handleGoogleCallback']);
-});
-
-// --------------------------------------------------------
-// Dashboard page (Admin or main dashboard, if needed)
-// --------------------------------------------------------
-Route::get('/dashboard', fn() => view('dashboard.dashboard'))->name('dashboard');

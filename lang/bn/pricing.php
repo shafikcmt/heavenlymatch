@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+
+    'page_title'    => 'সদস্যপদ প্ল্যানসমূহ',
+    'page_subtitle' => 'আপনার যাত্রার জন্য উপযুক্ত প্ল্যান বেছে নিন',
+    'most_popular'  => 'সবচেয়ে জনপ্রিয়',
+    'current_plan'  => 'বর্তমান প্ল্যান',
+    'upgrade'       => 'আপগ্রেড',
+    'get_started'   => 'শুরু করুন',
+    'per_month'     => '/মাস',
+    'per_year'      => '/বছর',
+    'free_forever'  => 'চিরকাল বিনামূল্যে',
+    'save_percent'  => ':percent% সাশ্রয়',
+    'bdt'           => '৳',
+
+    // Plans
+    'plan_free'    => 'ফ্রি',
+    'plan_silver'  => 'সিলভার',
+    'plan_gold'    => 'গোল্ড',
+    'plan_diamond' => 'ডায়মন্ড',
+
+    // Durations
+    'duration_monthly'   => '১ মাস',
+    'duration_quarterly' => '৩ মাস',
+    'duration_biannual'  => '৬ মাস',
+    'duration_annual'    => '১ বছর',
+
+    // Features
+    'feature_browse'              => 'প্রোফাইল দেখুন',
+    'feature_interests'           => 'প্রতি মাসে সর্বোচ্চ :n টি আগ্রহ পাঠান',
+    'feature_interests_unlimited' => 'সীমাহীন আগ্রহ',
+    'feature_messaging'           => 'গৃহীত সংযোগে বার্তা পাঠান',
+    'feature_contact_unlock'      => 'প্রতি মাসে :n টি যোগাযোগ তথ্য দেখুন',
+    'feature_contact_unlimited'   => 'সীমাহীন যোগাযোগ তথ্য',
+    'feature_who_viewed'          => 'কে আপনার প্রোফাইল দেখেছেন তা জানুন',
+    'feature_advanced_filter'     => 'উন্নত অনুসন্ধান ফিল্টার',
+    'feature_priority'            => 'অনুসন্ধানে অগ্রাধিকার তালিকা',
+    'feature_boost'               => 'মাসিক প্রোফাইল বুস্ট (:n বুস্ট)',
+    'feature_photo_access'        => 'ছবি দেখার অনুরোধ করুন',
+    'feature_verified_badge'      => 'যাচাইকৃত ব্যাজের অগ্রাধিকার',
+    'feature_daily_recs'          => 'উন্নত দৈনিক পরামর্শ',
+    'feature_guardian'            => 'অভিভাবক / ওয়ালি মেসেজিং সমর্থন',
+
+    // Payment section
+    'payment_title'        => 'পেমেন্ট সম্পন্ন করুন',
+    'payment_method'       => 'পেমেন্ট পদ্ধতি',
+    'payment_bkash'        => 'বিকাশ',
+    'payment_nagad'        => 'নগদ',
+    'payment_bank'         => 'ব্যাংক ট্রান্সফার',
+    'payment_instructions' => 'কীভাবে পেমেন্ট করবেন',
+    'bkash_instructions'   => 'আমাদের বিকাশ নম্বর :number এ :amount টাকা পাঠান। রেফারেন্স হিসেবে আপনার নিবন্ধিত মোবাইল ব্যবহার করুন।',
+    'nagad_instructions'   => 'আমাদের নগদ নম্বর :number এ :amount টাকা পাঠান। রেফারেন্স হিসেবে আপনার নিবন্ধিত মোবাইল ব্যবহার করুন।',
+    'sender_number'        => 'আপনার বিকাশ / নগদ নম্বর',
+    'transaction_id'       => 'ট্রানজেকশন আইডি',
+    'transaction_id_hint'  => 'পেমেন্ট নিশ্চিতকরণ থেকে ১০ সংখ্যার ট্রানজেকশন আইডি প্রবেশ করুন।',
+    'screenshot'           => 'পেমেন্টের স্ক্রিনশট (ঐচ্ছিক)',
+    'submit_payment'       => 'অনুমোদনের জন্য জমা দিন',
+    'payment_submitted'    => 'পেমেন্ট জমা দেওয়া হয়েছে! যাচাইয়ের পর ২৪ ঘণ্টার মধ্যে আপনার অ্যাকাউন্ট আপগ্রেড করা হবে।',
+    'payment_pending'      => 'আপনার পেমেন্ট পর্যালোচনাধীন রয়েছে।',
+    'payment_approved'     => 'আপনার পেমেন্ট অনুমোদিত হয়েছে। আপনার :plan সদস্যপদ উপভোগ করুন!',
+    'payment_rejected'     => 'আপনার পেমেন্ট প্রত্যাখ্যাত হয়েছে। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।',
+
+    // Upgrade benefits callout
+    'unlock_title'   => 'কেন আপগ্রেড করবেন?',
+    'unlock_matches' => 'দ্রুত ম্যাচ খুঁজুন',
+    'unlock_contact' => 'সরাসরি যোগাযোগ তথ্য পান',
+    'unlock_privacy' => 'উন্নত গোপনীয়তা নিয়ন্ত্রণ',
+    'unlock_support' => 'অগ্রাধিকার গ্রাহক সেবা',
+
+];
