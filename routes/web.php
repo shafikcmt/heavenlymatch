@@ -17,12 +17,13 @@ use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Biodata\BiodataWizardController;
 use App\Http\Controllers\ProfileViewController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MarketingController;
 use Inertia\Inertia;
 
 // ── Public marketing pages ────────────────────────────────────────────────────
 Route::get('/', fn () => Inertia::render('Marketing/Home'))->name('home');
 Route::get('/how-it-works', fn () => Inertia::render('Marketing/HowItWorks'))->name('how-it-works');
-Route::get('/pricing', fn () => Inertia::render('Marketing/Pricing'))->name('pricing');
+Route::get('/pricing', [MarketingController::class, 'pricing'])->name('pricing');
 Route::get('/about', fn () => Inertia::render('Marketing/About'))->name('about');
 Route::get('/contact', fn () => Inertia::render('Marketing/Contact'))->name('contact');
 Route::get('/blog', fn () => Inertia::render('Blog/Index'))->name('blog.index');

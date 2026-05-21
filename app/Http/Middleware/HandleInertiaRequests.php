@@ -23,6 +23,7 @@ class HandleInertiaRequests extends Middleware
         'dashboard',
         'admin',
         'pricing',
+        'marketing',
         'notifications',
         'validation',
     ];
