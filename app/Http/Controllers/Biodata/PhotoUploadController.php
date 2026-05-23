@@ -72,15 +72,20 @@ class PhotoUploadController extends Controller
         $storagePath = "{$dir}/{$filename}";
 
         // Process: auto-orient (fix EXIF rotation), resize, strip metadata, save as JPEG
-        $processed = Image::make($file)
-            ->orientate()
-            ->resize(1200, 1200, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })
-            ->encode('jpg', 85);
+        try {
+            $processed = Image::make($file)
+                ->orientate()
+                ->resize(1200, 1200, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->encode('jpg', 85);
 
-        Storage::disk(self::DISK)->put($storagePath, (string) $processed);
+            Storage::disk(self::DISK)->put($storagePath, (string) $processed);
+        } catch (\Throwable $e) {
+            // Intervention Image failed — store original file as-is
+            Storage::disk(self::DISK)->putFileAs($dir, $file, $filename);
+        }
 
         $isPrimary = empty($photos); // first-ever photo becomes primary
 

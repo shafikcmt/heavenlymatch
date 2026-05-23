@@ -238,4 +238,39 @@ return [
     'pricing_faq_q3'         => 'What if I have a problem with my payment?',
     'pricing_faq_a3'         => 'Contact us at the email on our Contact page and include your transaction ID. We will resolve it promptly.',
 
+    // ── Home — featured profiles slider ───────────────────────────────────────
+    'featured_profiles_title'    => 'Meet Active Members',
+    'featured_profiles_subtitle' => 'Real biodatas. Privacy protected. No contact info shown.',
+    'view_profile_btn'           => 'View Biodata',
+    'create_biodata_cta'         => 'Create Your Biodata to Appear Here',
+
+    // ── Home — testimonials ───────────────────────────────────────────────────
+    'testimonials_title'    => 'Member Feedback',
+    'testimonials_subtitle' => 'Sample stories illustrating the kind of experience our members share.',
+    'member_story_label'    => 'Sample Story',
+
+    // ── Home — success section ────────────────────────────────────────────────
+    'success_section_title' => 'Blessed Unions Every Month',
+    'success_section_desc'  => 'Alhamdulillah — families trust HeavenlyMatch to help them find the right life partner. Our platform has helped thousands of Muslims start their journey together, with dignity and family blessing.',
+    'success_feat_1'        => 'Privacy at every step',
+    'success_feat_2'        => 'Guardian-involved process',
+    'success_feat_3'        => 'AI-powered compatibility',
+    'success_feat_4'        => 'Verified profiles only',
+    'success_cta'           => 'Start Your Journey',
+
+    // ── Home — comparison section ─────────────────────────────────────────────
+    'comparison_title'       => 'Why HeavenlyMatch?',
+    'comparison_you_expect'  => 'You Might Expect',
+    'comparison_we_offer'    => 'What We Offer',
+    'comparison_row_1_left'  => 'Fake or unverified profiles',
+    'comparison_row_1_right' => 'Manually reviewed & verified biodatas',
+    'comparison_row_2_left'  => 'Photos exposed to everyone',
+    'comparison_row_2_right' => 'Privacy-controlled photos, blurred by default',
+    'comparison_row_3_left'  => 'No family involvement',
+    'comparison_row_3_right' => 'Guardian / Wali notification built-in',
+    'comparison_row_4_left'  => 'Complicated international payment only',
+    'comparison_row_4_right' => 'bKash, Nagad, bank transfer — no card needed',
+    'comparison_row_5_left'  => 'Generic matching algorithm',
+    'comparison_row_5_right' => 'Islamic values-based AI compatibility scoring',
+
 ];

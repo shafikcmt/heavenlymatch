@@ -1,8 +1,33 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head, Link } from '@inertiajs/react'
-import { Shield, CheckCircle, Lock, Users, CreditCard, MapPin, Eye, UserCheck } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Link } from '@inertiajs/react'
+import {
+  Shield, CheckCircle, Lock, Users, CreditCard, MapPin,
+  UserCheck, ChevronLeft, ChevronRight, Star, Check, X,
+} from 'lucide-react'
 import MarketingLayout from '@/layouts/MarketingLayout'
 import { useTranslation } from '@/lib/i18n'
+import { SeoHead } from '@/components/SeoHead'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface FeaturedProfile {
+  id: string
+  first_name: string
+  gender: 'male' | 'female'
+  age: number | null
+  district: string | null
+  occupation: string | null
+  avatar_num: number
+}
+
+interface Props {
+  heroImageUrl?: string | null
+  successImageUrl?: string | null
+  featuredProfiles?: FeaturedProfile[]
+}
+
+// ── Static data ───────────────────────────────────────────────────────────────
 
 const STATS = [
   { key: 'home_stat_members',   value: '50,000+' },
@@ -12,21 +37,17 @@ const STATS = [
 ] as const
 
 const GENERAL_FEATURES = [
-  'home_mode_general_f1',
-  'home_mode_general_f2',
-  'home_mode_general_f3',
-  'home_mode_general_f4',
+  'home_mode_general_f1', 'home_mode_general_f2',
+  'home_mode_general_f3', 'home_mode_general_f4',
 ] as const
 
 const ISLAMIC_FEATURES = [
-  'home_mode_islamic_f1',
-  'home_mode_islamic_f2',
-  'home_mode_islamic_f3',
-  'home_mode_islamic_f4',
+  'home_mode_islamic_f1', 'home_mode_islamic_f2',
+  'home_mode_islamic_f3', 'home_mode_islamic_f4',
 ] as const
 
 const TRUST_FEATURES = [
-  { icon: Lock,      titleKey: 'home_trust_privacy_title', descKey: 'home_trust_privacy_desc' },
+  { icon: Lock,      titleKey: 'home_trust_privacy_title',  descKey: 'home_trust_privacy_desc' },
   { icon: UserCheck, titleKey: 'home_trust_verified_title', descKey: 'home_trust_verified_desc' },
   { icon: Users,     titleKey: 'home_trust_guardian_title', descKey: 'home_trust_guardian_desc' },
   { icon: Shield,    titleKey: 'home_trust_halal_title',    descKey: 'home_trust_halal_desc' },
@@ -41,54 +62,113 @@ const STEPS = [
   { n: '4', icon: '💌', titleKey: 'home_step4_title', descKey: 'home_step4_desc' },
 ] as const
 
-export default function Home() {
+const TESTIMONIALS = [
+  {
+    initials: 'F.K.',
+    location: 'Dhaka',
+    text: "Alhamdulillah — I found my husband within 3 months. The biodata system is very professional and my family felt comfortable throughout the entire process.",
+  },
+  {
+    initials: 'A.R.',
+    location: 'Chattogram',
+    text: "As a practicing Muslim, I was worried about finding a halal platform. HeavenlyMatch's Islamic mode was exactly what I needed. Very respectful process from start to finish.",
+  },
+  {
+    initials: 'S.B.',
+    location: 'Rajshahi',
+    text: "My parents were involved from the very beginning. The guardian notification feature gave everyone peace of mind. May Allah bless this platform.",
+  },
+  {
+    initials: 'M.H.',
+    location: 'Sylhet',
+    text: "Paying via bKash was very easy. The profiles are genuine and I could filter by district and education. Very well designed for Bangladeshi Muslims.",
+  },
+  {
+    initials: 'T.A.',
+    location: 'Cumilla',
+    text: "The photo privacy feature is outstanding. I only showed my photo to serious candidates. This is how Islamic matrimony should work — with dignity.",
+  },
+]
+
+const COMPARISON_ROWS = [
+  { leftKey: 'comparison_row_1_left', rightKey: 'comparison_row_1_right' },
+  { leftKey: 'comparison_row_2_left', rightKey: 'comparison_row_2_right' },
+  { leftKey: 'comparison_row_3_left', rightKey: 'comparison_row_3_right' },
+  { leftKey: 'comparison_row_4_left', rightKey: 'comparison_row_4_right' },
+  { leftKey: 'comparison_row_5_left', rightKey: 'comparison_row_5_right' },
+] as const
+
+const SUCCESS_FEATURES = [
+  'success_feat_1', 'success_feat_2', 'success_feat_3', 'success_feat_4',
+] as const
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function Home({ heroImageUrl, successImageUrl, featuredProfiles = [] }: Props) {
   const { t } = useTranslation()
+  const [testimonialIdx, setTestimonialIdx] = useState(0)
+  const sliderRef = useRef<HTMLDivElement>(null)
+
+  const prevTestimonial = () => setTestimonialIdx(i => (i === 0 ? TESTIMONIALS.length - 1 : i - 1))
+  const nextTestimonial = () => setTestimonialIdx(i => (i === TESTIMONIALS.length - 1 ? 0 : i + 1))
+
+  const scrollSlider = (dir: 'left' | 'right') => {
+    if (!sliderRef.current) return
+    sliderRef.current.scrollBy({ left: dir === 'right' ? 220 : -220, behavior: 'smooth' })
+  }
+
+  const current = TESTIMONIALS[testimonialIdx] ?? TESTIMONIALS[0]!
 
   return (
     <MarketingLayout>
-      <Head title="HeavenlyMatch — Halal Matrimony for Bangladeshi Muslims" />
+      <SeoHead pageKey="home" />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-emerald-50 py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+      <section className="relative overflow-hidden py-28 px-4 bg-gradient-to-b from-rose-50 via-white to-primary-50/40">
+        {/* Soft ambient blobs */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-br from-rose-100/60 via-primary-100/40 to-violet-100/30 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-100/30 rounded-full filter blur-3xl pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          {/* Trust badge */}
+          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-8 shadow-sm">
             <Shield size={14} />
             {t('marketing', 'home_trust_badge')}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-6">
             {t('marketing', 'home_hero_title')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-violet-600 bg-clip-text text-transparent">
               {t('marketing', 'home_hero_highlight')}
             </span>
           </h1>
 
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-10">
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
             {t('marketing', 'home_hero_subtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href={route('register')}
-              className="inline-flex items-center justify-center gap-2 h-14 px-8 text-lg font-semibold rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-200 transition-colors"
+              className="inline-flex items-center justify-center gap-2 h-14 px-10 text-lg font-semibold rounded-2xl bg-primary-600 text-white hover:bg-primary-700 shadow-xl shadow-primary-200/60 transition-all hover:-translate-y-0.5"
             >
               {t('marketing', 'home_cta_register')} →
             </Link>
             <Link
               href={route('how-it-works')}
-              className="inline-flex items-center justify-center gap-2 h-14 px-8 text-lg font-semibold rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 h-14 px-10 text-lg font-semibold rounded-2xl border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm"
             >
               {t('marketing', 'home_cta_how')}
             </Link>
           </div>
 
-          <p className="mt-4 text-xs text-slate-400">{t('marketing', 'home_cta_subtitle')}</p>
+          <p className="mt-5 text-sm text-slate-400">{t('marketing', 'home_cta_subtitle')}</p>
         </div>
 
         {/* Stats */}
-        <div className="max-w-4xl mx-auto mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="max-w-3xl mx-auto mt-20 grid grid-cols-2 sm:grid-cols-4 gap-4 relative z-10">
           {STATS.map(({ key, value }) => (
-            <div key={key} className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+            <div key={key} className="rounded-2xl border border-white bg-white/80 backdrop-blur-sm p-5 text-center shadow-md shadow-slate-100">
               <p className="text-2xl font-extrabold text-primary-600">{value}</p>
               <p className="text-xs text-slate-500 mt-1">{t('marketing', key)}</p>
             </div>
@@ -96,8 +176,247 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Two modes ── */}
+      {/* ── Featured Profile Slider ── */}
       <section className="py-20 px-4 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">{t('marketing', 'featured_profiles_title')}</h2>
+            <p className="text-slate-500 text-sm">{t('marketing', 'featured_profiles_subtitle')}</p>
+          </div>
+
+          {featuredProfiles.length > 0 ? (
+            <div className="relative">
+              {/* Left/Right nav arrows */}
+              <button
+                onClick={() => scrollSlider('left')}
+                aria-label="Scroll left"
+                className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md hover:bg-slate-50 transition-colors"
+              >
+                <ChevronLeft size={18} className="text-slate-600" />
+              </button>
+              <button
+                onClick={() => scrollSlider('right')}
+                aria-label="Scroll right"
+                className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md hover:bg-slate-50 transition-colors"
+              >
+                <ChevronRight size={18} className="text-slate-600" />
+              </button>
+
+              {/* Scrollable track */}
+              <div
+                ref={sliderRef}
+                className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                {featuredProfiles.map(profile => (
+                  <div
+                    key={profile.id}
+                    className="shrink-0 snap-center w-[180px] sm:w-[200px] rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {/* Avatar area */}
+                    <div className="h-[160px] bg-slate-50 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={`/images/marketing/profile-placeholder-${profile.gender}.svg`}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        aria-hidden="true"
+                        onError={e => {
+                          (e.target as HTMLImageElement).src = `/images/avatar-${profile.gender}.svg`
+                        }}
+                      />
+                    </div>
+                    {/* Info */}
+                    <div className="p-3">
+                      <p className="font-semibold text-slate-900 text-sm truncate">{profile.first_name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {profile.age ? `${profile.age} yrs` : '—'}
+                        {profile.district ? ` · ${profile.district}` : ''}
+                      </p>
+                      {profile.occupation && (
+                        <p className="text-xs text-slate-400 mt-0.5 truncate">{profile.occupation}</p>
+                      )}
+                      <Link
+                        href={route('register')}
+                        className="mt-3 block text-center text-xs font-semibold text-primary-600 hover:text-primary-700 border border-primary-200 rounded-lg py-1.5 hover:bg-primary-50 transition-colors"
+                      >
+                        {t('marketing', 'view_profile_btn')}
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Empty state */
+            <div className="text-center py-10 rounded-2xl border-2 border-dashed border-slate-200">
+              <img
+                src="/images/marketing/profile-placeholder-male.svg"
+                alt=""
+                className="h-24 w-24 mx-auto mb-4 opacity-40"
+                aria-hidden="true"
+              />
+              <p className="text-slate-500 text-sm">{t('marketing', 'create_biodata_cta')}</p>
+              <Link href={route('register')} className="mt-4 inline-block text-sm font-semibold text-primary-600 hover:underline">
+                {t('marketing', 'home_cta_register')} →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Success / Stats section ── */}
+      <section className="py-20 px-4 bg-gradient-to-br from-emerald-900 to-slate-900 text-white">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Image */}
+          <div className="order-2 lg:order-1 rounded-3xl overflow-hidden shadow-2xl aspect-[4/3]">
+            {successImageUrl ? (
+              <img
+                src={successImageUrl}
+                alt=""
+                className="h-full w-full object-cover"
+                aria-hidden="true"
+                onError={e => {
+                  (e.target as HTMLImageElement).src = '/images/marketing/success-couple-placeholder.svg'
+                }}
+              />
+            ) : (
+              <img
+                src="/images/marketing/success-couple-placeholder.svg"
+                alt=""
+                className="h-full w-full object-cover"
+                aria-hidden="true"
+              />
+            )}
+          </div>
+
+          {/* Text */}
+          <div className="order-1 lg:order-2">
+            <h2 className="text-3xl font-bold mb-4">{t('marketing', 'success_section_title')}</h2>
+            <p className="text-emerald-100 text-sm leading-relaxed mb-6">{t('marketing', 'success_section_desc')}</p>
+
+            <ul className="space-y-3 mb-8">
+              {SUCCESS_FEATURES.map(key => (
+                <li key={key} className="flex items-center gap-3 text-sm">
+                  <span className="flex-shrink-0 h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <Check size={13} className="text-white" strokeWidth={3} />
+                  </span>
+                  <span className="text-emerald-50">{t('marketing', key)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href={route('register')}
+              className="inline-flex items-center justify-center h-12 px-8 font-semibold rounded-xl bg-amber-400 text-slate-900 hover:bg-amber-300 shadow-lg transition-colors"
+            >
+              {t('marketing', 'success_cta')} →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section className="py-20 px-4 bg-slate-50">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">{t('marketing', 'testimonials_title')}</h2>
+          <p className="text-slate-500 text-sm mb-12">{t('marketing', 'testimonials_subtitle')}</p>
+
+          <div className="relative bg-white rounded-3xl border border-slate-200 shadow-sm p-8 sm:p-10">
+            {/* Sample story label */}
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">
+              {t('marketing', 'member_story_label')}
+            </span>
+
+            {/* Avatar */}
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-400 to-primary-600 flex items-center justify-center mx-auto mb-5 shadow-md">
+              <span className="text-white font-bold text-lg">{current.initials}</span>
+            </div>
+
+            <blockquote className="text-slate-700 text-base leading-relaxed italic mb-6">
+              "{current.text}"
+            </blockquote>
+
+            <div className="flex items-center justify-center gap-1.5 text-sm text-slate-500">
+              <MapPin size={13} />
+              {current.location}
+            </div>
+
+            {/* Stars */}
+            <div className="flex justify-center gap-1 mt-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={14} className="text-amber-400 fill-amber-400" />
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <button
+              onClick={prevTestimonial}
+              aria-label="Previous"
+              className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft size={18} className="text-slate-600" />
+            </button>
+
+            {/* Dots */}
+            <div className="flex gap-2">
+              {TESTIMONIALS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setTestimonialIdx(i)}
+                  aria-label={`Go to testimonial ${i + 1}`}
+                  className={`h-2 rounded-full transition-all ${i === testimonialIdx ? 'w-6 bg-primary-600' : 'w-2 bg-slate-300'}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextTestimonial}
+              aria-label="Next"
+              className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"
+            >
+              <ChevronRight size={18} className="text-slate-600" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Comparison ── */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-slate-900 text-center mb-12">{t('marketing', 'comparison_title')}</h2>
+
+          {/* Header row */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="rounded-xl bg-red-50 border border-red-100 p-4 text-center">
+              <p className="text-sm font-semibold text-red-700">{t('marketing', 'comparison_you_expect')}</p>
+            </div>
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-center">
+              <p className="text-sm font-semibold text-emerald-700">{t('marketing', 'comparison_we_offer')}</p>
+            </div>
+          </div>
+
+          {/* Comparison rows */}
+          <div className="space-y-3">
+            {COMPARISON_ROWS.map(({ leftKey, rightKey }) => (
+              <div key={leftKey} className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50/60 p-3.5">
+                  <X size={15} className="text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800">{t('marketing', leftKey)}</p>
+                </div>
+                <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5">
+                  <Check size={15} className="text-emerald-600 shrink-0 mt-0.5" strokeWidth={3} />
+                  <p className="text-sm text-emerald-900 font-medium">{t('marketing', rightKey)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Two modes ── */}
+      <section className="py-20 px-4 bg-slate-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-3">
             {t('marketing', 'home_modes_title')}
@@ -143,7 +462,7 @@ export default function Home() {
       </section>
 
       {/* ── Trust features ── */}
-      <section className="py-20 px-4 bg-slate-50">
+      <section className="py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-3">
             {t('marketing', 'home_trust_title')}
@@ -166,7 +485,7 @@ export default function Home() {
       </section>
 
       {/* ── Steps ── */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-slate-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-14">
             {t('marketing', 'home_steps_title')}
@@ -175,7 +494,7 @@ export default function Home() {
             {STEPS.map(({ n, icon, titleKey, descKey }) => (
               <div key={n} className="text-center">
                 <div className="relative inline-block mb-4">
-                  <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-3xl mx-auto shadow-sm">
+                  <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-3xl mx-auto shadow-sm">
                     {icon}
                   </div>
                   <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center shadow">

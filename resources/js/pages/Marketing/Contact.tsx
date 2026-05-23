@@ -1,8 +1,8 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head } from '@inertiajs/react'
 import { Mail, Clock, MessageCircle, AlertTriangle } from 'lucide-react'
 import MarketingLayout from '@/layouts/MarketingLayout'
 import { useTranslation } from '@/lib/i18n'
+import { SeoHead } from '@/components/SeoHead'
 import { useState } from 'react'
 
 const CONTACT_EMAIL = 'support@heavenlymatch.com'
@@ -23,7 +23,7 @@ export default function Contact() {
 
   return (
     <MarketingLayout>
-      <Head title={t('marketing', 'contact_meta_title')} />
+      <SeoHead pageKey="contact" />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-50 via-white to-primary-50 py-20 px-4 text-center">

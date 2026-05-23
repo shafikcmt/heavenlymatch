@@ -108,13 +108,13 @@ export default function Reports({ reports, counts, tab }: Props) {
   ]
 
   const REASON_LABELS: Record<string, string> = {
-    fake_profile:          'Fake Profile',
-    harassment:            'Harassment',
-    inappropriate_photos:  'Inappropriate Photos',
-    spam:                  'Spam',
-    scam:                  'Scam',
-    underage:              'Underage User',
-    other:                 'Other',
+    fake_profile:          t('admin', 'reason_fake_profile'),
+    harassment:            t('admin', 'reason_harassment'),
+    inappropriate_photos:  t('admin', 'reason_inappropriate'),
+    spam:                  t('admin', 'reason_spam'),
+    scam:                  t('admin', 'reason_scam'),
+    underage:              t('admin', 'reason_underage'),
+    other:                 t('admin', 'reason_other'),
   }
 
   return (
@@ -184,11 +184,21 @@ export default function Reports({ reports, counts, tab }: Props) {
                     <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
                       <span>
                         <span className="text-slate-400">{t('admin', 'reporter')}: </span>
-                        <span className="font-medium text-slate-700">{r.reporter?.name ?? r.reporter_id}</span>
+                        <button
+                          onClick={() => router.get(route('admin.users.show', r.reporter_id))}
+                          className="font-medium text-primary-600 hover:underline"
+                        >
+                          {r.reporter?.name ?? r.reporter_id}
+                        </button>
                       </span>
                       <span>
                         <span className="text-slate-400">{t('admin', 'reported_user')}: </span>
-                        <span className="font-medium text-slate-700">{r.reported?.name ?? r.reported_id}</span>
+                        <button
+                          onClick={() => router.get(route('admin.users.show', r.reported_id))}
+                          className="font-medium text-primary-600 hover:underline"
+                        >
+                          {r.reported?.name ?? r.reported_id}
+                        </button>
                       </span>
                     </div>
                   </div>
@@ -205,7 +215,7 @@ export default function Reports({ reports, counts, tab }: Props) {
 
                 {r.resolution_note && (
                   <p className="text-xs text-slate-500 italic mb-3">
-                    Resolution: {r.resolution_note}
+                    {t('admin', 'resolution_label')} {r.resolution_note}
                   </p>
                 )}
 
@@ -266,14 +276,17 @@ export default function Reports({ reports, counts, tab }: Props) {
 }
 
 function ReportStatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    open:      'bg-amber-100 text-amber-700',
-    resolved:  'bg-emerald-100 text-emerald-700',
-    dismissed: 'bg-slate-100 text-slate-500',
+  const { t } = useTranslation()
+  const colorMap: Record<string, string> = {
+    open:       'bg-amber-100 text-amber-700',
+    reviewing:  'bg-amber-100 text-amber-700',
+    resolved:   'bg-emerald-100 text-emerald-700',
+    dismissed:  'bg-slate-100 text-slate-500',
   }
+  const labelKey = `report_status_${status}` as const
   return (
-    <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-500')}>
-      {status}
+    <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium', colorMap[status] ?? 'bg-slate-100 text-slate-500')}>
+      {t('admin', labelKey) || status}
     </span>
   )
 }

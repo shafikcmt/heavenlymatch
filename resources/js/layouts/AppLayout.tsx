@@ -1,18 +1,20 @@
+/// <reference path="../types/ziggy.d.ts" />
 import { usePage, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import type { PageProps } from '@/types'
 import {
   Home, Search, Heart, MessageCircle, Star, Bell,
-  User, Settings, LogOut, Menu, X, ChevronDown,
-  Shield, Sparkles, Crown,
+  User, Settings, LogOut, Menu, X,
+  Shield, Sparkles, Crown, TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 const NAV_ITEMS = [
   { label: 'Dashboard',    href: '/dashboard',    icon: Home },
   { label: 'Matches',      href: '/matches',       icon: Sparkles },
   { label: 'Search',       href: '/search',        icon: Search },
-  { label: 'Interests',    href: '/interests',     icon: Heart },
+  { label: 'Interests',    href: '/interests/received', icon: Heart },
   { label: 'Messages',     href: '/inbox',         icon: MessageCircle },
   { label: 'Shortlist',    href: '/shortlist',     icon: Star },
   { label: 'Notifications',href: '/notifications', icon: Bell },
@@ -34,7 +36,7 @@ function MembershipBadge({ tier }: { tier: string | null }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { auth, flash } = usePage<PageProps>().props
+  const { auth, flash, completion, unread_notifications } = usePage<PageProps>().props
   const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentPath = (typeof window !== 'undefined') ? window.location.pathname : ''
@@ -75,6 +77,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const active = currentPath === href || currentPath.startsWith(href + '/')
+            const isBell = href === '/notifications'
+            const badge = isBell && unread_notifications > 0 ? unread_notifications : 0
             return (
               <Link
                 key={href}
@@ -86,7 +90,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                 )}
               >
-                <Icon size={18} className={active ? 'text-primary-600' : 'text-slate-400'} />
+                <span className="relative">
+                  <Icon size={18} className={active ? 'text-primary-600' : 'text-slate-400'} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
+                </span>
                 {label}
               </Link>
             )
@@ -131,6 +142,28 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               Logout
             </Link>
           </div>
+          {/* Profile completion mini-bar */}
+          {completion && completion.percentage < 100 && (
+            <Link href={completion.next_step_url} className="block mt-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 hover:bg-amber-100 transition-colors">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
+                  <TrendingUp size={11} />
+                  Profile {completion.percentage}%
+                </span>
+                <span className="text-xs text-amber-600">Complete →</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-amber-200 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-amber-500 transition-all"
+                  style={{ width: `${completion.percentage}%` }}
+                />
+              </div>
+            </Link>
+          )}
+
+          <div className="mt-2 px-1">
+            <LanguageSwitcher className="w-full justify-center" />
+          </div>
         </div>
       </aside>
 
@@ -145,9 +178,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu size={20} />
           </button>
           <span className="font-bold text-slate-900">HeavenlyMatch</span>
-          <div className="ml-auto flex items-center gap-2">
-            <Link href="/notifications" className="text-slate-500 hover:text-slate-700">
+          <div className="ml-auto flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link href="/notifications" className="relative text-slate-500 hover:text-slate-700">
               <Bell size={20} />
+              {unread_notifications > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                  {unread_notifications > 9 ? '9+' : unread_notifications}
+                </span>
+              )}
             </Link>
           </div>
         </header>

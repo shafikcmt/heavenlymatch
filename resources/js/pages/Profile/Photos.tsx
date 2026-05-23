@@ -1,11 +1,12 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head, router, useForm } from '@inertiajs/react'
+import { Head, router, useForm, usePage } from '@inertiajs/react'
 import { useRef, useState } from 'react'
 import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
-import { Star, Trash2, Upload, ImageOff, AlertCircle } from 'lucide-react'
+import { Star, Trash2, Upload, ImageOff, AlertCircle, Shield, CheckCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { PageProps } from '@/types'
 
 interface Photo {
   path: string
@@ -23,12 +24,15 @@ interface Props {
 
 export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, hasBiodata }: Props) {
   const { t } = useTranslation()
+  const { flash, auth } = usePage<PageProps>().props
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewError, setPreviewError] = useState<string | null>(null)
 
   const canUpload = photos.length < maxPhotos
+  const isIslamic = auth.user?.platform_mode === 'islamic'
 
-  // Upload form
   const { data, setData, post, processing, errors, reset } = useForm<{ photo: File | null }>({
     photo: null,
   })
@@ -36,14 +40,38 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+
+    setPreviewError(null)
+
+    if (file.size > 4 * 1024 * 1024) {
+      setPreviewError(t('biodata', 'photo_too_large'))
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
     setData('photo', file)
+    setPreviewUrl(URL.createObjectURL(file))
+  }
+
+  function handleUploadConfirm() {
     post(route('profile.photos.store'), {
       forceFormData: true,
       onSuccess: () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl)
+        setPreviewUrl(null)
+        setPreviewError(null)
         reset()
         if (fileInputRef.current) fileInputRef.current.value = ''
       },
     })
+  }
+
+  function handlePreviewCancel() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(null)
+    setPreviewError(null)
+    reset()
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   function handleDelete(index: number) {
@@ -71,6 +99,28 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
       <div className="max-w-2xl mx-auto pt-4 pb-10 space-y-6">
         <h1 className="text-xl font-bold text-slate-900">{t('biodata', 'photos_title')}</h1>
 
+        {/* Flash messages */}
+        {flash.success && (
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <CheckCircle size={18} className="text-emerald-600 shrink-0" />
+            <p className="text-sm text-emerald-800">{flash.success}</p>
+          </div>
+        )}
+        {flash.error && (
+          <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+            <AlertCircle size={18} className="text-red-600 shrink-0" />
+            <p className="text-sm text-red-800">{flash.error}</p>
+          </div>
+        )}
+
+        {/* Islamic privacy notice */}
+        {isIslamic && (
+          <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <Shield size={18} className="text-emerald-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-emerald-800">{t('biodata', 'photo_privacy_islamic_notice')}</p>
+          </div>
+        )}
+
         {/* No biodata warning */}
         {!hasBiodata && (
           <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -79,14 +129,52 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
           </div>
         )}
 
-        {/* Upload area */}
-        {hasBiodata && (
-          <div className={cn(
-            'rounded-2xl border-2 border-dashed p-6 text-center transition-colors',
-            canUpload
-              ? 'border-slate-200 hover:border-primary-400 cursor-pointer'
-              : 'border-slate-100 bg-slate-50 opacity-60',
-          )}
+        {/* Preview panel (shown after file is selected) */}
+        {previewUrl && (
+          <div className="rounded-2xl border-2 border-primary-300 bg-primary-50 p-5 space-y-4">
+            <p className="text-sm font-semibold text-slate-700">{t('biodata', 'photo_preview_label')}</p>
+            <img
+              src={previewUrl}
+              alt="preview"
+              className="w-40 h-40 object-cover rounded-2xl border border-slate-200 mx-auto shadow"
+            />
+            {errors.photo && (
+              <p className="text-xs text-red-600 text-center">{errors.photo}</p>
+            )}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={handlePreviewCancel}
+                disabled={processing}
+              >
+                <X size={14} />
+                {t('biodata', 'photo_cancel_preview')}
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                onClick={handleUploadConfirm}
+                isLoading={processing}
+                disabled={processing}
+              >
+                <Upload size={14} />
+                {t('biodata', 'photo_confirm_upload')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Upload drop zone (hidden when preview is showing) */}
+        {hasBiodata && !previewUrl && (
+          <div
+            className={cn(
+              'rounded-2xl border-2 border-dashed p-6 text-center transition-colors',
+              canUpload
+                ? 'border-slate-200 hover:border-primary-400 cursor-pointer'
+                : 'border-slate-100 bg-slate-50 opacity-60',
+            )}
             onClick={() => canUpload && fileInputRef.current?.click()}
           >
             <input
@@ -98,31 +186,20 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
               disabled={!canUpload || processing}
             />
 
-            {processing ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
-                <p className="text-sm text-slate-500">Uploading…</p>
-              </div>
-            ) : (
-              <>
-                <Upload size={28} className={cn('mx-auto mb-3', canUpload ? 'text-primary-500' : 'text-slate-400')} />
-                <p className="text-sm font-medium text-slate-700 mb-1">
-                  {canUpload
-                    ? t('biodata', 'photo_upload_btn')
-                    : t('biodata', 'photo_limit_reached', { max: String(maxPhotos) })}
-                </p>
-                <p className="text-xs text-slate-400">
-                  {t('biodata', 'photo_count', {
-                    count: String(photos.length),
-                    max: String(maxPhotos),
-                  })}
-                  {' · '}JPG, PNG, WebP · max 4 MB
-                </p>
-              </>
-            )}
+            <Upload size={28} className={cn('mx-auto mb-3', canUpload ? 'text-primary-500' : 'text-slate-400')} />
+            <p className="text-sm font-medium text-slate-700 mb-1">
+              {canUpload
+                ? t('biodata', 'photo_upload_btn')
+                : t('biodata', 'photo_limit_reached', { max: String(maxPhotos) })}
+            </p>
+            <p className="text-xs text-slate-400">
+              {t('biodata', 'photo_count', { count: String(photos.length), max: String(maxPhotos) })}
+              {' · '}
+              {t('biodata', 'photo_file_hint')}
+            </p>
 
-            {errors.photo && (
-              <p className="mt-2 text-xs text-red-600">{errors.photo}</p>
+            {previewError && (
+              <p className="mt-2 text-xs text-red-600">{previewError}</p>
             )}
           </div>
         )}
@@ -159,12 +236,16 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
           <p className="text-xs text-slate-500 mb-4">{t('biodata', 'photo_visibility_hint')}</p>
 
           <div className="flex flex-col gap-2">
-            {(['public', 'members_only', 'blurred'] as const).map(val => (
+            {([
+              { value: 'public',       label: t('biodata', 'photo_public'),   desc: t('biodata', 'photo_vis_public_desc') },
+              { value: 'members_only', label: t('biodata', 'photo_members'),  desc: t('biodata', 'photo_vis_members_desc') },
+              { value: 'blurred',      label: t('biodata', 'photo_blurred'),  desc: t('biodata', 'photo_vis_blurred_desc') },
+            ] as const).map(({ value, label, desc }) => (
               <label
-                key={val}
+                key={value}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors',
-                  photoVisibility === val
+                  'flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors',
+                  photoVisibility === value
                     ? 'border-primary-500 bg-primary-50'
                     : 'border-slate-200 hover:bg-slate-50',
                 )}
@@ -172,24 +253,25 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
                 <input
                   type="radio"
                   name="photo_visibility"
-                  value={val}
-                  checked={photoVisibility === val}
-                  onChange={() => handleVisibilityChange(val)}
-                  className="accent-primary-600"
+                  value={value}
+                  checked={photoVisibility === value}
+                  onChange={() => handleVisibilityChange(value)}
+                  className="accent-primary-600 mt-0.5"
                 />
                 <div>
-                  <p className="text-sm font-medium text-slate-800">
-                    {t('biodata', val === 'public' ? 'photo_public' : val === 'members_only' ? 'photo_members' : 'photo_blurred')}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {val === 'public' && 'Anyone can see your photos'}
-                    {val === 'members_only' && 'Only accepted connections can see clearly'}
-                    {val === 'blurred' && 'Photos are blurred until you approve requests'}
-                  </p>
+                  <p className="text-sm font-medium text-slate-800">{label}</p>
+                  <p className="text-xs text-slate-400">{desc}</p>
                 </div>
               </label>
             ))}
           </div>
+
+          {isIslamic && photoVisibility !== 'blurred' && (
+            <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 mt-3">
+              <Shield size={14} className="text-emerald-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-emerald-800">{t('biodata', 'photo_privacy_islamic_notice')}</p>
+            </div>
+          )}
         </section>
       </div>
     </AppLayout>
@@ -227,7 +309,6 @@ function PhotoCard({
         loading="lazy"
       />
 
-      {/* Primary badge */}
       {isPrimary && (
         <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-primary-600 px-2 py-0.5 text-xs font-semibold text-white shadow">
           <Star size={10} fill="currentColor" />
@@ -235,7 +316,6 @@ function PhotoCard({
         </div>
       )}
 
-      {/* Action overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-end gap-2 p-3 bg-black/0 group-hover:bg-black/40 transition-all opacity-0 group-hover:opacity-100">
         {!isPrimary && (
           <button

@@ -32,6 +32,7 @@ class PaymentController extends Controller
                 'id', 'name', 'slug', 'duration_months', 'price', 'currency',
                 'features', 'badge', 'color_hex', 'is_popular',
                 'contact_view_limit', 'message_limit', 'priority_placement', 'family_support',
+                'profile_boost_hours',
             ]);
 
         $gateways = PaymentGateway::where('is_active', true)
@@ -47,6 +48,7 @@ class PaymentController extends Controller
             'plans'             => $plans,
             'gateways'          => $gateways,
             'currentPlan'       => $user->membership_plan_name,
+            'currentPlanId'     => $user->membership_plan_id,
             'membershipStatus'  => $user->membership_status,
             'membershipExpires' => $user->membership_expires_at?->toDateString(),
             'pendingPayment'    => $pendingTxn ? [

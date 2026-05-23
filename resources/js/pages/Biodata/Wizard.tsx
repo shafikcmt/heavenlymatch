@@ -1,10 +1,14 @@
 /// <reference path="../../types/ziggy.d.ts" />
 import { Head, router, useForm } from '@inertiajs/react'
+import { useState } from 'react'
 import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { cn } from '@/lib/utils'
-import { CheckCircle } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
+import { CheckCircle, Save } from 'lucide-react'
+import { BD_DIVISIONS, BD_DISTRICTS } from '@/data/bangladesh'
 
 interface BiodataData {
   // Step 1: General
@@ -24,6 +28,7 @@ interface BiodataData {
   residing_country?: string
   residing_city?: string
   is_nrb?: boolean
+  visa_status?: string
   // Step 3: Religion
   religion?: string
   sect?: string
@@ -33,9 +38,10 @@ interface BiodataData {
   clothing_style?: string
   beard_info?: string
   hijab_info?: string
+  is_islamically_educated?: boolean
   wali_approval?: boolean
   sunni_scale?: number | ''
-  // Step 4: Education
+  // Step 4: Education & Career
   education_method?: string
   highest_qualification?: string
   occupation?: string
@@ -86,118 +92,218 @@ interface BiodataData {
 interface Props {
   step: number
   steps: Record<number, string>
-  biodata: BiodataData
+  biodata: BiodataData & { completeness_score?: number }
   user: { name: string; gender: string; mode: string }
 }
 
-const STEP_LABELS = [
-  'General', 'Location', 'Religion', 'Education',
-  'Family', 'Lifestyle', 'Marriage', 'Partner', 'Photos',
-]
-
 export default function BiodataWizard({ step, steps, biodata, user }: Props) {
   const totalSteps = Object.keys(steps).length
+  const { t } = useTranslation()
+  const completenessScore = biodata.completeness_score ?? 0
 
   const { data, setData, post, processing, errors } = useForm<BiodataData>({
     ...biodata,
   })
+
+  const [savingDraft, setSavingDraft] = useState(false)
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     post(route('biodata.save', { step }))
   }
 
-  const Field = ({ name, label, type = 'text', placeholder = '', required = false }: {
-    name: string; label: string; type?: string; placeholder?: string; required?: boolean
+  const saveDraft = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setSavingDraft(true)
+    router.post(
+      route('biodata.save', { step }),
+      { ...(data as Record<string, unknown>), save_draft: true },
+      { onFinish: () => setSavingDraft(false) },
+    )
+  }
+
+  // ── Reusable sub-components ──────────────────────────────────────────────
+  type FieldName = keyof BiodataData
+
+  const Field = ({
+    name, label, type = 'text', placeholder = '', required = false,
+  }: {
+    name: FieldName; label: string; type?: string
+    placeholder?: string; required?: boolean
   }) => (
     <Input
       label={label}
       type={type}
-      value={(data[name as keyof BiodataData] as string | number | undefined) ?? ''}
-      onChange={e => setData(name as keyof BiodataData, e.target.value)}
-      error={errors[name as keyof BiodataData] as string | undefined}
+      value={(data[name] as string | number | undefined) ?? ''}
+      onChange={e => setData(name, e.target.value as never)}
+      error={errors[name]}
       placeholder={placeholder}
       required={required}
     />
   )
 
-  const Select = ({ name, label, options }: {
-    name: string; label: string
+  const Sel = ({
+    name, label, options, allowFreeText = false,
+  }: {
+    name: FieldName; label: string
     options: { value: string; label: string }[]
+    allowFreeText?: boolean
   }) => (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
-      <select
-        value={(data[name as keyof BiodataData] as string) ?? ''}
-        onChange={e => setData(name as keyof BiodataData, e.target.value)}
-        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-      >
-        <option value="">— Select —</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      {errors[name as keyof BiodataData] && <p className="mt-1 text-xs text-red-600">{errors[name as keyof BiodataData] as string}</p>}
-    </div>
+    <SearchableSelect
+      label={label}
+      value={(data[name] as string) ?? ''}
+      onChange={v => setData(name, v as never)}
+      options={options}
+      error={errors[name]}
+      allowFreeText={allowFreeText}
+    />
   )
 
-  const Toggle = ({ name, label }: { name: string; label: string }) => (
-    <label className="flex items-center gap-3 cursor-pointer">
+  const Toggle = ({ name, label }: { name: FieldName; label: string }) => (
+    <label className="flex items-center gap-3 cursor-pointer select-none">
       <div
         className={cn(
-          'relative w-11 h-6 rounded-full transition-colors',
-          data[name as keyof BiodataData] ? 'bg-primary-600' : 'bg-slate-300',
+          'relative w-11 h-6 rounded-full transition-colors shrink-0',
+          data[name] ? 'bg-primary-600' : 'bg-slate-300',
         )}
-        onClick={() => setData(name as keyof BiodataData, !data[name as keyof BiodataData])}
+        onClick={() => setData(name, !data[name] as never)}
       >
         <div className={cn(
           'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform',
-          data[name as keyof BiodataData] ? 'translate-x-6' : 'translate-x-1',
+          data[name] ? 'translate-x-6' : 'translate-x-1',
         )} />
       </div>
       <span className="text-sm text-slate-700">{label}</span>
     </label>
   )
 
+  const Textarea = ({
+    name, label, placeholder = '', rows = 4, maxLength,
+  }: {
+    name: FieldName; label: string; placeholder?: string
+    rows?: number; maxLength?: number
+  }) => {
+    const val = (data[name] as string) ?? ''
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-slate-700">{label}</label>
+          {maxLength && (
+            <span className={cn(
+              'text-xs',
+              val.length > maxLength * 0.9 ? 'text-amber-600' : 'text-slate-400',
+            )}>
+              {val.length}/{maxLength}
+            </span>
+          )}
+        </div>
+        <textarea
+          value={val}
+          onChange={e => setData(name, e.target.value as never)}
+          rows={rows}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
+        />
+        {errors[name] && <p className="mt-1 text-xs text-red-600">{errors[name]}</p>}
+      </div>
+    )
+  }
+
+  // ── Step labels / helpers (from translations via dot-notation) ────────────
+  const STEP_LABELS = ['General', 'Location', 'Religion', 'Education', 'Family', 'Lifestyle', 'Marriage', 'Partner', 'Photos']
+  const currentLabel = t('biodata', `step_labels.${step}`) || STEP_LABELS[step - 1] || `Step ${step}`
+  const currentHelper = t('biodata', `step_helper.${step}`)
+
+  // ── Cascading location (BD) ───────────────────────────────────────────────
+  const divisionOptions = BD_DIVISIONS.map(d => ({ value: d, label: d }))
+  const districtOptions = (data.division && BD_DISTRICTS[data.division as string])
+    ? BD_DISTRICTS[data.division as string]!.map(d => ({ value: d, label: d }))
+    : []
+
   return (
     <AppLayout>
       <Head title={`Biodata — Step ${step} of ${totalSteps}`} />
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Step progress */}
-        <div className="flex items-center gap-1 mb-8 overflow-x-auto pb-2">
-          {STEP_LABELS.map((label, i) => {
-            const num = i + 1
-            return (
-              <div key={num} className="flex items-center gap-1 flex-shrink-0">
-                <div className={cn(
-                  'h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all',
-                  step > num ? 'bg-emerald-500 text-white' :
-                  step === num ? 'bg-primary-600 text-white' :
-                  'bg-slate-200 text-slate-400',
-                )}>
-                  {step > num ? <CheckCircle size={14} /> : num}
-                </div>
-                <span className={cn(
-                  'text-xs font-medium hidden sm:block',
-                  step === num ? 'text-slate-900' : 'text-slate-400',
-                )}>{label}</span>
-                {num < totalSteps && (
-                  <div className={cn('w-4 h-0.5 mx-1', step > num ? 'bg-emerald-400' : 'bg-slate-200')} />
+      <div className="max-w-2xl mx-auto px-4 py-6">
+
+        {/* ── Overall completion bar ── */}
+        {completenessScore > 0 && (
+          <div className="mb-5">
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+              <span>Profile Completion</span>
+              <span className="font-semibold text-slate-700">{completenessScore}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  completenessScore >= 80 ? 'bg-emerald-500' :
+                  completenessScore >= 50 ? 'bg-primary-500' : 'bg-amber-400',
                 )}
-              </div>
-            )
-          })}
+                style={{ width: `${completenessScore}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── Step progress tabs ── */}
+        <div className="flex items-center gap-0.5 mb-6 overflow-x-auto pb-1">
+          {Array.from({ length: totalSteps }, (_, i) => i + 1).map(num => (
+            <div key={num} className="flex items-center gap-0.5 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => num < step && router.get(route('biodata.wizard', { step: num }))}
+                className={cn(
+                  'h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+                  step > num ? 'bg-emerald-500 text-white cursor-pointer hover:bg-emerald-600' :
+                  step === num ? 'bg-primary-600 text-white cursor-default' :
+                  'bg-slate-200 text-slate-400 cursor-default',
+                )}
+              >
+                {step > num ? <CheckCircle size={14} /> : num}
+              </button>
+              {num < totalSteps && (
+                <div className={cn('w-3 h-0.5', step > num ? 'bg-emerald-300' : 'bg-slate-200')} />
+              )}
+            </div>
+          ))}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-card">
-          <h2 className="text-lg font-bold text-slate-900 mb-6">
-            Step {step}: {STEP_LABELS[(step - 1)] ?? ''}
-          </h2>
+        {/* ── Form card ── */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
 
-          <form onSubmit={submit} className="space-y-5">
+          {/* Card header */}
+          <div className="px-6 py-5 border-b border-slate-100 bg-slate-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-0.5">
+                  Step {step} of {totalSteps}
+                </p>
+                <h2 className="text-lg font-bold text-slate-900">{currentLabel}</h2>
+                {currentHelper && (
+                  <p className="text-sm text-slate-500 mt-0.5">{currentHelper}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={saveDraft}
+                disabled={savingDraft || processing}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-400 transition-colors disabled:opacity-50"
+              >
+                <Save size={13} />
+                {savingDraft ? 'Saving…' : 'Save Draft'}
+              </button>
+            </div>
+          </div>
+
+          {/* Form body */}
+          <form onSubmit={submit} className="p-6 space-y-5">
+
             {/* ── Step 1: General ── */}
             {step === 1 && (
               <>
-                <Select name="marital_status" label="Marital Status" options={[
+                <Sel name="marital_status" label="Marital Status" options={[
                   { value: 'never_married', label: 'Never Married' },
                   { value: 'married', label: 'Married' },
                   { value: 'divorced', label: 'Divorced' },
@@ -208,28 +314,28 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   <Field name="height_cm" label="Height (cm)" type="number" placeholder="e.g. 165" />
                   <Field name="weight_kg" label="Weight (kg)" type="number" placeholder="e.g. 60" />
                 </div>
-                <Select name="complexion" label="Complexion" options={[
+                <Sel name="complexion" label="Complexion" options={[
                   { value: 'very_fair', label: 'Very Fair' },
                   { value: 'fair', label: 'Fair' },
                   { value: 'wheatish', label: 'Wheatish' },
                   { value: 'medium', label: 'Medium' },
                   { value: 'dark', label: 'Dark' },
                 ]} />
-                <Select name="blood_group" label="Blood Group" options={
-                  ['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(b => ({ value: b, label: b }))
+                <Sel name="blood_group" label="Blood Group" options={
+                  ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(b => ({ value: b, label: b }))
                 } />
                 <Field name="mother_tongue" label="Mother Tongue" placeholder="e.g. Bangla, Sylheti" />
                 <Field name="profile_headline" label="Profile Headline" placeholder="e.g. Practicing Muslim, Engineer in Dhaka" />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">About Me</label>
-                  <textarea
-                    value={(data.about_me as string) ?? ''}
-                    onChange={e => setData('about_me', e.target.value)}
-                    rows={4}
-                    placeholder="Write a brief introduction about yourself..."
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                </div>
+                <Textarea
+                  name="about_me"
+                  label="About Me"
+                  placeholder="Write a brief introduction — your personality, what you value, what you're looking for..."
+                  rows={5}
+                  maxLength={1000}
+                />
+                <p className="text-xs text-slate-400">
+                  Tip: profiles with 100+ characters in About Me get a 10% completeness bonus.
+                </p>
               </>
             )}
 
@@ -237,12 +343,20 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
             {step === 2 && (
               <>
                 <Field name="residing_country" label="Currently Residing In" placeholder="Bangladesh" />
-                <Field name="residing_city" label="City / District (current)" placeholder="Dhaka" />
-                <Field name="division" label="Division (permanent)" placeholder="Dhaka" />
-                <Field name="district" label="District (permanent)" placeholder="Dhaka" />
-                <Field name="upazila" label="Upazila / Thana" placeholder="Mirpur" />
+                <Field name="residing_city" label="City (current)" placeholder="Dhaka" />
+                <Sel name="division" label="Division (permanent home)" options={divisionOptions} />
+                <SearchableSelect
+                  label="District (permanent home)"
+                  value={(data.district as string) ?? ''}
+                  onChange={v => setData('district', v)}
+                  options={districtOptions}
+                  placeholder={data.division ? '— Select district —' : '— Select division first —'}
+                  disabled={!data.division}
+                  error={errors.district as string | undefined}
+                />
+                <Field name="upazila" label="Upazila / Thana" placeholder="e.g. Mirpur" />
                 <Toggle name="is_nrb" label="Non-Resident Bangladeshi (NRB)" />
-                <Select name="visa_status" label="Visa / Residency Status" options={[
+                <Sel name="visa_status" label="Visa / Residency Status" options={[
                   { value: 'citizen', label: 'Citizen' },
                   { value: 'permanent_resident', label: 'Permanent Resident' },
                   { value: 'work_visa', label: 'Work Visa' },
@@ -257,21 +371,21 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                 <Field name="religion" label="Religion" placeholder="Islam" />
                 <Field name="sect" label="Sect / Madhab" placeholder="e.g. Hanafi, Ahle Hadith" />
                 <Toggle name="is_practicing" label="Practicing Muslim" />
-                <Select name="prayers_info" label="Daily Prayers" options={[
+                <Sel name="prayers_info" label="Daily Prayers" options={[
                   { value: '5_times', label: '5 times daily (Alhamdulillah)' },
                   { value: '4_times', label: 'Mostly 5 times' },
                   { value: 'sometimes', label: 'Sometimes' },
                   { value: 'rarely', label: 'Rarely' },
                   { value: 'never', label: 'Not yet' },
                 ]} />
-                <Select name="quran_recitation" label="Quran Recitation" options={[
+                <Sel name="quran_recitation" label="Quran Recitation" options={[
                   { value: 'fluent', label: 'Fluent' },
                   { value: 'basic', label: 'Basic' },
-                  { value: 'learning', label: 'Learning' },
+                  { value: 'learning', label: 'Currently Learning' },
                   { value: 'no', label: 'No' },
                 ]} />
                 {user.gender === 'female'
-                  ? <Select name="hijab_info" label="Hijab / Niqab" options={[
+                  ? <Sel name="hijab_info" label="Hijab / Niqab" options={[
                       { value: 'wears_niqab', label: 'Wears Niqab' },
                       { value: 'wears_hijab', label: 'Wears Hijab' },
                       { value: 'trying', label: 'Trying to wear' },
@@ -279,10 +393,10 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                     ]} />
                   : <Field name="beard_info" label="Beard" placeholder="e.g. Full beard, Trimmed" />
                 }
-                <Toggle name="is_islamically_educated" label="Islamically Educated (Alim/Hafez/Islamic Course)" />
+                <Toggle name="is_islamically_educated" label="Islamically Educated (Alim / Hafez / Islamic Course)" />
                 {user.mode === 'islamic' && (
                   <>
-                    <Toggle name="wali_approval" label="Wali/Guardian Approves This Profile" />
+                    <Toggle name="wali_approval" label="Wali / Guardian Approves This Profile" />
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">
                         Practicing Scale (1–10)
@@ -306,29 +420,29 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
               </>
             )}
 
-            {/* ── Step 4: Education & Profession ── */}
+            {/* ── Step 4: Education & Career ── */}
             {step === 4 && (
               <>
-                <Select name="education_method" label="Education Method" options={[
+                <Sel name="education_method" label="Education System" options={[
                   { value: 'general', label: 'General' },
                   { value: 'islamic', label: 'Islamic (Madrasa)' },
-                  { value: 'both', label: 'Both' },
+                  { value: 'both', label: 'Both General & Islamic' },
                 ]} />
-                <Select name="highest_qualification" label="Highest Qualification" options={[
+                <Sel name="highest_qualification" label="Highest Qualification" options={[
                   { value: 'below_ssc', label: 'Below SSC' },
                   { value: 'ssc', label: 'SSC / O-Level' },
                   { value: 'hsc', label: 'HSC / A-Level' },
                   { value: 'diploma', label: 'Diploma' },
-                  { value: 'graduation', label: 'Graduation / Bachelor\'s' },
-                  { value: 'post_graduation', label: 'Post Graduation / Master\'s' },
-                  { value: 'phd', label: 'PhD' },
+                  { value: 'graduation', label: "Bachelor's Degree" },
+                  { value: 'post_graduation', label: "Master's Degree" },
+                  { value: 'phd', label: 'PhD / Doctorate' },
                   { value: 'hafez', label: 'Hafez' },
                   { value: 'alim', label: 'Alim' },
                   { value: 'fazil', label: 'Fazil' },
                   { value: 'kamil', label: 'Kamil' },
                 ]} />
                 <Field name="occupation" label="Current Occupation" placeholder="e.g. Software Engineer" />
-                <Select name="occupation_category" label="Occupation Category" options={[
+                <Sel name="occupation_category" label="Occupation Category" options={[
                   { value: 'business', label: 'Business / Entrepreneur' },
                   { value: 'service_govt', label: 'Government Job' },
                   { value: 'service_private', label: 'Private Job' },
@@ -343,16 +457,12 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   { value: 'other', label: 'Other' },
                 ]} />
                 <Field name="monthly_income" label="Monthly Income (BDT)" type="number" placeholder="e.g. 50000" />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Profession Details</label>
-                  <textarea
-                    value={(data.profession_details as string) ?? ''}
-                    onChange={e => setData('profession_details', e.target.value)}
-                    rows={3}
-                    placeholder="Brief description of your work..."
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                </div>
+                <Textarea
+                  name="profession_details"
+                  label="Profession Details (optional)"
+                  placeholder="Brief description of your work..."
+                  rows={3}
+                />
               </>
             )}
 
@@ -373,65 +483,57 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   <Field name="brothers" label="No. of Brothers" type="number" placeholder="0" />
                   <Field name="sisters" label="No. of Sisters" type="number" placeholder="0" />
                 </div>
-                <Select name="family_type" label="Family Type" options={[
+                <Sel name="family_type" label="Family Type" options={[
                   { value: 'joint', label: 'Joint Family' },
                   { value: 'nuclear', label: 'Nuclear Family' },
                   { value: 'flexible', label: 'Flexible' },
                 ]} />
-                <Select name="family_financial_status" label="Family Financial Status" options={[
+                <Sel name="family_financial_status" label="Family Financial Status" options={[
                   { value: 'lower', label: 'Lower Class' },
                   { value: 'lower_middle', label: 'Lower Middle Class' },
                   { value: 'middle', label: 'Middle Class' },
                   { value: 'upper_middle', label: 'Upper Middle Class' },
                   { value: 'upper', label: 'Upper Class' },
                 ]} />
-                <Select name="home_ownership" label="Home Ownership" options={[
+                <Sel name="home_ownership" label="Home Ownership" options={[
                   { value: 'own_house', label: 'Own House' },
                   { value: 'family_house', label: 'Family House' },
                   { value: 'rented', label: 'Rented' },
                 ]} />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Family Details (optional)</label>
-                  <textarea
-                    value={(data.family_details as string) ?? ''}
-                    onChange={e => setData('family_details', e.target.value)}
-                    rows={3}
-                    placeholder="Brief description of your family..."
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                </div>
+                <Textarea
+                  name="family_details"
+                  label="Family Details (optional)"
+                  placeholder="Brief description of your family..."
+                  rows={3}
+                />
               </>
             )}
 
             {/* ── Step 6: Lifestyle & Health ── */}
             {step === 6 && (
               <>
-                <Select name="health_status" label="Health Status" options={[
+                <Sel name="health_status" label="Health Status" options={[
                   { value: 'healthy', label: 'Healthy' },
                   { value: 'minor_condition', label: 'Minor Condition' },
                   { value: 'disability', label: 'Disability' },
                   { value: 'prefer_not_say', label: 'Prefer not to say' },
                 ]} />
-                <Select name="diet" label="Diet Preference" options={[
+                <Sel name="diet" label="Diet Preference" options={[
                   { value: 'halal_only', label: 'Halal Only' },
                   { value: 'vegetarian', label: 'Vegetarian' },
                   { value: 'no_restriction', label: 'No Restriction' },
                 ]} />
-                <Select name="smoking" label="Smoking" options={[
+                <Sel name="smoking" label="Smoking" options={[
                   { value: 'never', label: 'Never' },
                   { value: 'occasionally', label: 'Occasionally' },
                   { value: 'regularly', label: 'Regularly' },
                 ]} />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hobbies & Interests</label>
-                  <textarea
-                    value={(data.hobbies as string) ?? ''}
-                    onChange={e => setData('hobbies', e.target.value)}
-                    rows={3}
-                    placeholder="Reading, cooking, traveling..."
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                </div>
+                <Textarea
+                  name="hobbies"
+                  label="Hobbies & Interests"
+                  placeholder="Reading, cooking, traveling, gardening..."
+                  rows={3}
+                />
               </>
             )}
 
@@ -439,19 +541,20 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
             {step === 7 && (
               <>
                 {user.gender === 'male' && (
-                  <>
-                    <Toggle name="wife_in_veil" label="Expect wife to observe purdah/veil" />
+                  <div className="rounded-xl bg-slate-50 p-4 space-y-3">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">After Marriage</p>
+                    <Toggle name="wife_in_veil" label="Expect wife to observe purdah / veil" />
                     <Toggle name="wife_study_allowed" label="Wife can continue studying" />
                     <Toggle name="wife_job_allowed" label="Wife can do job after marriage" />
-                  </>
+                  </div>
                 )}
-                <Toggle name="guardian_agree" label="Guardian / family is aware and approves" />
+                <Toggle name="guardian_agree" label="Guardian / family is aware and approves this profile" />
                 <Field name="residence_after_marriage" label="Residence After Marriage" placeholder="Dhaka / Abroad / Flexible" />
                 <Field name="post_marriage_plan" label="Post-Marriage Plan" placeholder="Stay in BD / Move abroad / Flexible" />
                 <div className="border-t border-slate-200 pt-5">
-                  <p className="text-sm font-semibold text-slate-700 mb-3">Guardian Contact (for Islamic Mode)</p>
-                  <Field name="guardian_mobile" label="Guardian Mobile" placeholder="+88017XXXXXXXX" />
-                  <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Guardian Contact</p>
+                  <div className="space-y-4">
+                    <Field name="guardian_mobile" label="Guardian Mobile" placeholder="+88017XXXXXXXX" />
                     <Field name="guardian_email" label="Guardian Email (optional)" type="email" placeholder="guardian@example.com" />
                   </div>
                 </div>
@@ -461,78 +564,78 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
             {/* ── Step 8: Partner Preferences ── */}
             {step === 8 && (
               <>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field name="partner_age_min" label="Age Min" type="number" placeholder="22" />
-                  <Field name="partner_age_max" label="Age Max" type="number" placeholder="30" />
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Preferred Age Range</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field name="partner_age_min" label="Min Age" type="number" placeholder="22" />
+                    <Field name="partner_age_max" label="Max Age" type="number" placeholder="35" />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field name="partner_height_cm_min" label="Height Min (cm)" type="number" placeholder="155" />
-                  <Field name="partner_height_cm_max" label="Height Max (cm)" type="number" placeholder="180" />
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Preferred Height Range (cm)</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field name="partner_height_cm_min" label="Min Height" type="number" placeholder="155" />
+                    <Field name="partner_height_cm_max" label="Max Height" type="number" placeholder="185" />
+                  </div>
                 </div>
-                <Select name="partner_marital_status" label="Preferred Marital Status" options={[
+                <Sel name="partner_marital_status" label="Preferred Marital Status" options={[
                   { value: 'never_married', label: 'Never Married' },
                   { value: 'divorced', label: 'Divorced' },
                   { value: 'widowed', label: 'Widowed' },
                   { value: 'any', label: 'Any' },
                 ]} />
-                <Select name="partner_education" label="Minimum Education" options={[
+                <Sel name="partner_education" label="Minimum Education" options={[
                   { value: 'ssc', label: 'SSC / O-Level' },
                   { value: 'hsc', label: 'HSC / A-Level' },
                   { value: 'graduation', label: "Bachelor's" },
                   { value: 'post_graduation', label: "Master's or above" },
                   { value: 'any', label: 'No preference' },
                 ]} />
-                <Field name="partner_division" label="Preferred Division" placeholder="Any / Dhaka / Chittagong" />
-                <Select name="partner_family_type" label="Preferred Family Type" options={[
-                  { value: 'joint', label: 'Joint' },
-                  { value: 'nuclear', label: 'Nuclear' },
+                <Sel name="partner_division" label="Preferred Division (optional)" options={[
+                  { value: 'any', label: 'Any Division' },
+                  ...BD_DIVISIONS.map(d => ({ value: d, label: d })),
+                ]} />
+                <Sel name="partner_family_type" label="Preferred Family Type" options={[
+                  { value: 'joint', label: 'Joint Family' },
+                  { value: 'nuclear', label: 'Nuclear Family' },
                   { value: 'any', label: 'No preference' },
                 ]} />
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Partner Expectations</label>
-                  <textarea
-                    value={(data.partner_expectations as string) ?? ''}
-                    onChange={e => setData('partner_expectations', e.target.value)}
-                    rows={4}
-                    placeholder="Describe qualities you're looking for..."
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                </div>
+                <Textarea
+                  name="partner_expectations"
+                  label="Partner Expectations"
+                  placeholder="Describe the qualities you're looking for in a life partner..."
+                  rows={5}
+                  maxLength={1000}
+                />
               </>
             )}
 
             {/* ── Step 9: Photos ── */}
             {step === 9 && (
               <div className="text-center py-8">
-                <div className="mx-auto w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-3xl mb-4">
+                <div className="mx-auto w-20 h-20 rounded-full bg-amber-50 flex items-center justify-center text-4xl mb-4">
                   📷
                 </div>
-                <h3 className="font-bold text-slate-900 mb-2">Upload Your Photo</h3>
-                <p className="text-sm text-slate-500 mb-6">
-                  A photo increases your profile visibility by 3×. Your privacy settings control who can see it.
+                <h3 className="font-bold text-slate-900 mb-2">Upload Your Profile Photo</h3>
+                <p className="text-sm text-slate-500 mb-1 max-w-sm mx-auto">
+                  Profiles with a photo get <strong>3× more match requests</strong>. Your privacy settings control who can see it.
                 </p>
-                <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-primary-300 px-8 py-6 text-primary-600 hover:bg-primary-50 transition-colors">
-                  <span className="text-sm font-medium">Choose photo (JPG, PNG — max 5 MB)</span>
-                  <input type="file" accept="image/jpeg,image/png" className="hidden"
-                    onChange={e => {
-                      const file = e.target.files?.[0]
-                      if (file) setData('photo_file' as unknown as keyof BiodataData, file as unknown as never)
-                    }}
-                  />
-                </label>
-                <p className="mt-4 text-xs text-slate-400">
-                  You can skip this step and add photos later from your profile settings.
+                <p className="text-xs text-amber-600 mb-6">
+                  You can upload photos from your Profile page after completing this step.
+                </p>
+                <p className="text-xs text-slate-400">
+                  Click "Submit Biodata" below to finish — then visit your profile to upload photos.
                 </p>
               </div>
             )}
 
-            {/* Navigation */}
-            <div className="flex gap-3 pt-2">
+            {/* ── Navigation buttons ── */}
+            <div className="flex gap-3 pt-2 border-t border-slate-100">
               {step > 1 && (
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 sm:flex-none sm:px-6"
                   onClick={() => router.get(route('biodata.wizard', { step: step - 1 }))}
                 >
                   ← Back

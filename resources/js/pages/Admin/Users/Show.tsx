@@ -126,7 +126,7 @@ export default function UserShow({ user, payments }: Props) {
       {modal === 'suspend' && (
         <ActionModal
           title={t('admin', 'user_suspend')}
-          description="Provide a reason for suspension."
+          description={t('admin', 'user_suspend_reason')}
           placeholder="e.g. Policy violation"
           confirmLabel={t('admin', 'user_suspend')}
           confirmVariant="destructive"
@@ -160,25 +160,25 @@ export default function UserShow({ user, payments }: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-            <InfoRow label="Gender" value={user.gender} />
-            <InfoRow label="Role" value={user.role ?? 'user'} />
-            <InfoRow label="Membership" value={user.membership_status} />
-            {user.membership_plan_name && <InfoRow label="Plan" value={user.membership_plan_name} />}
+            <InfoRow label={t('admin', 'col_gender')} value={user.gender} />
+            <InfoRow label={t('admin', 'user_role_label')} value={user.role ?? 'user'} />
+            <InfoRow label={t('admin', 'col_membership')} value={user.membership_status} />
+            {user.membership_plan_name && <InfoRow label={t('admin', 'user_plan_label')} value={user.membership_plan_name} />}
             {user.membership_expires_at && (
-              <InfoRow label="Expires" value={new Date(user.membership_expires_at).toLocaleDateString('en-BD')} />
+              <InfoRow label={t('admin', 'user_expires_label')} value={new Date(user.membership_expires_at).toLocaleDateString('en-BD')} />
             )}
-            <InfoRow label="Identity" value={user.identity_verification_status ?? 'unverified'} />
-            <InfoRow label="Joined" value={new Date(user.created_at).toLocaleDateString('en-BD')} />
+            <InfoRow label={t('admin', 'user_identity_label')} value={user.identity_verification_status ?? 'unverified'} />
+            <InfoRow label={t('admin', 'col_joined')} value={new Date(user.created_at).toLocaleDateString('en-BD')} />
             {user.last_login_at && (
-              <InfoRow label="Last Login" value={new Date(user.last_login_at).toLocaleDateString('en-BD')} />
+              <InfoRow label={t('admin', 'user_last_login_label')} value={new Date(user.last_login_at).toLocaleDateString('en-BD')} />
             )}
-            {user.blocked_reason && <InfoRow label="Ban Reason" value={user.blocked_reason} />}
+            {user.blocked_reason && <InfoRow label={t('admin', 'user_ban_reason_label')} value={user.blocked_reason} />}
           </div>
 
           {/* Biodata status */}
           {user.biodata && (
             <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <span className="text-sm text-slate-600">Biodata status:</span>
+              <span className="text-sm text-slate-600">{t('admin', 'user_biodata_status_label')}</span>
               <span className={cn(
                 'text-xs font-medium rounded-full px-2.5 py-0.5',
                 user.biodata.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
@@ -257,11 +257,11 @@ export default function UserShow({ user, payments }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Ref</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Plan</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Amount</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Status</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Date</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_ref')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_plan')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_amount')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_status')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_date')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -271,7 +271,7 @@ export default function UserShow({ user, payments }: Props) {
                       <td className="px-4 py-3 text-slate-700">{p.plan_name}</td>
                       <td className="px-4 py-3 font-medium">৳{p.amount.toLocaleString('en-BD')}</td>
                       <td className="px-4 py-3">
-                        <PaymentStatusBadge status={p.status} />
+                        <PaymentStatusBadge status={p.status} labelApproved={t('admin', 'col_paid_status')} />
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-400">
                         {new Date(p.created_at).toLocaleDateString('en-BD')}
@@ -311,7 +311,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function PaymentStatusBadge({ status }: { status: string }) {
+function PaymentStatusBadge({ status, labelApproved }: { status: string; labelApproved: string }) {
   const map: Record<string, string> = {
     paid:      'bg-emerald-100 text-emerald-700',
     pending:   'bg-amber-100 text-amber-700',
@@ -320,7 +320,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
   }
   return (
     <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-500')}>
-      {status === 'paid' ? 'Approved' : status}
+      {status === 'paid' ? labelApproved : status}
     </span>
   )
 }

@@ -70,4 +70,55 @@ return [
     'unlock_privacy'  => 'Better privacy controls',
     'unlock_support'  => 'Priority customer support',
 
+    // CTA variants
+    'cta_choose_plan'          => 'Choose Plan',
+    'cta_current_plan'         => 'Current Plan',
+    'cta_upgrade_now'          => 'Upgrade Now',
+    'cta_renew_plan'           => 'Renew Plan',
+
+    // Feature comparison matrix
+    'matrix_title'             => 'Feature Comparison',
+    'matrix_feature'           => 'Feature',
+    'feature_contacts'         => 'Contact Views',
+    'feature_messages'         => 'Messages',
+    'feature_boost_hours'      => 'Profile Boost',
+    'feature_priority_placement' => 'Priority Placement',
+    'feature_family_support'   => 'Family / Wali Support',
+    'unlimited'                => 'Unlimited',
+    'included'                 => '✓',
+    'not_included'             => '—',
+
+    // Status page
+    'status_page_title'        => 'Payment Status',
+    'status_approved'          => 'Approved',
+    'status_rejected_label'    => 'Rejected',
+    'status_under_review'      => 'Under Review',
+
+    // Payment incomplete state
+    'payment_incomplete_title' => 'Payment Incomplete',
+    'payment_incomplete_msg'   => "You haven't submitted your payment details yet.",
+    'complete_payment'         => 'Complete Payment',
+    'rejection_reason'         => 'Reason:',
+
+    // Transaction detail row labels
+    'row_plan'                 => 'Plan',
+    'row_amount'               => 'Amount',
+    'row_reference'            => 'Ref',
+    'row_status'               => 'Status',
+    'row_submitted'            => 'Submitted',
+
+    // Manual payment form
+    'submit_details_title'     => 'Submit Payment Details',
+    'number_label'             => 'Number',
+    'upload_hint'              => 'JPG, PNG, WebP · max 2MB',
+    'click_to_upload'          => 'Click to upload screenshot',
+    'remove'                   => 'Remove',
+    'copy'                     => 'Copy',
+    'copied'                   => 'Copied!',
+    'txn_ref_label'            => 'Transaction ref:',
+
+    // Plans page misc
+    'plans_empty'              => 'No plans available at this time.',
+    'select_plan_hint'         => 'Select a plan above to continue',
+
 ];

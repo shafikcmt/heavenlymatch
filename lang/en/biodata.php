@@ -19,11 +19,40 @@ return [
         3 => 'Religion',
         4 => 'Education',
         5 => 'Family',
-        6 => 'Profession',
-        7 => 'Lifestyle',
-        8 => 'Marriage',
-        9 => 'Partner',
+        6 => 'Lifestyle',
+        7 => 'Marriage',
+        8 => 'Partner',
+        9 => 'Photos',
     ],
+
+    // ── Step helper text ──────────────────────────────────────────────────────
+    'step_helper' => [
+        1 => 'Tell us about yourself — age, marital status, and personal details.',
+        2 => 'Where are you from, and where do you currently live?',
+        3 => 'Share your religious beliefs and daily practice.',
+        4 => 'Your education background and current occupation.',
+        5 => 'Help us understand your family background.',
+        6 => 'Your lifestyle, health, and daily habits.',
+        7 => 'Marriage expectations and guardian information.',
+        8 => 'What qualities are you looking for in a life partner?',
+        9 => 'A photo increases your match rate by 3× — add one now.',
+    ],
+
+    // ── Completion section labels (for dashboard checklist) ───────────────────
+    'section_label' => [
+        'general'   => 'General Information',
+        'location'  => 'Location',
+        'religion'  => 'Religion & Practice',
+        'education' => 'Education & Career',
+        'family'    => 'Family Background',
+        'lifestyle' => 'Lifestyle & Health',
+        'marriage'  => 'Marriage Preferences',
+        'partner'   => 'Partner Preferences',
+        'photos'    => 'Profile Photo',
+    ],
+
+    'completion_cta'     => 'Continue completing your profile',
+    'completion_benefit' => 'Profiles above 80% get 3× more matches',
 
     // ── Section headers ───────────────────────────────────────────────────────
     'section_general'    => 'General Information',
@@ -236,6 +265,16 @@ return [
     'photo_visibility_updated'  => 'Photo visibility updated.',
     'photo_no_photos'           => 'No photos uploaded yet.',
     'photo_visibility_hint'     => 'Controls who can see your photos on your profile.',
+    'photo_vis_public_desc'     => 'Anyone — including guests — can see your photos',
+    'photo_vis_members_desc'    => 'Only registered and logged-in members can see clearly',
+    'photo_vis_blurred_desc'    => 'Photos are blurred for everyone until you approve their request',
+    'photo_privacy_islamic_notice' => 'Islamic mode recommends "Blurred" visibility to preserve modesty (purdah).',
+    'photo_file_hint'           => 'JPG, PNG, WebP · max 4 MB · min 200×200 px',
+    'photo_uploading'           => 'Uploading…',
+    'photo_too_large'           => 'File is too large. Maximum allowed size is 4 MB.',
+    'photo_preview_label'       => 'Preview',
+    'photo_confirm_upload'      => 'Upload This Photo',
+    'photo_cancel_preview'      => 'Cancel',
 
     // ── Completion score ─────────────────────────────────────────────────────
     'completion_score'     => 'Profile :percent% Complete',

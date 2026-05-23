@@ -6,22 +6,44 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Soft biodata completion check.
+ *
+ * - Most authenticated routes are allowed through regardless of completion state.
+ * - Only hard-blocks specific action routes that genuinely require profile data:
+ *     interests.store, upgrade.checkout, upgrade.manual.submit
+ *   when the profile is < 30% complete.
+ * - The biodata wizard is always allowed through.
+ */
 class CheckBiodataCompletion
 {
-    /**
-     * Handle an incoming request.
-     */
+    private const BLOCKED_BELOW_30 = [
+        'interests.store',
+        'upgrade.checkout',
+        'upgrade.manual.submit',
+    ];
+
     public function handle(Request $request, Closure $next): mixed
     {
         $user = Auth::user();
 
-        $biodata = $user->biodata()->first();
+        // Always allow wizard and biodata management routes
+        if ($request->routeIs('biodata.*')) {
+            return $next($request);
+        }
 
-        if (! $biodata || ! $biodata->is_completed) {
-            // Allow the wizard routes to pass through so the user can complete biodata
-            if (! $request->is('biodata/wizard*')) {
-                return redirect()->route('biodata.wizard')
-                    ->with('warning', 'Please complete your biodata before continuing.');
+        // For action routes that require a minimum profile, check completeness
+        if ($request->routeIs(...self::BLOCKED_BELOW_30)) {
+            $score = $user->biodata?->completeness_score ?? 0;
+
+            if ($score < 30) {
+                $message = 'Please complete at least 30% of your biodata profile before taking this action.';
+
+                if ($request->wantsJson()) {
+                    return response()->json(['message' => $message], 422);
+                }
+
+                return back()->with('error', $message);
             }
         }
 

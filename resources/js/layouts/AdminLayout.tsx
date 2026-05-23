@@ -1,26 +1,29 @@
+/// <reference path="../types/ziggy.d.ts" />
 import { Link, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import type { PageProps } from '@/types'
 import {
   LayoutDashboard, Users, FileText, CreditCard,
-  Flag, Settings, Menu, X, Crown, LogOut,
+  Flag, Settings, Menu, X, Crown, LogOut, ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const NAV = [
-  { label: 'Dashboard',  href: '/admin',         icon: LayoutDashboard },
-  { label: 'Users',      href: '/admin/users',    icon: Users },
-  { label: 'Biodatas',   href: '/admin/biodatas', icon: FileText },
-  { label: 'Payments',   href: '/admin/payments', icon: CreditCard },
-  { label: 'Reports',    href: '/admin/reports',  icon: Flag },
-  { label: 'Settings',   href: '/admin/settings', icon: Settings },
-]
+import { useTranslation } from '@/lib/i18n'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { auth, flash } = usePage<PageProps>().props
+  const { t } = useTranslation()
   const user = auth.user!
   const [open, setOpen] = useState(false)
   const path = typeof window !== 'undefined' ? window.location.pathname : ''
+
+  const NAV = [
+    { label: t('admin', 'nav_dashboard'), href: route('admin.dashboard'), match: '/admin',         icon: LayoutDashboard },
+    { label: t('admin', 'nav_users'),     href: route('admin.users.index'),    match: '/admin/users',    icon: Users },
+    { label: t('admin', 'nav_biodatas'),  href: route('admin.biodatas.index'), match: '/admin/biodatas', icon: FileText },
+    { label: t('admin', 'nav_payments'),  href: route('admin.payments.index'), match: '/admin/payments', icon: CreditCard },
+    { label: t('admin', 'nav_reports'),   href: route('admin.reports.index'),  match: '/admin/reports',  icon: Flag },
+    { label: t('admin', 'nav_settings'),  href: route('admin.settings.index'), match: '/admin/settings', icon: Settings },
+  ]
 
   return (
     <div className="min-h-screen bg-slate-100 flex">
@@ -45,8 +48,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ label, href, icon: Icon }) => {
-            const active = path === href || (href !== '/admin' && path.startsWith(href))
+          {NAV.map(({ label, href, match, icon: Icon }) => {
+            const active = path === match || (match !== '/admin' && path.startsWith(match))
             return (
               <Link
                 key={href}
@@ -70,18 +73,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex gap-1">
             <Link
               href="/"
-              className="flex-1 flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
             >
-              Back to site
+              <ExternalLink size={12} />
+              {t('admin', 'back_to_site')}
             </Link>
             <Link
-              href="/logout"
+              href={route('admin.logout')}
               method="post"
               as="button"
-              className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-red-400 hover:bg-red-950 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-xs text-red-400 hover:bg-red-950 transition-colors"
             >
               <LogOut size={13} />
-              Logout
+              {t('admin', 'logout')}
             </Link>
           </div>
         </div>

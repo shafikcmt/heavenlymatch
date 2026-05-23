@@ -1,22 +1,9 @@
 ---
 deployment:
   tasks:
-    # Set deployment directory
-    - export DEPLOY_DIR=/home/heavwzih/public_html
-
-    # Navigate to deployment directory
-    - cd $DEPLOY_DIR
-
-    # Install PHP dependencies
-    - composer install --no-dev --optimize-autoloader
-
-    # Run migrations (force to avoid prompt)
-    - php artisan migrate --force
-
-    # Cache configuration, routes, and views for performance
-    - php artisan config:cache
-    - php artisan route:cache
-    - php artisan view:cache
-
-    # Optional: clear old cache
-    - php artisan cache:clear
+    - export DEPLOYPATH=/home/heavwzih/develop.heavenlymatch.net/
+    - /bin/rsync -av --delete --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='storage/logs' --exclude='storage/framework/cache' --exclude='storage/framework/sessions' --exclude='storage/framework/views' ./ $DEPLOYPATH
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan optimize:clear
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan config:cache
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan route:cache
+    - cd $DEPLOYPATH && /usr/local/bin/php artisan view:cache

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="successBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#78350f;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#92400e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#065f46;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fde68a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#fde68a;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#fde68a;stop-opacity:0" />
+    </radialGradient>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#successBg)" />
+
+  <!-- Radial glow center -->
+  <circle cx="400" cy="250" r="200" fill="url(#glow1)"/>
+
+  <!-- Geometric ornament rings -->
+  <circle cx="400" cy="250" r="180" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.15"/>
+  <circle cx="400" cy="250" r="160" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.1"/>
+
+  <!-- Islamic star pattern (8-pointed) center decorative -->
+  <g transform="translate(400, 250)" opacity="0.12" fill="#fde68a">
+    <polygon points="0,-70 10,-10 70,0 10,10 0,70 -10,10 -70,0 -10,-10"/>
+    <polygon points="0,-70 10,-10 70,0 10,10 0,70 -10,10 -70,0 -10,-10" transform="rotate(45)"/>
+  </g>
+
+  <!-- Confetti-like dots (celebration) -->
+  <g opacity="0.5">
+    <circle cx="150" cy="100" r="4" fill="#fbbf24"/>
+    <circle cx="200" cy="60" r="3" fill="#d1fae5"/>
+    <circle cx="250" cy="90" r="5" fill="#fbbf24"/>
+    <circle cx="100" cy="150" r="3" fill="#fde68a"/>
+    <circle cx="650" cy="80" r="4" fill="#fbbf24"/>
+    <circle cx="700" cy="130" r="3" fill="#d1fae5"/>
+    <circle cx="600" cy="60" r="5" fill="#fbbf24"/>
+    <circle cx="720" cy="200" r="3" fill="#fde68a"/>
+    <circle cx="80" cy="350" r="4" fill="#fde68a"/>
+    <circle cx="130" cy="400" r="3" fill="#fbbf24"/>
+    <circle cx="680" cy="380" r="4" fill="#fbbf24"/>
+    <circle cx="740" cy="350" r="3" fill="#d1fae5"/>
+    <circle cx="170" cy="450" r="5" fill="#fde68a"/>
+    <circle cx="620" cy="440" r="4" fill="#fbbf24"/>
+  </g>
+
+  <!-- Wedding rings (center, prominent) -->
+  <g transform="translate(360, 200)" filter="url(#softGlow)">
+    <circle cx="0" cy="0" r="42" fill="none" stroke="url(#goldShine)" stroke-width="10" opacity="0.95"/>
+    <circle cx="50" cy="10" r="42" fill="none" stroke="#e2e8f0" stroke-width="10" opacity="0.8"/>
+    <!-- Diamonds -->
+    <polygon points="0,-55 10,-42 0,-47 -10,-42" fill="#fde68a" opacity="1"/>
+    <polygon points="50,-53 60,-40 50,-45 40,-40" fill="#e2e8f0" opacity="0.95"/>
+  </g>
+
+  <!-- Large hearts -->
+  <g fill="#fbbf24" opacity="0.7" filter="url(#softGlow)">
+    <!-- Main heart center-top -->
+    <path d="M 400 120 C 400 104 384 88 368 104 C 352 88 336 104 336 120 C 336 152 368 172 368 172 C 368 172 400 152 400 120 Z" transform="translate(32, 0)"/>
+  </g>
+
+  <!-- Smaller hearts scattered -->
+  <g fill="#fde68a" opacity="0.45">
+    <path d="M 180 200 C 180 194 174 188 168 194 C 162 188 156 194 156 200 C 156 212 168 218 168 218 C 168 218 180 212 180 200 Z"/>
+    <path d="M 640 170 C 640 164 634 158 628 164 C 622 158 616 164 616 170 C 616 182 628 188 628 188 C 628 188 640 182 640 170 Z"/>
+    <path d="M 130 300 C 130 294 124 288 118 294 C 112 288 106 294 106 300 C 106 312 118 318 118 318 C 118 318 130 312 130 300 Z"/>
+    <path d="M 680 310 C 680 304 674 298 668 304 C 662 298 656 304 656 310 C 656 322 668 328 668 328 C 668 328 680 322 680 310 Z"/>
+  </g>
+
+  <!-- Crescent moon top-right -->
+  <g transform="translate(680, 80)" filter="url(#softGlow)">
+    <circle cx="0" cy="0" r="22" fill="#fbbf24" opacity="0.85"/>
+    <circle cx="8" cy="-5" r="17" fill="#92400e"/>
+  </g>
+
+  <!-- Text area backdrop -->
+  <rect x="220" y="295" width="360" height="140" rx="16" fill="#000000" opacity="0.25"/>
+
+  <!-- Text -->
+  <text x="400" y="335" font-family="Georgia, serif" font-size="22" fill="#fde68a" text-anchor="middle" font-weight="bold">Real Couples, Real Love</text>
+  <text x="400" y="362" font-family="Arial, sans-serif" font-size="14" fill="#fef9f0" text-anchor="middle" opacity="0.9">Alhamdulillah — Joined through HeavenlyMatch</text>
+  <text x="400" y="388" font-family="Arial, sans-serif" font-size="12" fill="#d1fae5" text-anchor="middle" opacity="0.75">Thousands of blessed unions since 2023</text>
+
+  <!-- Decorative bottom flourish -->
+  <path d="M 200 490 Q 400 460 600 490" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="400" cy="472" r="4" fill="#fbbf24" opacity="0.4"/>
+
+  <!-- Corner ornaments -->
+  <g fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.25">
+    <path d="M 20 20 L 70 20 M 20 20 L 20 70"/>
+    <path d="M 780 20 L 730 20 M 780 20 L 780 70"/>
+    <path d="M 20 480 L 70 480 M 20 480 L 20 430"/>
+    <path d="M 780 480 L 730 480 M 780 480 L 780 430"/>
+  </g>
+</svg>

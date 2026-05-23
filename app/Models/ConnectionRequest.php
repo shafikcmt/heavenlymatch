@@ -3,24 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConnectionRequest extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
         'sender_id',
         'receiver_id',
         'status',
-        'message',
-        'guardian_pending',
+        'initial_message',
+        'guardian_notified',
         'guardian_notified_at',
         'responded_at',
     ];
 
     protected $casts = [
-        'guardian_pending'     => 'boolean',
+        'guardian_notified'    => 'boolean',
         'guardian_notified_at' => 'datetime',
         'responded_at'         => 'datetime',
     ];
@@ -43,6 +40,11 @@ class ConnectionRequest extends Model
     public function scopeAccepted($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', 'accepted');
+    }
+
+    public function conversation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Conversation::class, 'connection_request_id');
     }
 
     public function isAccepted(): bool

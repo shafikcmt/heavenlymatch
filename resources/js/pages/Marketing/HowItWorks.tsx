@@ -1,8 +1,9 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head, Link } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 import { Shield, Eye, Users, CheckCircle } from 'lucide-react'
 import MarketingLayout from '@/layouts/MarketingLayout'
 import { useTranslation } from '@/lib/i18n'
+import { SeoHead } from '@/components/SeoHead'
 
 const GENERAL_STEPS = [
   { n: '1', icon: '📝', titleKey: 'hiw_general_s1_title', descKey: 'hiw_general_s1_desc' },
@@ -32,7 +33,7 @@ export default function HowItWorks() {
 
   return (
     <MarketingLayout>
-      <Head title={t('marketing', 'hiw_meta_title')} />
+      <SeoHead pageKey="how_it_works" />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-50 via-white to-primary-50 py-20 px-4 text-center">

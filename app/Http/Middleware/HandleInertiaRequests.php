@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Registration;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Lang;
@@ -26,6 +27,11 @@ class HandleInertiaRequests extends Middleware
         'marketing',
         'notifications',
         'validation',
+        'interests',
+        'inbox',
+        'settings',
+        'verification',
+        'seo',
     ];
 
     public function version(Request $request): ?string
@@ -65,6 +71,9 @@ class HandleInertiaRequests extends Middleware
                     'biodata_complete'  => (bool) $user->biodata?->is_completed,
                 ] : null,
             ],
+            'completion' => fn () => $user
+                ? ProfileCompletionService::compute($user)
+                : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
@@ -74,6 +83,11 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
+            'unread_notifications' => fn () => $user
+                ? \App\Models\UserNotification::where('user_id', $user->registration_id)
+                    ->whereNull('read_at')
+                    ->count()
+                : 0,
             'locale'        => $locale,
             'translations'  => fn () => $this->loadTranslations($locale),
             'googleEnabled' => filled(config('services.google.client_id'))

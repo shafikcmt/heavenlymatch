@@ -70,4 +70,55 @@ return [
     'unlock_privacy' => 'উন্নত গোপনীয়তা নিয়ন্ত্রণ',
     'unlock_support' => 'অগ্রাধিকার গ্রাহক সেবা',
 
+    // CTA variants
+    'cta_choose_plan'          => 'প্ল্যান বেছে নিন',
+    'cta_current_plan'         => 'বর্তমান প্ল্যান',
+    'cta_upgrade_now'          => 'এখনই আপগ্রেড করুন',
+    'cta_renew_plan'           => 'নবায়ন করুন',
+
+    // Feature comparison matrix
+    'matrix_title'             => 'ফিচার তুলনা',
+    'matrix_feature'           => 'ফিচার',
+    'feature_contacts'         => 'যোগাযোগ দেখার সীমা',
+    'feature_messages'         => 'বার্তা',
+    'feature_boost_hours'      => 'প্রোফাইল বুস্ট',
+    'feature_priority_placement' => 'অগ্রাধিকার স্থান',
+    'feature_family_support'   => 'পরিবার / ওয়ালি সমর্থন',
+    'unlimited'                => 'সীমাহীন',
+    'included'                 => '✓',
+    'not_included'             => '—',
+
+    // Status page
+    'status_page_title'        => 'পেমেন্টের অবস্থা',
+    'status_approved'          => 'অনুমোদিত',
+    'status_rejected_label'    => 'প্রত্যাখ্যাত',
+    'status_under_review'      => 'পর্যালোচনাধীন',
+
+    // Payment incomplete state
+    'payment_incomplete_title' => 'পেমেন্ট অসম্পূর্ণ',
+    'payment_incomplete_msg'   => 'আপনি এখনো পেমেন্টের তথ্য জমা দেননি।',
+    'complete_payment'         => 'পেমেন্ট সম্পন্ন করুন',
+    'rejection_reason'         => 'কারণ:',
+
+    // Transaction detail row labels
+    'row_plan'                 => 'প্ল্যান',
+    'row_amount'               => 'পরিমাণ',
+    'row_reference'            => 'রেফ',
+    'row_status'               => 'অবস্থা',
+    'row_submitted'            => 'জমা দেওয়া হয়েছে',
+
+    // Manual payment form
+    'submit_details_title'     => 'পেমেন্টের তথ্য জমা দিন',
+    'number_label'             => 'নম্বর',
+    'upload_hint'              => 'JPG, PNG, WebP · সর্বোচ্চ ২MB',
+    'click_to_upload'          => 'স্ক্রিনশট আপলোড করতে ক্লিক করুন',
+    'remove'                   => 'মুছুন',
+    'copy'                     => 'কপি করুন',
+    'copied'                   => 'কপি হয়েছে!',
+    'txn_ref_label'            => 'ট্রানজেকশন রেফ:',
+
+    // Plans page misc
+    'plans_empty'              => 'এই মুহূর্তে কোনো প্ল্যান পাওয়া যাচ্ছে না।',
+    'select_plan_hint'         => 'উপরে একটি প্ল্যান বেছে নিন',
+
 ];

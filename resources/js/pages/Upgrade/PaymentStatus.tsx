@@ -32,11 +32,18 @@ export default function PaymentStatus({
   const isPending  = latestTransaction?.status === 'pending'
   const isRejected = latestTransaction?.status === 'failed'
 
+  function statusLabel(status: string): string {
+    if (status === 'paid')    return t('pricing', 'status_approved')
+    if (status === 'pending') return t('pricing', 'status_under_review')
+    if (status === 'failed')  return t('pricing', 'status_rejected_label')
+    return status
+  }
+
   return (
     <AppLayout>
-      <Head title="Payment Status" />
+      <Head title={t('pricing', 'status_page_title')} />
 
-      <div className="max-w-md mx-auto pt-6">
+      <div className="max-w-md mx-auto px-4 pt-6">
         {/* Active membership */}
         {isActive && (
           <div className="text-center mb-8">
@@ -52,7 +59,7 @@ export default function PaymentStatus({
           </div>
         )}
 
-        {/* Pending review */}
+        {/* Pending review — submitted */}
         {!isActive && isPending && latestTransaction?.is_submitted && (
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-amber-100 mb-4">
@@ -67,18 +74,20 @@ export default function PaymentStatus({
           </div>
         )}
 
-        {/* Not yet submitted */}
+        {/* Pending — not yet submitted */}
         {!isActive && isPending && !latestTransaction?.is_submitted && (
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-slate-100 mb-4">
               <Clock size={32} className="text-slate-400" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900 mb-2">Payment Incomplete</h1>
+            <h1 className="text-xl font-bold text-slate-900 mb-2">
+              {t('pricing', 'payment_incomplete_title')}
+            </h1>
             <p className="text-sm text-slate-500 mb-5">
-              You haven't submitted your payment details yet.
+              {t('pricing', 'payment_incomplete_msg')}
             </p>
             <Button onClick={() => router.get(route('upgrade.manual', latestTransaction!.transaction_no))}>
-              Complete Payment
+              {t('pricing', 'complete_payment')}
             </Button>
           </div>
         )}
@@ -94,7 +103,7 @@ export default function PaymentStatus({
             </h1>
             {latestTransaction?.admin_note && (
               <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mt-3 text-left">
-                Reason: {latestTransaction.admin_note}
+                {t('pricing', 'rejection_reason')} {latestTransaction.admin_note}
               </p>
             )}
             <p className="text-sm text-slate-500 mt-3">
@@ -128,18 +137,11 @@ export default function PaymentStatus({
             'border-slate-200 bg-slate-50',
           )}>
             <div className="space-y-2 text-sm">
-              <Row label="Plan" value={latestTransaction.plan_name} />
-              <Row label="Amount" value={`৳${latestTransaction.amount.toLocaleString('en-BD')}`} />
-              <Row label="Ref" value={latestTransaction.transaction_no} mono />
-              <Row
-                label="Status"
-                value={
-                  latestTransaction.status === 'paid'    ? 'Approved' :
-                  latestTransaction.status === 'pending' ? 'Under Review' :
-                  latestTransaction.status === 'failed'  ? 'Rejected' : latestTransaction.status
-                }
-              />
-              <Row label="Submitted" value={new Date(latestTransaction.created_at).toLocaleDateString('en-BD')} />
+              <Row label={t('pricing', 'row_plan')}      value={latestTransaction.plan_name} />
+              <Row label={t('pricing', 'row_amount')}    value={`৳${latestTransaction.amount.toLocaleString('en-BD')}`} />
+              <Row label={t('pricing', 'row_reference')} value={latestTransaction.transaction_no} mono />
+              <Row label={t('pricing', 'row_status')}    value={statusLabel(latestTransaction.status)} />
+              <Row label={t('pricing', 'row_submitted')} value={new Date(latestTransaction.created_at).toLocaleDateString('en-BD')} />
             </div>
           </div>
         )}
@@ -168,4 +170,3 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
     </div>
   )
 }
-

@@ -110,7 +110,7 @@ export default function Dashboard({ stats, recentUsers, pendingBiodatas, pending
           />
           <StatCard
             icon={<CreditCard size={18} />}
-            label="Revenue (BDT)"
+            label={t('admin', 'revenue_label')}
             value={`৳${stats.total_revenue.toLocaleString('en-BD')}`}
             color="green"
             wide
@@ -147,7 +147,7 @@ export default function Dashboard({ stats, recentUsers, pendingBiodatas, pending
                       <p className="text-xs text-slate-400">{b.registration?.gender}</p>
                     </div>
                     <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">
-                      Pending
+                      {t('admin', 'biodata_tab_pending')}
                     </span>
                   </li>
                 ))}
@@ -205,11 +205,11 @@ export default function Dashboard({ stats, recentUsers, pendingBiodatas, pending
             <table className="w-full text-sm min-w-[540px]">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">ID</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Plan</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Joined</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_name')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_id')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_status')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_membership')}</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_joined')}</th>
                 </tr>
               </thead>
               <tbody>

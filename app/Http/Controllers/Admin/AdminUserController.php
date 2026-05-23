@@ -16,8 +16,7 @@ class AdminUserController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Registration::with('biodata')
-            ->latest();
+        $query = Registration::with('biodata')->latest();
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -50,7 +49,7 @@ class AdminUserController extends Controller
 
     public function show(string $id): Response
     {
-        $user = Registration::with(['biodata'])->findOrFail($id);
+        $user = $this->findUser($id)->load('biodata');
 
         $payments = $user->payments()
             ->latest()
@@ -67,14 +66,14 @@ class AdminUserController extends Controller
     {
         $request->validate(['reason' => 'nullable|string|max:500']);
 
-        Registration::findOrFail($id)->ban($request->input('reason', ''));
+        $this->findUser($id)->ban($request->input('reason', ''));
 
         return back()->with('success', __('admin.user_banned'));
     }
 
     public function unban(string $id): RedirectResponse
     {
-        Registration::findOrFail($id)->activate();
+        $this->findUser($id)->activate();
 
         return back()->with('success', __('admin.user_unbanned'));
     }
@@ -83,26 +82,37 @@ class AdminUserController extends Controller
     {
         $request->validate(['reason' => 'nullable|string|max:500']);
 
-        Registration::findOrFail($id)->suspend($request->input('reason', ''));
+        $this->findUser($id)->suspend($request->input('reason', ''));
 
         return back()->with('success', __('admin.user_suspended'));
     }
 
     public function activate(string $id): RedirectResponse
     {
-        Registration::findOrFail($id)->activate();
+        $this->findUser($id)->activate();
 
         return back()->with('success', __('admin.user_activated'));
     }
 
     public function verify(string $id): RedirectResponse
     {
-        Registration::findOrFail($id)->update([
+        $this->findUser($id)->forceFill([
             'identity_verification_status' => 'verified',
             'identity_verified_at'         => now(),
             'identity_verified_by'         => Auth::id(),
-        ]);
+        ])->save();
 
         return back()->with('success', __('admin.user_verified'));
+    }
+
+    /**
+     * Find a Registration by registration_id (e.g. "HM000001") or by integer primary key.
+     * React admin pages always pass registration_id strings from the URL.
+     */
+    private function findUser(string $id): Registration
+    {
+        return Registration::where('registration_id', $id)
+            ->orWhere('id', is_numeric($id) ? (int) $id : -1)
+            ->firstOrFail();
     }
 }

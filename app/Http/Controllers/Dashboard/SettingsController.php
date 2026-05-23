@@ -21,12 +21,14 @@ class SettingsController extends Controller
 
         return Inertia::render('Dashboard/Settings', [
             'user' => [
-                'name'             => $user->name,
-                'email'            => $user->email,
-                'mobile'           => $user->mobile,
-                'platform_mode'    => $user->platform_mode,
-                'photo_visibility' => $user->photo_visibility,
-                'account_status'   => $user->account_status,
+                'name'               => $user->name,
+                'email'              => $user->email,
+                'mobile'             => $user->mobile_number,
+                'platform_mode'      => $user->platform_mode,
+                'photo_visibility'   => $user->photo_visibility,
+                'account_status'     => $user->account_status,
+                'registration_id'    => $user->registration_id,
+                'preferred_language' => $user->preferred_language ?? 'en',
             ],
         ]);
     }
@@ -37,15 +39,24 @@ class SettingsController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name'             => ['required', 'string', 'max:100'],
-            'mobile'           => ['nullable', 'string', 'max:20'],
-            'platform_mode'    => ['required', 'in:general,islamic'],
-            'photo_visibility' => ['required', 'in:public,members_only,blurred'],
+            'name'               => ['required', 'string', 'max:100'],
+            'mobile'             => ['nullable', 'string', 'max:20'],
+            'platform_mode'      => ['required', 'in:general,islamic'],
+            'photo_visibility'   => ['required', 'in:public,members_only,blurred'],
+            'preferred_language' => ['required', 'in:en,bn'],
         ]);
 
-        $user->update($validated);
+        $user->update([
+            'name'               => $validated['name'],
+            'mobile_number'      => $validated['mobile'] ?? null,
+            'platform_mode'      => $validated['platform_mode'],
+            'photo_visibility'   => $validated['photo_visibility'],
+            'preferred_language' => $validated['preferred_language'],
+        ]);
 
-        return back()->with('success', 'Profile settings updated.');
+        $request->session()->put('locale', $validated['preferred_language']);
+
+        return back()->with('success', __('settings.account_saved'));
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -64,7 +75,7 @@ class SettingsController extends Controller
 
         $user->update(['password' => Hash::make($validated['password'])]);
 
-        return back()->with('success', 'Password updated successfully.');
+        return back()->with('success', __('settings.password_updated'));
     }
 
     public function deleteAccount(Request $request): RedirectResponse
@@ -88,6 +99,6 @@ class SettingsController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home')->with('success', 'Your account has been deleted.');
+        return redirect()->route('home')->with('success', __('settings.account_deleted'));
     }
 }

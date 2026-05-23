@@ -11,46 +11,61 @@ class Biodata extends Model
 
     protected $fillable = [
         'registration_id',
-        'religion',
 
-        // Step 1: General Info
+        // General Info
         'marital_status',
         'birth_date',
-        'height',
+        'height_cm',
+        'weight_kg',
         'complexion',
-        'weight',
         'blood_group',
-        'nationality',
+        'about_me',
+        'profile_headline',
 
-        // Step 2: Address
+        // Location
+        'nationality',
+        'division',
+        'district',
+        'upazila',
         'permanent_address',
         'village_area',
         'present_address',
-        'grew_up',
+        'grew_up_in',
+        'residing_country',
+        'residing_city',
+        'visa_status',
+        'is_nrb',
+        'mother_tongue',
 
-        // Step 3: Education
+        // Religion & Islamic Practice
+        'religion',
+        'sect',
+        'is_practicing',
+        'accepts_interfaith',
+        'prayers_info',
+        'quran_recitation',
+        'fiqh',
+        'clothing_style',
+        'beard_info',
+        'hijab_info',
+        'is_islamically_educated',
+        'beliefs_on_mazar',
+        'favorite_scholars',
+        'religious_work',
+        'wali_approval',
+        'sunni_scale',
+
+        // Education & Professional
         'education_method',
         'highest_qualification',
-        'other_education',
-        'ssc_year',
-        'ssc_group',
-        'hsc_year',
-        'hsc_group',
-        'diploma_subject',
-        'diploma_medium',
-        'diploma_institution',
-        'diploma_year',
-        'graduation_subject',
-        'graduation_institution',
-        'graduation_year',
-        'postgraduation_subject',
-        'postgraduation_institution',
-        'postgraduation_year',
-        'islamic_titles',
-        'islamic_institution',
-        'islamic_year',
+        'education_details',
+        'occupation',
+        'occupation_category',
+        'profession_details',
+        'monthly_income',
+        'profession_halal_status',
 
-        // Step 4: Family
+        // Family
         'father_name',
         'father_alive',
         'father_profession',
@@ -59,64 +74,67 @@ class Biodata extends Model
         'mother_profession',
         'brothers',
         'sisters',
-        'uncle_profession',
+        'family_type',
         'family_financial_status',
+        'home_ownership',
         'family_details',
         'family_religious_condition',
 
-        // Step 5: Personal Info
-        'clothing_style',
-        'beard_info',
-        'clothes_above_ankles',
-        'niqab_since',
-        'prays_five_times',
-        'prayers_info',
-        'mahram_nonmahram',
-        'quran_recitation',
-        'fiqh',
+        // Health
+        'health_status',
+        'health_details',
+
+        // Lifestyle
+        'diet',
+        'smoking',
         'watch_entertainment',
-        'diseases',
-        'beliefs_on_mazar',
-        'books_read',
-        'special_category',
         'hobbies',
-        'groom_photo',
+        'special_category',
 
-        // Step 6: Occupation
-        'occupation',
-        'profession_details',
-        'monthly_income',
+        // Photos
+        'photos',
+        'photo_verified',
 
-        // Step 7: Marriage Info
+        // Marriage Info
         'guardian_agree',
         'wife_in_veil',
         'wife_study_allowed',
         'wife_job_allowed',
         'residence_after_marriage',
         'expect_gift_from_bride',
+        'post_marriage_plan',
+        'polygamy_open',
+        'children_count',
 
-        // Step 8: Expected Partner
-        'partner_age',
+        // Partner Preferences
+        'partner_age_min',
+        'partner_age_max',
+        'partner_height_cm_min',
+        'partner_height_cm_max',
         'partner_complexion',
-        'partner_height',
-        'partner_education',
-        'partner_district',
         'partner_marital_status',
-        'partner_profession',
-        'partner_financial_condition',
+        'partner_education',
+        'partner_occupation_pref',
+        'partner_income_min',
+        'partner_income_max',
+        'partner_religion',
+        'partner_sect',
+        'partner_nationality',
+        'partner_residing_country',
+        'partner_division',
+        'partner_district',
+        'partner_family_type',
         'partner_expectations',
 
-        // Step 9: Pledge
-        'parents_know',
-        'truth_testify',
-        'responsibility',
-
-        // Step 10: Contact
+        // Contact / Guardian
         'guardian_mobile',
         'guardian_relationship',
         'guardian_email',
-        'is_completed',
+
+        // Admin & Moderation
         'status',
+        'is_completed',
+        'completeness_score',
         'admin_note',
         'approved_at',
         'approved_by',
@@ -125,24 +143,54 @@ class Biodata extends Model
         'is_featured',
         'featured_at',
         'profile_score',
-
-        // Photos — stored as JSON array: [{path, is_primary, visibility, uploaded_at}]
-        'photos',
-        'photo_verified',
-        'completeness_score',
         'last_active_at',
     ];
 
     protected $casts = [
-        'is_completed'       => 'boolean',
-        'is_featured'        => 'boolean',
-        'photo_verified'     => 'boolean',
-        'photos'             => 'array',
-        'completeness_score' => 'integer',
-        'approved_at'        => 'datetime',
-        'rejected_at'        => 'datetime',
-        'featured_at'        => 'datetime',
-        'last_active_at'     => 'datetime',
+        // Booleans
+        'is_completed'            => 'boolean',
+        'is_featured'             => 'boolean',
+        'photo_verified'          => 'boolean',
+        'is_practicing'           => 'boolean',
+        'accepts_interfaith'      => 'boolean',
+        'is_islamically_educated' => 'boolean',
+        'wali_approval'           => 'boolean',
+        'is_nrb'                  => 'boolean',
+        'father_alive'            => 'boolean',
+        'mother_alive'            => 'boolean',
+        'guardian_agree'          => 'boolean',
+        'wife_in_veil'            => 'boolean',
+        'wife_study_allowed'      => 'boolean',
+        'wife_job_allowed'        => 'boolean',
+        'polygamy_open'           => 'boolean',
+
+        // Arrays/JSON
+        'photos'            => 'array',
+        'education_details' => 'array',
+
+        // Integers
+        'completeness_score'    => 'integer',
+        'height_cm'             => 'integer',
+        'weight_kg'             => 'integer',
+        'brothers'              => 'integer',
+        'sisters'               => 'integer',
+        'monthly_income'        => 'integer',
+        'partner_age_min'       => 'integer',
+        'partner_age_max'       => 'integer',
+        'partner_height_cm_min' => 'integer',
+        'partner_height_cm_max' => 'integer',
+        'partner_income_min'    => 'integer',
+        'partner_income_max'    => 'integer',
+        'children_count'        => 'integer',
+        'sunni_scale'           => 'integer',
+        'profile_score'         => 'integer',
+
+        // Dates
+        'birth_date'     => 'date',
+        'approved_at'    => 'datetime',
+        'rejected_at'    => 'datetime',
+        'featured_at'    => 'datetime',
+        'last_active_at' => 'datetime',
     ];
 
     public function registration()

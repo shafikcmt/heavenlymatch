@@ -66,6 +66,11 @@ class BiodataWizardController extends Controller
 
         $biodata->save();
 
+        if ($request->boolean('save_draft')) {
+            return redirect()->route('biodata.wizard', ['step' => $step])
+                ->with('success', __('biodata.draft_saved'));
+        }
+
         $nextStep = $step + 1;
 
         if ($nextStep > count(self::STEPS)) {

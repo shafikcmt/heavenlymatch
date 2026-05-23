@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\ConnectionRequest;
+use App\Models\Conversation;
 use App\Models\Registration;
 use App\Models\UserNotification;
 use App\Notifications\HeavenlyMatchNotification;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,34 +17,61 @@ use Inertia\Response;
 
 class InterestController extends Controller
 {
-    public function received(): Response
+    public function received(Request $request): Response
     {
         /** @var Registration $user */
         $user = Auth::user();
+        $status = in_array($request->query('status'), ['pending', 'accepted', 'declined'])
+            ? $request->query('status')
+            : 'pending';
 
-        $interests = ConnectionRequest::with(['sender.biodata'])
-            ->where('receiver_id', $user->registration_id)
-            ->pending()
+        $myId = $user->registration_id;
+
+        $interests = ConnectionRequest::with(['sender.biodata', 'conversation'])
+            ->where('receiver_id', $myId)
+            ->where('status', $status)
             ->latest()
             ->paginate(20);
 
+        $counts = [
+            'pending'  => ConnectionRequest::where('receiver_id', $myId)->where('status', 'pending')->count(),
+            'accepted' => ConnectionRequest::where('receiver_id', $myId)->where('status', 'accepted')->count(),
+            'declined' => ConnectionRequest::where('receiver_id', $myId)->where('status', 'declined')->count(),
+        ];
+
         return Inertia::render('Dashboard/Interests/Received', [
-            'interests' => $interests,
+            'interests'     => $interests,
+            'counts'        => $counts,
+            'currentStatus' => $status,
         ]);
     }
 
-    public function sent(): Response
+    public function sent(Request $request): Response
     {
         /** @var Registration $user */
         $user = Auth::user();
+        $status = in_array($request->query('status'), ['pending', 'accepted', 'declined'])
+            ? $request->query('status')
+            : 'pending';
 
-        $interests = ConnectionRequest::with(['receiver.biodata'])
-            ->where('sender_id', $user->registration_id)
+        $myId = $user->registration_id;
+
+        $interests = ConnectionRequest::with(['receiver.biodata', 'conversation'])
+            ->where('sender_id', $myId)
+            ->where('status', $status)
             ->latest()
             ->paginate(20);
 
+        $counts = [
+            'pending'  => ConnectionRequest::where('sender_id', $myId)->where('status', 'pending')->count(),
+            'accepted' => ConnectionRequest::where('sender_id', $myId)->where('status', 'accepted')->count(),
+            'declined' => ConnectionRequest::where('sender_id', $myId)->where('status', 'declined')->count(),
+        ];
+
         return Inertia::render('Dashboard/Interests/Sent', [
-            'interests' => $interests,
+            'interests'     => $interests,
+            'counts'        => $counts,
+            'currentStatus' => $status,
         ]);
     }
 
@@ -50,6 +79,12 @@ class InterestController extends Controller
     {
         /** @var Registration $user */
         $user = Auth::user();
+
+        // Block if profile completion is too low
+        $completion = ProfileCompletionService::compute($user);
+        if (!$completion['can_send_interest']) {
+            return back()->with('error', 'Complete at least 30% of your biodata to send interest.');
+        }
 
         $validated = $request->validate([
             'receiver_id' => ['required', 'string', 'exists:registrations,registration_id'],
@@ -69,10 +104,10 @@ class InterestController extends Controller
         }
 
         ConnectionRequest::create([
-            'sender_id'   => $user->registration_id,
-            'receiver_id' => $validated['receiver_id'],
-            'note'        => $validated['note'] ?? null,
-            'status'      => 'pending',
+            'sender_id'       => $user->registration_id,
+            'receiver_id'     => $validated['receiver_id'],
+            'initial_message' => $validated['note'] ?? null,
+            'status'          => 'pending',
         ]);
 
         $receiver = Registration::where('registration_id', $validated['receiver_id'])
@@ -119,9 +154,20 @@ class InterestController extends Controller
             ->firstOrFail();
 
         $interest->update([
-            'status'      => $validated['action'] === 'accept' ? 'accepted' : 'rejected',
+            'status'      => $validated['action'] === 'accept' ? 'accepted' : 'declined',
             'responded_at'=> now(),
         ]);
+
+        if ($validated['action'] === 'accept') {
+            Conversation::firstOrCreate(
+                ['connection_request_id' => $interest->id],
+                [
+                    'user_a_id' => $interest->sender_id,
+                    'user_b_id' => $user->registration_id,
+                    'is_active' => true,
+                ],
+            );
+        }
 
         $sender = Registration::where('registration_id', $interest->sender_id)
             ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])

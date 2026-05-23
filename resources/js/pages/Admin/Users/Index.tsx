@@ -96,8 +96,8 @@ export default function UsersIndex({ users, filters }: Props) {
             className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('admin', 'all_genders')}</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="male">{t('admin', 'user_gender_male')}</option>
+            <option value="female">{t('admin', 'user_gender_female')}</option>
           </select>
 
           <select
@@ -106,34 +106,34 @@ export default function UsersIndex({ users, filters }: Props) {
             className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('admin', 'all_memberships')}</option>
-            <option value="free">Free</option>
-            <option value="active">Premium</option>
-            <option value="expired">Expired</option>
+            <option value="free">{t('admin', 'membership_free')}</option>
+            <option value="active">{t('admin', 'membership_premium')}</option>
+            <option value="expired">{t('admin', 'membership_expired')}</option>
           </select>
         </div>
 
         {/* Count */}
-        <p className="text-sm text-slate-500">{users.total} users</p>
+        <p className="text-sm text-slate-500">{t('admin', 'users_count').replace(':count', String(users.total))}</p>
 
         {/* Table */}
         <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">ID</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Gender</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Plan</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Biodata</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Joined</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_name')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_id')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_gender')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_status')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_membership')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_biodata')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_joined')}</th>
               </tr>
             </thead>
             <tbody>
               {users.data.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-slate-400 text-sm">
-                    No users found.
+                    {t('admin', 'no_users_found')}
                   </td>
                 </tr>
               ) : (
@@ -153,7 +153,7 @@ export default function UsersIndex({ users, filters }: Props) {
                       <StatusBadge status={u.account_status} />
                     </td>
                     <td className="px-4 py-3">
-                      <MembershipBadge status={u.membership_status} />
+                      <MembershipBadge status={u.membership_status} labelPremium={t('admin', 'membership_premium')} labelFree={t('admin', 'membership_free')} />
                     </td>
                     <td className="px-4 py-3">
                       {u.biodata ? (
@@ -225,9 +225,9 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function MembershipBadge({ status }: { status: string }) {
+function MembershipBadge({ status, labelPremium, labelFree }: { status: string; labelPremium: string; labelFree: string }) {
   if (status === 'active') {
-    return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700">Premium</span>
+    return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700">{labelPremium}</span>
   }
-  return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500">Free</span>
+  return <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500">{labelFree}</span>
 }

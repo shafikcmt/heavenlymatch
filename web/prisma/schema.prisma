@@ -1,0 +1,1096 @@
+// =============================================================================
+// HeavenlyMatch — Complete MySQL Schema (Prisma)
+// Platform: Next.js 15 + Prisma + MySQL (XAMPP / production MySQL 8)
+// Version: 2.0 (Enterprise)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum PlatformMode {
+  GENERAL
+  ISLAMIC
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+  PENDING_VERIFICATION
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum PhotoVisibility {
+  PUBLIC          // Visible to all logged-in users
+  MEMBERS_ONLY    // Visible only after accepted connection
+  BLURRED         // Always blurred — Islamic strict mode
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+}
+
+enum EducationLevel {
+  PRIMARY
+  JSC
+  SSC
+  HSC
+  DIPLOMA
+  GRADUATION
+  POST_GRADUATION
+  PHD
+  HAFEZ
+  ALIM
+  FAZIL
+  KAMIL
+}
+
+enum EducationMethod {
+  GENERAL
+  ISLAMIC
+  BOTH
+}
+
+enum Religion {
+  ISLAM
+  HINDUISM
+  CHRISTIANITY
+  BUDDHISM
+  OTHER
+}
+
+enum FamilyType {
+  JOINT
+  NUCLEAR
+  FLEXIBLE
+}
+
+enum InterestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  GUARDIAN_PENDING
+  WITHDRAWN
+  EXPIRED
+}
+
+enum PhotoAccessStatus {
+  PENDING
+  GRANTED
+  DENIED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRIAL
+}
+
+enum SubscriptionTier {
+  FREE
+  SILVER
+  GOLD
+  DIAMOND
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+  MANUAL_PENDING
+}
+
+enum PaymentGatewaySlug {
+  SSLCOMMERZ
+  BKASH
+  NAGAD
+  STRIPE
+  PAYPAL
+  MANUAL
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationType {
+  NEW_INTEREST
+  INTEREST_ACCEPTED
+  INTEREST_DECLINED
+  NEW_MESSAGE
+  PHOTO_ACCESS_REQUEST
+  PHOTO_ACCESS_GRANTED
+  NEW_MATCH
+  PROFILE_VIEW
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  VERIFICATION_APPROVED
+  VERIFICATION_REJECTED
+  GUARDIAN_NOTIFICATION
+  ADMIN_MESSAGE
+  SYSTEM
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  SUPPORT_AGENT
+  FINANCE_MANAGER
+}
+
+enum ReportReason {
+  FAKE_PROFILE
+  INAPPROPRIATE_CONTENT
+  HARASSMENT
+  SPAM
+  SCAM
+  UNDERAGE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// =============================================================================
+// LOCATION (Bangladesh-specific + International)
+// =============================================================================
+
+model Country {
+  id         Int     @id @default(autoincrement())
+  name       String  @unique @db.VarChar(100)
+  namebn     String? @db.VarChar(100) // Bengali name
+  iso2       String  @unique @db.VarChar(2)
+  iso3       String  @unique @db.VarChar(3)
+  dialCode   String? @db.VarChar(10)
+  isPopular  Boolean @default(false) // BD, UK, UAE, USA, Australia, Malaysia
+  sortOrder  Int     @default(0)
+  divisions  Division[]
+  profiles   Profile[] @relation("ResidingCountry")
+
+  @@index([isPopular, sortOrder])
+  @@map("countries")
+}
+
+model Division {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(60)
+  namebn    String?   @db.VarChar(60)
+  countryId Int
+  country   Country   @relation(fields: [countryId], references: [id])
+  districts District[]
+  profiles  Profile[] @relation("HomeDivision")
+  preferences Preference[] @relation("PreferredDivision")
+
+  @@unique([countryId, name])
+  @@map("divisions")
+}
+
+model District {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(60)
+  namebn     String?  @db.VarChar(60)
+  divisionId Int
+  division   Division @relation(fields: [divisionId], references: [id])
+  upazilas   Upazila[]
+  profiles   Profile[] @relation("HomeDistrict")
+  preferences Preference[] @relation("PreferredDistrict")
+
+  @@unique([divisionId, name])
+  @@index([divisionId])
+  @@map("districts")
+}
+
+model Upazila {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(80)
+  namebn     String?  @db.VarChar(80)
+  districtId Int
+  district   District @relation(fields: [districtId], references: [id])
+  profiles   Profile[] @relation("HomeUpazila")
+
+  @@unique([districtId, name])
+  @@map("upazilas")
+}
+
+// =============================================================================
+// USERS & AUTHENTICATION
+// =============================================================================
+
+model User {
+  id                    String    @id @default(cuid())
+  registrationId        String    @unique @db.VarChar(12) // HM000001 format
+  email                 String    @unique @db.VarChar(255)
+  emailVerifiedAt       DateTime?
+  mobile                String    @unique @db.VarChar(20)
+  mobileVerifiedAt      DateTime?
+  countryCode           String    @default("+880") @db.VarChar(10)
+  passwordHash          String    @db.VarChar(255)
+  platformMode          PlatformMode @default(GENERAL)
+  accountStatus         AccountStatus @default(PENDING_VERIFICATION)
+  role                  AdminRole? // null = regular user; set = admin team member
+  preferredLanguage     String    @default("bn") @db.VarChar(5)
+  termsAcceptedAt       DateTime?
+  lastLoginAt           DateTime?
+  lastActiveAt          DateTime?
+  twoFactorEnabled      Boolean   @default(false)
+  twoFactorSecret       String?   @db.VarChar(64)
+  deactivatedAt         DateTime?
+  deletionRequestedAt   DateTime?
+  blockedAt             DateTime?
+  blockedReason         String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  profile               Profile?
+  oauthAccounts         OAuthAccount[]
+  refreshTokens         RefreshToken[]
+  subscription          Subscription?
+  payments              Payment[]
+  sentInterests         Interest[]     @relation("SentInterests")
+  receivedInterests     Interest[]     @relation("ReceivedInterests")
+  conversations         ConversationParticipant[]
+  sentMessages          Message[]
+  guardian              Guardian?
+  shortlists            Shortlist[]    @relation("UserShortlists")
+  shortlistedBy         Shortlist[]    @relation("ShortlistedUser")
+  profileViews          ProfileView[]  @relation("ViewedProfile")
+  viewedProfiles        ProfileView[]  @relation("Viewer")
+  photoAccessRequests   PhotoAccessRequest[] @relation("Requester")
+  photoAccessGranted    PhotoAccessRequest[] @relation("ProfileOwner")
+  matchScoresAsUser     MatchScore[]   @relation("MatchUser")
+  matchScoresAsCandidate MatchScore[]  @relation("MatchCandidate")
+  contactUnlocks        ContactUnlock[] @relation("Unlocker")
+  contactUnlockedBy     ContactUnlock[] @relation("UnlockedProfile")
+  notifications         Notification[]
+  boosts                ProfileBoost[]
+  reports               Report[]       @relation("Reporter")
+  reportedAs            Report[]       @relation("Reported")
+  blocks                Block[]        @relation("Blocker")
+  blockedBy             Block[]        @relation("Blocked")
+  adminLogs             AdminLog[]
+  verificationRequests  VerificationRequest[]
+
+  @@index([accountStatus, platformMode])
+  @@index([registrationId])
+  @@index([lastActiveAt])
+  @@map("users")
+}
+
+model OAuthAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   @db.VarChar(20) // 'google', 'facebook', 'apple'
+  providerUid  String   @db.VarChar(255)
+  accessToken  String?  @db.Text
+  refreshToken String?  @db.Text
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUid])
+  @@map("oauth_accounts")
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique @db.VarChar(64) // SHA-256 of actual token
+  deviceInfo String?  @db.VarChar(255)
+  ipAddress  String?  @db.VarChar(45)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("refresh_tokens")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  target    String   @db.VarChar(255) // email or phone
+  type      String   @db.VarChar(30)  // 'email_verify', 'phone_verify', 'guardian_verify', 'password_reset'
+  code      String   @db.VarChar(10)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([target, type, expiresAt])
+  @@map("otp_codes")
+}
+
+// =============================================================================
+// PROFILE & BIODATA
+// =============================================================================
+
+model Profile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Identity ────────────────────────────────────────────────────────
+  name                  String    @db.VarChar(100)
+  displayName           String?   @db.VarChar(50)
+  gender                Gender
+  profileCreatedFor     String    @db.VarChar(30) // 'self', 'son', 'daughter', 'brother', 'sister'
+  dateOfBirth           DateTime  @db.Date
+  maritalStatus         MaritalStatus @default(NEVER_MARRIED)
+  numberOfChildren      Int       @default(0)
+
+  // ── Physical ────────────────────────────────────────────────────────
+  heightCm              Int?      // store as int for range queries
+  weightKg              Int?
+  complexion            String?   @db.VarChar(30)
+  bloodGroup            String?   @db.VarChar(5)
+  hasDisability         Boolean   @default(false)
+  disabilityDescription String?   @db.Text
+
+  // ── Religious ───────────────────────────────────────────────────────
+  religion              Religion  @default(ISLAM)
+  sect                  String?   @db.VarChar(50)   // Hanafi, Shafi, Ahle Hadith, etc.
+  isPracticing          Boolean   @default(true)
+  prayerHabits          String?   @db.VarChar(50)   // '5_times', 'regularly', 'sometimes'
+  prayerInMasjid        String?   @db.VarChar(20)   // male: 'always','sometimes','rarely'
+  quranRecitation       String?   @db.VarChar(30)
+  islamicEducation      String?   @db.VarChar(100)
+  hasHajj               Boolean   @default(false)
+  fiqhFollowed          String?   @db.VarChar(30)
+  beliefOnMazar         String?   @db.VarChar(50)
+  watchEntertainment    String?   @db.VarChar(30)
+  // Female-specific
+  wearsHijab            String?   @db.VarChar(20)   // 'always', 'sometimes', 'no'
+  wearsBurqa            String?   @db.VarChar(20)
+  wearNiqab             Boolean   @default(false)
+  niqabSince            String?   @db.VarChar(30)
+  // Male-specific
+  hasBeard              String?   @db.VarChar(20)   // 'full', 'trimmed', 'no'
+  beardSince            String?   @db.VarChar(30)
+  clothesAboveAnkles    Boolean   @default(false)
+  observesMahramRules   Boolean   @default(false)
+
+  // ── Education ───────────────────────────────────────────────────────
+  educationMethod       EducationMethod @default(GENERAL)
+  highestQualification  EducationLevel?
+  educationDetails      Json?     // Array of degree objects: [{degree, institution, year, subject}]
+  islamicTitles         String?   @db.VarChar(200)  // comma-separated
+  islamicInstitution    String?   @db.VarChar(200)
+
+  // ── Occupation ──────────────────────────────────────────────────────
+  occupation            String?   @db.VarChar(80)
+  occupationCategory    String?   @db.VarChar(50)   // for grouping in search
+  company               String?   @db.VarChar(150)
+  monthlyIncome         Int?      // stored in BDT equivalent
+  currency              String    @default("BDT") @db.VarChar(5)
+  professionDetails     String?   @db.Text
+
+  // ── Family ──────────────────────────────────────────────────────────
+  fatherName            String?   @db.VarChar(100)
+  fatherAlive           Boolean?
+  fatherProfession      String?   @db.VarChar(100)
+  motherName            String?   @db.VarChar(100)
+  motherAlive           Boolean?
+  motherProfession      String?   @db.VarChar(100)
+  brothersCount         Int       @default(0)
+  sistersCount          Int       @default(0)
+  familyType            FamilyType @default(NUCLEAR)
+  familyFinancialStatus String?   @db.VarChar(30)   // 'lower','middle','upper_middle','upper'
+  familyReligiousCondition String? @db.Text
+  familyDetails         String?   @db.Text
+
+  // ── Lifestyle ───────────────────────────────────────────────────────
+  diet                  String?   @db.VarChar(30)   // 'halal_only','vegetarian','no_restriction'
+  smoking               String?   @db.VarChar(20)   // 'yes','no','occasionally'
+  wantsChildren         String?   @db.VarChar(20)
+  hasChildren           String?   @db.VarChar(20)
+  hobbies               String?   @db.Text
+  booksRead             String?   @db.Text
+
+  // ── Location ────────────────────────────────────────────────────────
+  nationality           String    @default("Bangladeshi") @db.VarChar(60)
+  residingCountryId     Int?
+  residingCountry       Country?  @relation("ResidingCountry", fields: [residingCountryId], references: [id])
+  residingCity          String?   @db.VarChar(80)
+  visaStatus            String?   @db.VarChar(30)
+  permanentAddress      String?   @db.Text
+  presentAddress        String?   @db.Text
+  grewUp                String?   @db.VarChar(100)
+  homeDivisionId        Int?
+  homeDivision          Division? @relation("HomeDivision", fields: [homeDivisionId], references: [id])
+  homeDistrictId        Int?
+  homeDistrict          District? @relation("HomeDistrict", fields: [homeDistrictId], references: [id])
+  homeUpazilaId         Int?
+  homeUpazila           Upazila?  @relation("HomeUpazila", fields: [homeUpazilaId], references: [id])
+
+  // ── Marriage Intentions ─────────────────────────────────────────────
+  guardianAgrees        Boolean?
+  expectedMarriageTime  String?   @db.VarChar(30)
+  wifeInVeil            String?   @db.VarChar(20)
+  wifeStudyAllowed      String?   @db.VarChar(20)
+  wifeJobAllowed        String?   @db.VarChar(20)
+  residenceAfterMarriage String?  @db.VarChar(80)
+  expectGiftFromBride   String?   @db.VarChar(20)
+
+  // ── Admin & Status ──────────────────────────────────────────────────
+  status                String    @default("pending") @db.VarChar(20) // pending|approved|rejected
+  adminNote             String?   @db.Text
+  isCompleted           Boolean   @default(false)
+  isFeatured            Boolean   @default(false)
+  profileScore          Int       @default(0) // Admin-assigned quality score
+  completenessScore     Int       @default(0) // 0-100, auto-computed
+  approvedAt            DateTime?
+  approvedBy            String?   @db.VarChar(20)
+  rejectedAt            DateTime?
+  rejectedBy            String?   @db.VarChar(20)
+  featuredAt            DateTime?
+
+  // ── Photo Privacy ───────────────────────────────────────────────────
+  photoVisibility       PhotoVisibility @default(MEMBERS_ONLY)
+
+  // ── Pledge / Certification ──────────────────────────────────────────
+  parentsKnow           Boolean   @default(false)
+  truthTestified        Boolean   @default(false)
+  responsibilityAccepted Boolean  @default(false)
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  photos                Photo[]
+  preferences           Preference?
+  verificationRequests  VerificationRequest[]
+  photoAccessRequests   PhotoAccessRequest[]  @relation("TargetProfile")
+
+  @@index([gender, status, isCompleted])
+  @@index([religion, sect])
+  @@index([occupation, monthlyIncome])
+  @@index([homeDistrictId, homeDivisionId])
+  @@index([residingCountryId])
+  @@index([maritalStatus, heightCm])
+  @@index([completenessScore, status])
+  @@index([isFeatured, status])
+  @@map("profiles")
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  profileId    String
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  s3Key        String   @db.VarChar(500)   // private S3 object key — NEVER expose
+  thumbnailKey String?  @db.VarChar(500)   // pre-generated 300x300 thumbnail
+  isPrimary    Boolean  @default(false)
+  visibility   PhotoVisibility @default(MEMBERS_ONLY)
+  isApproved   Boolean  @default(false)
+  sortOrder    Int       @default(0)
+  uploadedAt   DateTime @default(now())
+
+  @@index([profileId, isPrimary])
+  @@map("photos")
+}
+
+model Preference {
+  id                    String    @id @default(cuid())
+  profileId             String    @unique
+  profile               Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Age
+  partnerAgeMin         Int?
+  partnerAgeMax         Int?
+
+  // Physical
+  partnerHeightCmMin    Int?
+  partnerHeightCmMax    Int?
+  partnerComplexion     String?   @db.VarChar(30)
+
+  // Religion
+  partnerReligion       Religion?
+  partnerSect           String?   @db.VarChar(50)
+  partnerMustBePracticing Boolean @default(false)
+
+  // Education
+  partnerEducation      EducationLevel?
+  partnerEducationMethod EducationMethod?
+
+  // Location
+  partnerNationality    String?   @db.VarChar(60)
+  partnerResidingCountryId Int?
+  preferredDivisionId   Int?
+  preferredDivision     Division? @relation("PreferredDivision", fields: [preferredDivisionId], references: [id])
+  preferredDistrictId   Int?
+  preferredDistrict     District? @relation("PreferredDistrict", fields: [preferredDistrictId], references: [id])
+  openToNRB             Boolean   @default(true)
+
+  // Occupation & Income
+  partnerOccupation     String?   @db.VarChar(80)
+  partnerIncomeMin      Int?
+  partnerIncomeMax      Int?
+
+  // Marital status acceptable
+  acceptNeverMarried    Boolean   @default(true)
+  acceptDivorced        Boolean   @default(false)
+  acceptWidowed         Boolean   @default(false)
+
+  // Family
+  partnerFamilyType     FamilyType?
+  partnerFinancialStatus String?  @db.VarChar(30)
+
+  // Lifestyle
+  partnerMaritalStatus  MaritalStatus?
+  partnerSmokingAllowed Boolean   @default(false)
+
+  // Free text expectation
+  expectations          String?   @db.Text
+
+  updatedAt             DateTime  @updatedAt
+
+  @@map("preferences")
+}
+
+// =============================================================================
+// VERIFICATION
+// =============================================================================
+
+model VerificationRequest {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId       String?
+  profile         Profile? @relation(fields: [profileId], references: [id])
+
+  // Which verification type
+  type            String   @db.VarChar(30) // 'nid','passport','selfie','document'
+  status          VerificationStatus @default(UNVERIFIED)
+
+  // Uploaded files (S3 keys — private bucket)
+  documentFrontKey String?  @db.VarChar(500)
+  documentBackKey  String?  @db.VarChar(500)
+  selfieKey        String?  @db.VarChar(500)
+  documentNumber   String?  @db.VarChar(30)
+
+  // Admin review
+  reviewedBy      String?  @db.VarChar(20)
+  reviewedAt      DateTime?
+  rejectionReason String?  @db.Text
+  adminNote       String?  @db.Text
+
+  submittedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, type, status])
+  @@index([status, submittedAt])
+  @@map("verification_requests")
+}
+
+// =============================================================================
+// INTERESTS / CONNECTION REQUESTS
+// =============================================================================
+
+model Interest {
+  id                  String   @id @default(cuid())
+  senderId            String
+  sender              User     @relation("SentInterests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId          String
+  receiver            User     @relation("ReceivedInterests", fields: [receiverId], references: [id], onDelete: Cascade)
+  status              InterestStatus @default(PENDING)
+  message             String?  @db.Text    // optional introduction
+  guardianNotified    Boolean  @default(false)
+  guardianNotifiedAt  DateTime?
+  respondedAt         DateTime?
+  expiresAt           DateTime?            // auto-expire pending requests after 30 days
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  conversation        Conversation?
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId, status])
+  @@index([status, expiresAt])
+  @@map("interests")
+}
+
+// =============================================================================
+// CONVERSATIONS & MESSAGES
+// =============================================================================
+
+model Conversation {
+  id           String   @id @default(cuid())
+  interestId   String   @unique
+  interest     Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+  isActive     Boolean  @default(true)
+  lastMessageAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime?
+  isArchived     Boolean      @default(false)
+  mutedUntil     DateTime?
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String       @db.Text
+  type           String       @default("text") @db.VarChar(20) // 'text'|'image'|'system'
+  attachmentKey  String?      @db.VarChar(500)
+  readAt         DateTime?
+  deletedForSender Boolean   @default(false)
+  deletedForAll  Boolean     @default(false)
+  flagged        Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+// =============================================================================
+// GUARDIAN / WALI MODULE
+// =============================================================================
+
+model Guardian {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String   @db.VarChar(100)
+  relationship      String   @db.VarChar(50) // Father, Mother, Brother, Wali, Uncle
+  mobile            String   @db.VarChar(20)
+  email             String?  @db.VarChar(100)
+  // 'all_actions' | 'interests_only' | 'disabled'
+  notificationLevel String   @default("interests_only") @db.VarChar(30)
+  isVerified        Boolean  @default(false)
+  verifiedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("guardians")
+}
+
+// =============================================================================
+// PHOTO ACCESS (Islamic Strict Mode)
+// =============================================================================
+
+model PhotoAccessRequest {
+  id           String   @id @default(cuid())
+  requesterId  String
+  requester    User     @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  profileId    String   // Profile.id (not userId)
+  profile      Profile  @relation("TargetProfile", fields: [profileId], references: [id], onDelete: Cascade)
+  profileOwnerId String
+  profileOwner User     @relation("ProfileOwner", fields: [profileOwnerId], references: [id], onDelete: Cascade)
+  status       PhotoAccessStatus @default(PENDING)
+  respondedAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  @@unique([requesterId, profileId])
+  @@index([profileOwnerId, status])
+  @@map("photo_access_requests")
+}
+
+// =============================================================================
+// SHORTLISTS & PROFILE VIEWS
+// =============================================================================
+
+model Shortlist {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("UserShortlists", fields: [userId], references: [id], onDelete: Cascade)
+  shortlistedId String
+  shortlisted   User     @relation("ShortlistedUser", fields: [shortlistedId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, shortlistedId])
+  @@index([userId])
+  @@map("shortlists")
+}
+
+model ProfileView {
+  id          String   @id @default(cuid())
+  profileId   String   // userId of the profile being viewed
+  profile     User     @relation("ViewedProfile", fields: [profileId], references: [id], onDelete: Cascade)
+  viewerId    String?  // null = anonymous
+  viewer      User?    @relation("Viewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  ipAddress   String?  @db.VarChar(45)
+  userAgent   String?  @db.VarChar(255)
+  viewedAt    DateTime @default(now())
+
+  @@index([profileId, viewedAt])
+  @@index([viewerId, profileId])
+  @@map("profile_views")
+}
+
+// =============================================================================
+// AI MATCH SCORES
+// =============================================================================
+
+model MatchScore {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
+  candidateId    String
+  candidate      User     @relation("MatchCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
+  totalScore     Int      // 0-100
+  scoreBreakdown Json     // {age:18, location:15, religion:20, ...}
+  computedAt     DateTime @default(now())
+
+  @@unique([userId, candidateId])
+  @@index([userId, totalScore])
+  @@map("match_scores")
+}
+
+// =============================================================================
+// SUBSCRIPTIONS & PAYMENTS
+// =============================================================================
+
+model SubscriptionPlan {
+  id                   String   @id @default(cuid())
+  name                 String   @db.VarChar(50)
+  slug                 String   @unique @db.VarChar(50)
+  tier                 SubscriptionTier
+  durationMonths       Int
+  priceLocal           Decimal  @db.Decimal(12, 2)  // BDT
+  priceIntl            Decimal  @db.Decimal(12, 2)  // USD
+  currencyLocal        String   @default("BDT") @db.VarChar(5)
+  currencyIntl         String   @default("USD") @db.VarChar(5)
+  features             Json     // [{key, label, included}]
+  limits               Json     // {messageLimit, contactUnlocks, profileBoosts, searchFilters}
+  badge                String?  @db.VarChar(30)
+  isPopular            Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  subscriptions        Subscription[]
+  payments             Payment[]
+
+  @@index([tier, isActive, sortOrder])
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId      String
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id])
+  status      SubscriptionStatus @default(ACTIVE)
+  startedAt   DateTime
+  expiresAt   DateTime
+  cancelledAt DateTime?
+  autoRenew   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, expiresAt])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String?
+  plan            SubscriptionPlan? @relation(fields: [planId], references: [id])
+  amount          Decimal  @db.Decimal(12, 2)
+  currency        String   @db.VarChar(5)
+  gateway         PaymentGatewaySlug
+  gatewayTxId     String?  @db.VarChar(200)  // gateway's transaction ID
+  internalTxId    String   @unique @db.VarChar(30) // HMP-2506-000001
+  status          PaymentStatus @default(PENDING)
+  purposeType     String   @db.VarChar(30)   // 'subscription','boost','contact_unlock'
+  purposeId       String?  @db.VarChar(50)   // ID of boost/unlock record
+  gatewayResponse Json?
+  paidAt          DateTime?
+  expiresAt       DateTime? // for pending payments: 45-min expiry
+  refundedAt      DateTime?
+  refundAmount    Decimal? @db.Decimal(12, 2)
+  ipAddress       String?  @db.VarChar(45)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  contactUnlocks  ContactUnlock[]
+  boosts          ProfileBoost[]
+
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@index([gateway, gatewayTxId])
+  @@map("payments")
+}
+
+model ContactUnlock {
+  id            String   @id @default(cuid())
+  unlockerId    String
+  unlocker      User     @relation("Unlocker", fields: [unlockerId], references: [id], onDelete: Cascade)
+  unlockedId    String
+  unlocked      User     @relation("UnlockedProfile", fields: [unlockedId], references: [id], onDelete: Cascade)
+  paymentId     String?
+  payment       Payment? @relation(fields: [paymentId], references: [id])
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([unlockerId, unlockedId])
+  @@index([unlockerId])
+  @@map("contact_unlocks")
+}
+
+model ProfileBoost {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentId     String?
+  payment       Payment? @relation(fields: [paymentId], references: [id])
+  durationHours Int      @default(24)
+  startedAt     DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, isActive, expiresAt])
+  @@map("profile_boosts")
+}
+
+// =============================================================================
+// NOTIFICATIONS
+// =============================================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  channel   NotificationChannel @default(IN_APP)
+  title     String   @db.VarChar(200)
+  body      String   @db.Text
+  data      Json?
+  readAt    DateTime?
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, type, createdAt])
+  @@map("notifications")
+}
+
+// =============================================================================
+// REPORTS & BLOCKS
+// =============================================================================
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  reporter    User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId  String
+  reported    User     @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+  reason      ReportReason
+  description String?  @db.Text
+  status      ReportStatus @default(PENDING)
+  reviewedBy  String?  @db.VarChar(20)
+  reviewedAt  DateTime?
+  resolution  String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reportedId, status])
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+model Block {
+  id          String   @id @default(cuid())
+  blockerId   String
+  blocker     User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId   String
+  blocked     User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  reason      String?  @db.VarChar(200)
+  createdAt   DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@map("blocks")
+}
+
+// =============================================================================
+// ADMIN & AUDIT
+// =============================================================================
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String   @db.VarChar(100)
+  targetType String?  @db.VarChar(50) // 'user','profile','payment', etc.
+  targetId   String?  @db.VarChar(50)
+  metadata   Json?
+  ipAddress  String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+  @@map("admin_logs")
+}
+
+// =============================================================================
+// CMS — BLOG & SUCCESS STORIES
+// =============================================================================
+
+model BlogCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique @db.VarChar(100)
+  slug      String   @unique @db.VarChar(100)
+  posts     BlogPost[]
+  createdAt DateTime @default(now())
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  title        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  excerpt      String?  @db.VarChar(500)
+  content      String   @db.Text
+  coverImageKey String?  @db.VarChar(500)
+  categoryId   String?
+  category     BlogCategory? @relation(fields: [categoryId], references: [id])
+  status       BlogStatus @default(DRAFT)
+  authorId     String?  @db.VarChar(50)
+  tags         String?  @db.Text // comma-separated tag list
+  metaTitle    String?  @db.VarChar(255)
+  metaDesc     String?  @db.VarChar(500)
+  publishedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([slug])
+  @@map("blog_posts")
+}
+
+model SuccessStory {
+  id           String   @id @default(cuid())
+  groomName    String   @db.VarChar(100)
+  brideName    String   @db.VarChar(100)
+  location     String?  @db.VarChar(150)
+  story        String   @db.Text
+  photoKey     String?  @db.VarChar(500)
+  marriageDate DateTime? @db.Date
+  isPublished  Boolean  @default(false)
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isPublished, isFeatured])
+  @@map("success_stories")
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  authorName  String   @db.VarChar(100)
+  authorRole  String?  @db.VarChar(100)
+  text        String   @db.Text
+  rating      Int      // 1-5
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+// =============================================================================
+// SYSTEM SETTINGS & SAVED SEARCHES
+// =============================================================================
+
+model SystemSetting {
+  key       String @id @db.VarChar(100)
+  value     String @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model SavedSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @db.VarChar(100)
+  filters   Json     // serialized search filter object
+  alertEnabled Boolean @default(false)
+  lastRanAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+model ReferralCode {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  code        String   @unique @db.VarChar(20)
+  usedCount   Int      @default(0)
+  creditsEarned Int    @default(0)
+  createdAt   DateTime @default(now())
+
+  @@map("referral_codes")
+}

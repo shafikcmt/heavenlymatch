@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="maleBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ecfdf5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d1fae5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="maleBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#064e3b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#065f46;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="300" height="400" fill="url(#maleBg)" rx="12"/>
+
+  <!-- Subtle pattern -->
+  <g opacity="0.06" stroke="#059669" stroke-width="0.8" fill="none">
+    <line x1="0" y1="50" x2="300" y2="50"/>
+    <line x1="0" y1="100" x2="300" y2="100"/>
+    <line x1="0" y1="150" x2="300" y2="150"/>
+    <line x1="0" y1="200" x2="300" y2="200"/>
+    <line x1="0" y1="250" x2="300" y2="250"/>
+    <line x1="0" y1="300" x2="300" y2="300"/>
+    <line x1="0" y1="350" x2="300" y2="350"/>
+  </g>
+
+  <!-- Small crescent top -->
+  <g transform="translate(150, 35)" opacity="0.3">
+    <circle cx="0" cy="0" r="14" fill="#fbbf24"/>
+    <circle cx="5" cy="-3" r="11" fill="#ecfdf5"/>
+  </g>
+
+  <!-- Head / face -->
+  <circle cx="150" cy="140" r="52" fill="#064e3b" opacity="0.85"/>
+
+  <!-- Kufi (Islamic cap) -->
+  <ellipse cx="150" cy="94" rx="38" ry="14" fill="#fbbf24" opacity="0.75"/>
+  <rect x="112" y="94" width="76" height="10" fill="#fbbf24" opacity="0.75" rx="2"/>
+
+  <!-- Face highlights -->
+  <circle cx="137" cy="145" r="5" fill="#ecfdf5" opacity="0.25"/>
+  <circle cx="163" cy="145" r="5" fill="#ecfdf5" opacity="0.25"/>
+
+  <!-- Beard suggestion -->
+  <path d="M 118 165 Q 150 182 182 165 Q 180 190 150 195 Q 120 190 118 165 Z" fill="#043927" opacity="0.6"/>
+
+  <!-- Body / thobe -->
+  <path d="M 68 400 L 68 270 Q 68 230 150 220 Q 232 230 232 270 L 232 400 Z" fill="url(#maleBody)" opacity="0.85"/>
+
+  <!-- Collar V-neck -->
+  <path d="M 150 220 L 138 250 L 150 245 L 162 250 Z" fill="#ecfdf5" opacity="0.2"/>
+
+  <!-- Arms -->
+  <path d="M 68 270 L 40 330 L 55 335 L 78 285 Z" fill="#064e3b" opacity="0.8"/>
+  <path d="M 232 270 L 260 330 L 245 335 L 222 285 Z" fill="#064e3b" opacity="0.8"/>
+
+  <!-- Hands -->
+  <ellipse cx="47" cy="338" rx="14" ry="10" fill="#b45309" opacity="0.5"/>
+  <ellipse cx="253" cy="338" rx="14" ry="10" fill="#b45309" opacity="0.5"/>
+
+  <!-- Gold border accent -->
+  <rect width="300" height="400" fill="none" stroke="#fbbf24" stroke-width="2" rx="12" opacity="0.3"/>
+</svg>

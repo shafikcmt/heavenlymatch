@@ -184,12 +184,12 @@ export default function BiodatasIndex({ biodatas, counts, tab }: Props) {
 
                 {b.admin_note && (
                   <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">
-                    Note: {b.admin_note}
+                    {t('admin', 'biodata_note_label')} {b.admin_note}
                   </p>
                 )}
 
                 <p className="text-xs text-slate-400 mb-3">
-                  Updated: {new Date(b.updated_at).toLocaleDateString('en-BD')}
+                  {t('admin', 'biodata_updated_label')} {new Date(b.updated_at).toLocaleDateString('en-BD')}
                 </p>
 
                 {(b.status === 'pending' || b.status === 'rejected') && (

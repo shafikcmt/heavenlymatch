@@ -126,12 +126,15 @@ class Registration extends Authenticatable implements MustVerifyEmail
 
     public function payments()
     {
-        return $this->hasMany(PaymentTransaction::class, 'registration_id');
+        // Third arg = local key on registrations (HM000001 string, not the integer PK)
+        return $this->hasMany(PaymentTransaction::class, 'registration_id', 'registration_id');
     }
 
     public function activePayment()
     {
-        return $this->hasOne(PaymentTransaction::class, 'registration_id')->where('status', 'paid')->latestOfMany();
+        return $this->hasOne(PaymentTransaction::class, 'registration_id', 'registration_id')
+            ->where('status', 'paid')
+            ->latestOfMany();
     }
 
     // ── MustVerifyEmail overrides ────────────────────────────────────────────

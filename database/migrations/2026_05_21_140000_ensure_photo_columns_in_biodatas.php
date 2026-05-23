@@ -7,15 +7,22 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Safe migration: adds photo-related columns to the biodatas table only if
- * they don't already exist. The clean schema (2026_06_01_000003) includes
- * these columns; this migration covers installations that ran the older
- * incremental migrations instead of the clean rewrite.
+ * Ensures photo-related columns exist in biodatas.
+ *
+ * SAFE FOR FRESH INSTALL: skips when biodatas does not yet exist —
+ * the clean 2026_06_01_000003 migration already includes all these columns.
+ *
+ * SAFE FOR EXISTING DATABASES: hasColumn() guards prevent duplicate-column errors.
  */
 return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('biodatas')) {
+            // Fresh install — 2026_06_01_000003 already defines all these columns.
+            return;
+        }
+
         Schema::table('biodatas', function (Blueprint $table) {
             if (! Schema::hasColumn('biodatas', 'photos')) {
                 $table->json('photos')->nullable()->after('special_category');
@@ -37,6 +44,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Intentionally empty — do not drop columns that may have existed before this migration.
+        // Intentionally empty — do not drop columns that may have pre-existed this migration.
     }
 };

@@ -50,7 +50,7 @@ class DashboardController extends Controller
         // ── Daily picks (5 best AI matches, cached until midnight) ───────────
         $dailyPicks = Cache::remember(
             "daily_picks:{$regId}:" . now()->toDateString(),
-            now()->endOfDay(),
+            (int) now()->diffInSeconds(now()->endOfDay()),
             function () use ($user, $regId) {
                 $bio = $user->biodata;
                 if (! $bio) return [];
@@ -127,6 +127,7 @@ class DashboardController extends Controller
             'height_cm'             => $bio->height_cm,
             'is_featured'           => $bio->is_featured,
             'is_verified'           => $reg->identity_verification_status === 'verified',
+            'is_premium'            => $reg->hasActiveMembership(),
             'is_boosted'            => $reg->is_boosted,
             'platform_mode'         => $reg->platform_mode,
             'photo_visibility'      => $reg->photo_visibility,

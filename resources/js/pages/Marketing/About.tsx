@@ -1,8 +1,9 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head, Link } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
 import { Heart, Shield, Users, MapPin } from 'lucide-react'
 import MarketingLayout from '@/layouts/MarketingLayout'
 import { useTranslation } from '@/lib/i18n'
+import { SeoHead } from '@/components/SeoHead'
 
 const VALUES = [
   { icon: Shield, titleKey: 'about_value_halal_title',   descKey: 'about_value_halal_desc' },
@@ -23,7 +24,7 @@ export default function About() {
 
   return (
     <MarketingLayout>
-      <Head title={t('marketing', 'about_meta_title')} />
+      <SeoHead pageKey="about" />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-50 via-white to-emerald-50 py-20 px-4 text-center">

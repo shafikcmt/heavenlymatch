@@ -16,20 +16,26 @@ use App\Http\Controllers\Dashboard\NotificationController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Biodata\BiodataWizardController;
 use App\Http\Controllers\ProfileViewController;
+use App\Http\Controllers\Admin\AdminLoginController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MarketingController;
-use Inertia\Inertia;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\VerificationController;
 
 // ── Public marketing pages ────────────────────────────────────────────────────
-Route::get('/', fn () => Inertia::render('Marketing/Home'))->name('home');
-Route::get('/how-it-works', fn () => Inertia::render('Marketing/HowItWorks'))->name('how-it-works');
-Route::get('/pricing', [MarketingController::class, 'pricing'])->name('pricing');
-Route::get('/about', fn () => Inertia::render('Marketing/About'))->name('about');
-Route::get('/contact', fn () => Inertia::render('Marketing/Contact'))->name('contact');
-Route::get('/blog', fn () => Inertia::render('Blog/Index'))->name('blog.index');
-Route::get('/blog/{slug}', fn (string $slug) => Inertia::render('Blog/Show', ['slug' => $slug]))->name('blog.show');
-Route::get('/terms', fn () => Inertia::render('Legal/Terms'))->name('terms');
-Route::get('/privacy', fn () => Inertia::render('Legal/Privacy'))->name('privacy');
+Route::get('/',             [PublicPageController::class, 'home'])->name('home');
+Route::get('/how-it-works', [PublicPageController::class, 'howItWorks'])->name('how-it-works');
+Route::get('/pricing',      [MarketingController::class, 'pricing'])->name('pricing');
+Route::get('/about',        [PublicPageController::class, 'about'])->name('about');
+Route::get('/contact',      [PublicPageController::class, 'contact'])->name('contact');
+Route::get('/blog',         [PublicPageController::class, 'blog'])->name('blog.index');
+Route::get('/blog/{slug}',  [PublicPageController::class, 'blogShow'])->name('blog.show');
+Route::get('/terms',        [PublicPageController::class, 'terms'])->name('terms');
+Route::get('/privacy',      [PublicPageController::class, 'privacy'])->name('privacy');
+
+// ── SEO / crawlers ────────────────────────────────────────────────────────────
+Route::get('/robots.txt',   [PublicPageController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml',  [PublicPageController::class, 'sitemap'])->name('sitemap');
 
 // Public photo serving (HMAC-signed, privacy enforced)
 Route::get('/photo/{registrationId}/{photoIndex?}', [\App\Http\Controllers\Api\PhotoController::class, 'serve'])
@@ -37,24 +43,20 @@ Route::get('/photo/{registrationId}/{photoIndex?}', [\App\Http\Controllers\Api\P
     ->name('api.photo.serve');
 
 // ── Language switcher (guests + authenticated) ────────────────────────────────
-Route::post('/language/{locale}', function (string $locale) {
-    $supported = ['en', 'bn'];
-    if (! in_array($locale, $supported, true)) {
-        abort(422, 'Unsupported locale.');
-    }
+Route::post('/language/{locale}', [PublicPageController::class, 'switchLocale'])
+    ->middleware('web')
+    ->name('language.switch');
 
-    session(['locale' => $locale]);
-
-    // Persist to user profile when logged in
-    if ($user = auth()->user()) {
-        // only update if the column exists on the model
-        if (isset($user->preferred_locale) || array_key_exists('preferred_locale', $user->getAttributes())) {
-            $user->forceFill(['preferred_locale' => $locale])->save();
-        }
-    }
-
-    return back();
-})->middleware('web')->name('language.switch');
+// ── Admin auth (outside user auth middleware) ─────────────────────────────────
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login',  [AdminLoginController::class, 'show'])->name('login');
+        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.submit');
+    });
+    Route::post('/logout', [AdminLoginController::class, 'destroy'])
+        ->middleware('auth')
+        ->name('logout');
+});
 
 // ── Guest-only auth ───────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -79,7 +81,7 @@ Route::get('/verify-email',                    [LoginController::class, 'verifyN
 Route::get('/verify-email/{id}/{hash}',        [LoginController::class, 'verifyEmail'])->name('verification.verify')->middleware(['auth', 'signed']);
 Route::post('/verify-email/resend',            [LoginController::class, 'resendVerification'])->name('verification.send')->middleware(['auth', 'throttle:6,1']);
 
-// ── Authenticated routes ───────────────────────────────────────────────────────
+// ── Authenticated user routes ─────────────────────────────────────────────────
 Route::middleware(['auth', 'verified.user'])->group(function () {
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
@@ -157,30 +159,35 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
         Route::post('/photo/request-access/{registrationId}', [\App\Http\Controllers\Api\PhotoController::class, 'requestAccess'])->name('photo.request-access');
         Route::post('/photo/respond-access/{requestId}',      [\App\Http\Controllers\Api\PhotoController::class, 'respondAccess'])->name('photo.respond-access');
 
+        // Identity verification
+        Route::get('/verify/identity', [VerificationController::class, 'identity'])->name('verify.identity');
+
         // Reports
         Route::post('/report/{registrationId}', [\App\Http\Controllers\ReportController::class, 'store'])->name('report.store');
     });
+});
 
-    // ── Admin panel ───────────────────────────────────────────────────────────
-    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/',           [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/users',      [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
-        Route::get('/users/{id}', [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
-        Route::post('/users/{id}/ban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
-        Route::post('/users/{id}/verify', [\App\Http\Controllers\Admin\AdminUserController::class, 'verify'])->name('users.verify');
-        Route::get('/biodatas',           [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
-        Route::post('/biodatas/{id}/approve', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
-        Route::post('/biodatas/{id}/reject',  [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
-        Route::post('/users/{id}/unban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
-        Route::post('/users/{id}/suspend',  [\App\Http\Controllers\Admin\AdminUserController::class, 'suspend'])->name('users.suspend');
-        Route::post('/users/{id}/activate', [\App\Http\Controllers\Admin\AdminUserController::class, 'activate'])->name('users.activate');
-        Route::get('/payments',              [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
-        Route::post('/payments/{id}/approve',[\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
-        Route::post('/payments/{id}/reject', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
-        Route::get('/reports',               [\App\Http\Controllers\Admin\AdminReportController::class, 'index'])->name('reports.index');
-        Route::post('/reports/{id}/resolve', [\App\Http\Controllers\Admin\AdminReportController::class, 'resolve'])->name('reports.resolve');
-        Route::post('/reports/{id}/dismiss', [\App\Http\Controllers\Admin\AdminReportController::class, 'dismiss'])->name('reports.dismiss');
-        Route::get('/settings',              [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
-        Route::put('/settings',              [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
-    });
+// ── Admin panel (auth + admin middleware, no verified.user required) ───────────
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/',           [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users',      [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/{id}', [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
+    Route::post('/users/{id}/ban',      [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
+    Route::post('/users/{id}/unban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
+    Route::post('/users/{id}/suspend',  [\App\Http\Controllers\Admin\AdminUserController::class, 'suspend'])->name('users.suspend');
+    Route::post('/users/{id}/activate', [\App\Http\Controllers\Admin\AdminUserController::class, 'activate'])->name('users.activate');
+    Route::post('/users/{id}/verify',   [\App\Http\Controllers\Admin\AdminUserController::class, 'verify'])->name('users.verify');
+    Route::get('/biodatas',              [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
+    Route::post('/biodatas/{id}/approve',[\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
+    Route::post('/biodatas/{id}/reject', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
+    Route::get('/payments',               [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments/{id}/approve', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
+    Route::post('/payments/{id}/reject',  [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/reports',                [\App\Http\Controllers\Admin\AdminReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/{id}/resolve',  [\App\Http\Controllers\Admin\AdminReportController::class, 'resolve'])->name('reports.resolve');
+    Route::post('/reports/{id}/dismiss',  [\App\Http\Controllers\Admin\AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::get('/settings',                     [\App\Http\Controllers\Admin\AdminSettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings',                     [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/media/{key}',        [\App\Http\Controllers\Admin\AdminSettingsController::class, 'uploadMedia'])->name('settings.media.upload');
+    Route::delete('/settings/media/{key}',      [\App\Http\Controllers\Admin\AdminSettingsController::class, 'removeMedia'])->name('settings.media.remove');
 });

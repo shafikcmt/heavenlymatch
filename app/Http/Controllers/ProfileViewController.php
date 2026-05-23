@@ -59,8 +59,15 @@ class ProfileViewController extends Controller
 
             $isShortlisted = \Illuminate\Support\Facades\DB::table('shortlists')
                 ->where('user_id', $viewerId)
-                ->where('target_id', $registrationId)
+                ->where('shortlisted_id', $registrationId)
                 ->exists();
+
+            $isAlreadyReported = \Illuminate\Support\Facades\DB::table('profile_reports')
+                ->where('reporter_id', $viewerId)
+                ->where('reported_id', $registrationId)
+                ->exists();
+        } else {
+            $isAlreadyReported = false;
         }
 
         // Determine photo visibility
@@ -71,14 +78,21 @@ class ProfileViewController extends Controller
             });
 
         return Inertia::render('Profile/Show', [
-            'profile'          => $profile,
-            'biodata'          => $biodata,
-            'photos'           => $photos,
-            'interestSent'     => $interestSent,
-            'interestReceived' => $interestReceived,
-            'isConnected'      => $isConnected,
-            'isShortlisted'    => $isShortlisted,
-            'isOwnProfile'     => $viewerId === $registrationId,
+            'profile'            => $profile,
+            'biodata'            => $biodata,
+            'photos'             => $photos,
+            'interestSent'       => $interestSent,
+            'interestReceived'   => $interestReceived,
+            'isConnected'        => $isConnected,
+            'isShortlisted'      => $isShortlisted,
+            'isOwnProfile'       => $viewerId === $registrationId,
+            'isAlreadyReported'  => $isAlreadyReported,
+            'profileTrust'       => [
+                'isEmailVerified'    => $profile->is_email_verified,
+                'isIdentityVerified' => $profile->identity_verification_status === 'verified',
+                'biodataApproved'    => $biodata?->status === 'approved',
+                'isPremium'          => $profile->hasActiveMembership(),
+            ],
         ]);
     }
 
@@ -87,7 +101,7 @@ class ProfileViewController extends Controller
         /** @var Registration $user */
         $user = Auth::user();
 
-        $isPremium = $user->membership_tier === 'premium';
+        $isPremium = $user->hasActiveMembership();
 
         $viewers = ProfileView::where('profile_id', $user->registration_id)
             ->with('viewer.biodata')

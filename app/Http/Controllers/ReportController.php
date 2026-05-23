@@ -16,7 +16,7 @@ class ReportController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'reason'      => ['required', 'in:fake_profile,inappropriate_photo,harassment,spam,underage,other'],
+            'reason'      => ['required', 'in:fake_profile,inappropriate_photos,harassment,spam,scam,underage,other'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -29,11 +29,11 @@ class ReportController extends Controller
             'reported_id'  => $target->registration_id,
             'reason'       => $validated['reason'],
             'description'  => $validated['description'] ?? null,
-            'status'       => 'pending',
+            'status'       => 'open',
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);
 
-        return back()->with('success', 'Report submitted. We will review it within 24 hours.');
+        return back()->with('success', __('dashboard.report_submitted'));
     }
 }

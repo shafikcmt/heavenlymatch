@@ -58,7 +58,12 @@ return new class extends Migration
             $table->string('customer_name', 100)->nullable();
             $table->string('customer_email', 180)->nullable();
             $table->string('customer_phone', 20)->nullable();
+            $table->string('sender_number', 25)->nullable();         // bKash/Nagad sender's number
+            $table->string('screenshot_path', 500)->nullable();      // payment proof screenshot
             $table->text('reference_note')->nullable();
+            $table->text('admin_note')->nullable();                   // admin review note
+            $table->unsignedBigInteger('reviewed_by')->nullable();   // admin who reviewed
+            $table->timestamp('reviewed_at')->nullable();
             $table->json('payload')->nullable();                       // full gateway response
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('expires_at')->nullable();

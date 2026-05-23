@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="1200" height="500">
+  <defs>
+    <linearGradient id="heroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#064e3b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4c1d95;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="creamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef9f0;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#fef9f0;stop-opacity:0.02" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="500" fill="url(#heroBg)" />
+
+  <!-- Geometric lattice pattern (Islamic-inspired) -->
+  <g opacity="0.08" stroke="#fef3c7" stroke-width="0.8" fill="none">
+    <!-- Horizontal lines -->
+    <line x1="0" y1="62.5" x2="1200" y2="62.5"/>
+    <line x1="0" y1="125" x2="1200" y2="125"/>
+    <line x1="0" y1="187.5" x2="1200" y2="187.5"/>
+    <line x1="0" y1="250" x2="1200" y2="250"/>
+    <line x1="0" y1="312.5" x2="1200" y2="312.5"/>
+    <line x1="0" y1="375" x2="1200" y2="375"/>
+    <line x1="0" y1="437.5" x2="1200" y2="437.5"/>
+    <!-- Vertical lines -->
+    <line x1="100" y1="0" x2="100" y2="500"/>
+    <line x1="200" y1="0" x2="200" y2="500"/>
+    <line x1="300" y1="0" x2="300" y2="500"/>
+    <line x1="400" y1="0" x2="400" y2="500"/>
+    <line x1="500" y1="0" x2="500" y2="500"/>
+    <line x1="600" y1="0" x2="600" y2="500"/>
+    <line x1="700" y1="0" x2="700" y2="500"/>
+    <line x1="800" y1="0" x2="800" y2="500"/>
+    <line x1="900" y1="0" x2="900" y2="500"/>
+    <line x1="1000" y1="0" x2="1000" y2="500"/>
+    <line x1="1100" y1="0" x2="1100" y2="500"/>
+    <!-- Diagonal lines -->
+    <line x1="0" y1="0" x2="1200" y2="500"/>
+    <line x1="0" y1="500" x2="1200" y2="0"/>
+    <line x1="0" y1="125" x2="600" y2="500"/>
+    <line x1="600" y1="0" x2="1200" y2="375"/>
+    <line x1="0" y1="250" x2="500" y2="500"/>
+    <line x1="700" y1="0" x2="1200" y2="250"/>
+  </g>
+
+  <!-- Decorative circles (geometric ornament) -->
+  <g opacity="0.06" fill="none" stroke="#fef3c7" stroke-width="1">
+    <circle cx="600" cy="250" r="220"/>
+    <circle cx="600" cy="250" r="180"/>
+    <circle cx="600" cy="250" r="140"/>
+  </g>
+
+  <!-- Left arch silhouette (masjid inspired) -->
+  <g opacity="0.12">
+    <path d="M 80 450 L 80 200 Q 80 120 160 120 Q 240 120 240 200 L 240 450 Z" fill="#fef3c7"/>
+    <path d="M 100 450 L 100 210 Q 100 140 160 140 Q 220 140 220 210 L 220 450 Z" fill="#064e3b"/>
+    <!-- Arch top ornament -->
+    <circle cx="160" cy="115" r="12" fill="#fbbf24" opacity="0.8"/>
+  </g>
+
+  <!-- Right arch silhouette -->
+  <g opacity="0.12">
+    <path d="M 960 450 L 960 200 Q 960 120 1040 120 Q 1120 120 1120 200 L 1120 450 Z" fill="#fef3c7"/>
+    <path d="M 980 450 L 980 210 Q 980 140 1040 140 Q 1100 140 1100 210 L 1100 450 Z" fill="#4c1d95"/>
+    <circle cx="1040" cy="115" r="12" fill="#fbbf24" opacity="0.8"/>
+  </g>
+
+  <!-- Crescent moon (top center) -->
+  <g transform="translate(600, 75)" filter="url(#glow)">
+    <circle cx="0" cy="0" r="28" fill="#fbbf24" opacity="0.9"/>
+    <circle cx="10" cy="-6" r="22" fill="#1e3a5f"/>
+    <circle cx="38" cy="-18" r="5" fill="#fbbf24" opacity="0.7"/>
+    <circle cx="48" cy="-8" r="3" fill="#fbbf24" opacity="0.5"/>
+    <circle cx="44" cy="5" r="4" fill="#fbbf24" opacity="0.6"/>
+  </g>
+
+  <!-- Wedding rings (center) -->
+  <g transform="translate(540, 230)" filter="url(#glow)">
+    <circle cx="0" cy="0" r="35" fill="none" stroke="url(#goldGrad)" stroke-width="8" opacity="0.9"/>
+    <circle cx="40" cy="8" r="35" fill="none" stroke="#e2e8f0" stroke-width="8" opacity="0.7"/>
+    <!-- Diamond on ring 1 -->
+    <polygon points="0,-48 8,-38 0,-42 -8,-38" fill="#fbbf24" opacity="0.95"/>
+    <!-- Diamond on ring 2 -->
+    <polygon points="40,-44 48,-34 40,-38 32,-34" fill="#e2e8f0" opacity="0.9"/>
+  </g>
+
+  <!-- Hearts scattered -->
+  <g fill="#fbbf24" opacity="0.3">
+    <!-- Heart at top-left -->
+    <path d="M 180 80 C 180 72 172 64 164 72 C 156 64 148 72 148 80 C 148 96 164 104 164 104 C 164 104 180 96 180 80 Z" transform="scale(0.6) translate(150, 40)"/>
+    <!-- Heart at right -->
+    <path d="M 1050 130 C 1050 122 1042 114 1034 122 C 1026 114 1018 122 1018 130 C 1018 146 1034 154 1034 154 C 1034 154 1050 146 1050 130 Z" transform="scale(0.5)"/>
+  </g>
+  <g fill="#f9a8d4" opacity="0.25">
+    <path d="M 350 350 C 350 342 342 334 334 342 C 326 334 318 342 318 350 C 318 366 334 374 334 374 C 334 374 350 366 350 350 Z" transform="scale(0.7)"/>
+    <path d="M 880 320 C 880 312 872 304 864 312 C 856 304 848 312 848 320 C 848 336 864 344 864 344 C 864 344 880 336 880 320 Z" transform="scale(0.55)"/>
+  </g>
+
+  <!-- Bismillah-style calligraphy ornament (abstract decorative arcs, not actual Arabic) -->
+  <g transform="translate(600, 170)" opacity="0.25" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round">
+    <path d="M -80 0 Q -60 -20 -40 0 Q -20 20 0 0 Q 20 -20 40 0 Q 60 20 80 0"/>
+    <path d="M -60 15 Q -40 -5 -20 15 Q 0 35 20 15 Q 40 -5 60 15"/>
+  </g>
+
+  <!-- Text content area (center) -->
+  <rect x="380" y="195" width="440" height="170" rx="20" fill="#000000" opacity="0.2"/>
+
+  <!-- Main heading -->
+  <text x="600" y="260" font-family="Georgia, serif" font-size="36" fill="#fef9f0" text-anchor="middle" font-weight="bold" opacity="0.95">HeavenlyMatch</text>
+  <text x="600" y="295" font-family="Georgia, serif" font-size="18" fill="#fbbf24" text-anchor="middle" opacity="0.9">Where Faith Meets Forever</text>
+
+  <!-- Tagline -->
+  <text x="600" y="335" font-family="Arial, sans-serif" font-size="13" fill="#d1fae5" text-anchor="middle" opacity="0.8">Halal · Meaningful · Trusted</text>
+
+  <!-- Decorative bottom wave -->
+  <path d="M 0 470 Q 300 440 600 470 Q 900 500 1200 470 L 1200 500 L 0 500 Z" fill="#fef3c7" opacity="0.05"/>
+
+  <!-- Stars / sparkles -->
+  <g fill="#fbbf24" opacity="0.5">
+    <polygon points="300,60 303,70 313,70 305,76 308,86 300,80 292,86 295,76 287,70 297,70" transform="scale(0.5) translate(300,50)"/>
+    <polygon points="900,80 903,90 913,90 905,96 908,106 900,100 892,106 895,96 887,90 897,90" transform="scale(0.4) translate(900,60)"/>
+    <polygon points="150,300 152,307 159,307 153,311 156,318 150,314 144,318 147,311 141,307 148,307" transform="scale(0.6) translate(100,200)"/>
+    <polygon points="1050,200 1052,207 1059,207 1053,211 1056,218 1050,214 1044,218 1047,211 1041,207 1048,207" transform="scale(0.5) translate(900,100)"/>
+  </g>
+</svg>

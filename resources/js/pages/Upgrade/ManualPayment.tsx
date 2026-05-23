@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
 import { Input } from '@/components/ui/Input'
+import { cn } from '@/lib/utils'
 import { Copy, CheckCircle, Upload } from 'lucide-react'
 import { useState, useRef } from 'react'
 
@@ -64,7 +65,7 @@ export default function ManualPayment({ transaction }: Props) {
     <AppLayout>
       <Head title={t('pricing', 'payment_title')} />
 
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-lg mx-auto px-4 py-8">
         <h1 className="text-xl font-bold text-slate-900 mb-6">
           {t('pricing', 'payment_title')}
         </h1>
@@ -105,10 +106,12 @@ export default function ManualPayment({ transaction }: Props) {
                   })}
             </p>
 
-            {/* Merchant number copy */}
+            {/* Merchant number with copy button */}
             <div className="flex items-center gap-3 rounded-xl bg-white border border-amber-200 px-4 py-3">
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">{transaction.gateway_name} Number</p>
+                <p className="text-xs text-slate-400 mb-0.5">
+                  {transaction.gateway_name} {t('pricing', 'number_label')}
+                </p>
                 <p className="text-lg font-bold text-slate-900 tracking-wide">
                   {transaction.merchant_number}
                 </p>
@@ -119,7 +122,7 @@ export default function ManualPayment({ transaction }: Props) {
                 className="ml-auto flex items-center gap-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 px-3 py-1.5 text-xs font-medium text-amber-800 transition-colors"
               >
                 {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? t('pricing', 'copied') : t('pricing', 'copy')}
               </button>
             </div>
           </div>
@@ -128,7 +131,7 @@ export default function ManualPayment({ transaction }: Props) {
         {/* Submission form */}
         <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-5">
           <h2 className="text-sm font-bold text-slate-900">
-            Submit Payment Details
+            {t('pricing', 'submit_details_title')}
           </h2>
 
           {/* Sender number */}
@@ -192,10 +195,14 @@ export default function ManualPayment({ transaction }: Props) {
                 />
                 <button
                   type="button"
-                  onClick={() => { setPreview(null); setData('screenshot', null); if (fileRef.current) fileRef.current.value = '' }}
+                  onClick={() => {
+                    setPreview(null)
+                    setData('screenshot', null)
+                    if (fileRef.current) fileRef.current.value = ''
+                  }}
                   className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-1 text-xs text-red-600 border border-red-200 hover:bg-red-50"
                 >
-                  Remove
+                  {t('pricing', 'remove')}
                 </button>
               </div>
             ) : (
@@ -205,8 +212,8 @@ export default function ManualPayment({ transaction }: Props) {
                 className="w-full flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 hover:border-slate-300 py-6 transition-colors"
               >
                 <Upload size={20} className="text-slate-400" />
-                <span className="text-sm text-slate-400">Click to upload screenshot</span>
-                <span className="text-xs text-slate-300">JPG, PNG, WebP · max 2MB</span>
+                <span className="text-sm text-slate-400">{t('pricing', 'click_to_upload')}</span>
+                <span className="text-xs text-slate-300">{t('pricing', 'upload_hint')}</span>
               </button>
             )}
             {errors.screenshot && (
@@ -226,13 +233,10 @@ export default function ManualPayment({ transaction }: Props) {
         </form>
 
         <p className="text-center text-xs text-slate-400 mt-4">
-          Transaction ref: <span className="font-mono">{transaction.transaction_no}</span>
+          {t('pricing', 'txn_ref_label')}{' '}
+          <span className="font-mono">{transaction.transaction_no}</span>
         </p>
       </div>
     </AppLayout>
   )
-}
-
-function cn(...classes: (string | false | undefined | null)[]) {
-  return classes.filter(Boolean).join(' ')
 }

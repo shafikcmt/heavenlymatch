@@ -1,9 +1,11 @@
 /// <reference path="../../types/ziggy.d.ts" />
-import { Head } from '@inertiajs/react'
+import { useRef, useState } from 'react'
+import { Head, router } from '@inertiajs/react'
 import { useForm } from '@inertiajs/react'
 import AdminLayout from '@/layouts/AdminLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
+import { Upload, Trash2 } from 'lucide-react'
 
 interface Gateway {
   id: number
@@ -16,10 +18,46 @@ interface Gateway {
 interface Props {
   settings: Record<string, string>
   gateways: Gateway[]
+  mediaUrls: Record<string, string | null>
 }
 
-export default function Settings({ settings, gateways }: Props) {
+export default function Settings({ settings, gateways, mediaUrls }: Props) {
   const { t } = useTranslation()
+
+  const [uploadBusy, setUploadBusy] = useState<string | null>(null)
+  const [flash, setFlash] = useState<string | null>(null)
+  const heroRef = useRef<HTMLInputElement>(null)
+  const successRef = useRef<HTMLInputElement>(null)
+  const testimonialRef = useRef<HTMLInputElement>(null)
+
+  const inputRefs: Record<string, React.RefObject<HTMLInputElement | null>> = {
+    hero: heroRef,
+    success: successRef,
+    testimonial: testimonialRef,
+  }
+
+  const uploadImage = (key: string) => {
+    const ref = inputRefs[key]
+    const file = ref?.current?.files?.[0]
+    if (!file) return
+    setUploadBusy(key)
+    const fd = new FormData()
+    fd.append('image', file)
+    router.post(route('admin.settings.media.upload', { key }), fd, {
+      onFinish: () => {
+        setUploadBusy(null)
+        if (ref?.current) ref.current.value = ''
+      },
+    })
+  }
+
+  const removeImage = (key: string) => {
+    if (!confirm(t('admin', 'image_remove_btn') + '?')) return
+    setUploadBusy(key)
+    router.delete(route('admin.settings.media.remove', { key }), {
+      onFinish: () => setUploadBusy(null),
+    })
+  }
 
   const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
     settings: {
@@ -182,6 +220,62 @@ export default function Settings({ settings, gateways }: Props) {
             {t('common', 'save') || 'Save Settings'}
           </Button>
         </form>
+
+        {/* Homepage images — separate from PUT form */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 mt-6">
+          <h2 className="text-sm font-semibold text-slate-900 mb-4">
+            {t('admin', 'settings_group_homepage')}
+          </h2>
+          <div className="space-y-6">
+            {([
+              { key: 'hero',        labelKey: 'settings_hero_image' },
+              { key: 'success',     labelKey: 'settings_success_image' },
+              { key: 'testimonial', labelKey: 'settings_testimonial_image' },
+            ] as const).map(({ key, labelKey }) => (
+              <div key={key}>
+                <p className="text-sm font-medium text-slate-700 mb-2">{t('admin', labelKey)}</p>
+                {mediaUrls[key] ? (
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={mediaUrls[key]!}
+                      alt=""
+                      className="h-16 w-24 object-cover rounded-lg border border-slate-200"
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadBusy === key}
+                      onClick={() => removeImage(key)}
+                      className="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 size={13} />
+                      {t('admin', 'image_remove_btn')}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic mb-2">{t('admin', 'no_image_uploaded')}</p>
+                )}
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    ref={inputRefs[key] as React.RefObject<HTMLInputElement>}
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                    className="block text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-medium file:bg-slate-50 hover:file:bg-slate-100 file:cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    disabled={uploadBusy === key}
+                    onClick={() => uploadImage(key)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+                  >
+                    <Upload size={13} />
+                    {uploadBusy === key ? '…' : t('admin', 'image_upload_btn')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </AdminLayout>
   )

@@ -21,12 +21,25 @@ export interface Flash {
   info: string | null
 }
 
+export interface CompletionData {
+  percentage: number
+  completed_sections: string[]
+  missing_sections: string[]
+  next_step: number
+  next_step_url: string
+  can_send_interest: boolean
+  can_be_publicly_listed: boolean
+  has_photo: boolean
+}
+
 export interface PageProps {
   auth: { user: AuthUser | null }
   flash: Flash
   ziggy: { location: string; url: string; port: number | null; defaults: Record<string, unknown>; routes: Record<string, unknown> }
   locale: 'en' | 'bn'
   translations: Record<string, Record<string, unknown>>
+  completion: CompletionData | null
+  unread_notifications: number
   [key: string]: unknown
 }
 
@@ -47,6 +60,7 @@ export interface ProfileCard {
   height_cm: number | null
   is_featured: boolean
   is_verified: boolean
+  is_premium?: boolean
   is_boosted: boolean
   platform_mode: 'general' | 'islamic'
   photo_visibility: 'public' | 'members_only' | 'blurred'

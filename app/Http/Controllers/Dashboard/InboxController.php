@@ -18,19 +18,37 @@ class InboxController extends Controller
     public function index(): Response
     {
         /** @var Registration $user */
-        $user = Auth::user();
+        $user  = Auth::user();
+        $myId  = $user->registration_id;
 
-        $conversations = Conversation::where(function ($q) use ($user) {
-                $q->where('participant_a', $user->registration_id)
-                  ->orWhere('participant_b', $user->registration_id);
+        $conversations = Conversation::where(function ($q) use ($myId) {
+                $q->where('user_a_id', $myId)
+                  ->orWhere('user_b_id', $myId);
             })
-            ->with(['lastMessage'])
+            ->with([
+                'latestMessage',
+                'userA:registration_id,name,gender',
+                'userB:registration_id,name,gender',
+            ])
             ->orderByDesc('updated_at')
-            ->paginate(20);
+            ->paginate(20)
+            ->through(function ($convo) use ($myId) {
+                $other = $convo->user_a_id === $myId ? $convo->userB : $convo->userA;
+                $convo->other_participant = $other ? [
+                    'registration_id' => $other->registration_id,
+                    'name'            => $other->name,
+                    'gender'          => $other->gender,
+                ] : null;
+                $convo->unread_count = Message::where('conversation_id', $convo->id)
+                    ->where('sender_id', '!=', $myId)
+                    ->whereNull('read_at')
+                    ->count();
+                return $convo;
+            });
 
         return Inertia::render('Dashboard/Inbox/Index', [
             'conversations' => $conversations,
-            'myId'          => $user->registration_id,
+            'myId'          => $myId,
         ]);
     }
 
@@ -41,22 +59,25 @@ class InboxController extends Controller
         $myId = $user->registration_id;
 
         $conversation = Conversation::where(function ($q) use ($myId) {
-                $q->where('participant_a', $myId)->orWhere('participant_b', $myId);
+                $q->where('user_a_id', $myId)->orWhere('user_b_id', $myId);
             })
             ->findOrFail($conversationId);
 
         $messages = Message::where('conversation_id', $conversationId)
             ->oldest()
-            ->get(['id', 'sender_id', 'body', 'is_read', 'created_at']);
+            ->get(['id', 'sender_id', 'body', 'read_at', 'created_at']);
 
         // Mark unread messages as read
         Message::where('conversation_id', $conversationId)
             ->where('sender_id', '!=', $myId)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
-        $otherId = $conversation->otherParty($myId);
-        $other   = Registration::with('biodata')->where('registration_id', $otherId)->first();
+        $otherId = $conversation->user_a_id === $myId
+            ? $conversation->user_b_id
+            : $conversation->user_a_id;
+
+        $other = Registration::with('biodata')->where('registration_id', $otherId)->first();
 
         return Inertia::render('Dashboard/Inbox/Thread', [
             'conversation' => $conversation,
@@ -73,7 +94,7 @@ class InboxController extends Controller
         $myId = $user->registration_id;
 
         $conversation = Conversation::where(function ($q) use ($myId) {
-                $q->where('participant_a', $myId)->orWhere('participant_b', $myId);
+                $q->where('user_a_id', $myId)->orWhere('user_b_id', $myId);
             })
             ->findOrFail($conversationId);
 
@@ -85,7 +106,6 @@ class InboxController extends Controller
             'conversation_id' => $conversation->id,
             'sender_id'       => $myId,
             'body'            => $validated['body'],
-            'is_read'         => false,
         ]);
 
         $conversation->touch();
@@ -105,7 +125,7 @@ class InboxController extends Controller
         $myId = $user->registration_id;
 
         Conversation::where(function ($q) use ($myId) {
-                $q->where('participant_a', $myId)->orWhere('participant_b', $myId);
+                $q->where('user_a_id', $myId)->orWhere('user_b_id', $myId);
             })
             ->findOrFail($conversationId);
 
@@ -118,8 +138,8 @@ class InboxController extends Controller
         if ($messages->isNotEmpty()) {
             Message::where('conversation_id', $conversationId)
                 ->where('sender_id', '!=', $myId)
-                ->where('is_read', false)
-                ->update(['is_read' => true]);
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
         }
 
         return response()->json($messages);

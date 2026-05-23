@@ -19,10 +19,11 @@ return new class extends Migration
             // ── Core Identity ─────────────────────────────────────────────
             $table->id();
             $table->string('registration_id', 20)->unique();      // HM000001
+            $table->string('google_id', 100)->nullable()->unique(); // OAuth link — null = email/password account
             $table->string('name', 100);
-            $table->enum('gender', ['male', 'female']);
+            $table->enum('gender', ['male', 'female'])->nullable();   // nullable so OAuth can register before wizard
             $table->enum('profile_created_for', ['self', 'son', 'daughter', 'brother', 'sister', 'relative'])->default('self');
-            $table->enum('looking_for', ['bride', 'groom']);
+            $table->enum('looking_for', ['bride', 'groom'])->nullable(); // nullable so OAuth can register before wizard
 
             // ── Email Auth ────────────────────────────────────────────────
             $table->string('email', 180)->unique();
@@ -49,6 +50,7 @@ return new class extends Migration
 
             // ── Membership ────────────────────────────────────────────────
             $table->unsignedBigInteger('membership_plan_id')->nullable();
+            $table->string('membership_plan_name', 50)->nullable();  // denormalized plan name, avoids JOIN
             $table->enum('membership_status', ['free', 'active', 'expired', 'cancelled'])->default('free');
             $table->timestamp('membership_started_at')->nullable();
             $table->timestamp('membership_expires_at')->nullable();

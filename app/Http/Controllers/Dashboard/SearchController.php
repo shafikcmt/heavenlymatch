@@ -22,7 +22,7 @@ class SearchController extends Controller
             'marital_status', 'education', 'occupation_category',
             'religion', 'sect', 'is_practicing',
             'complexion', 'family_type', 'platform_mode',
-            'income_min', 'income_max', 'keyword',
+            'income_min', 'income_max', 'keyword', 'sort',
         ]);
 
         $looking_for = $user->looking_for ?? 'any';
@@ -90,13 +90,63 @@ class SearchController extends Controller
             });
         }
 
-        $perPage = ($user->membership_tier === 'premium') ? 24 : 12;
-        $results = $query->orderByDesc('completeness_score')->paginate($perPage)->withQueryString();
+        // Sorting
+        $sort = $filters['sort'] ?? 'newest';
+        match ($sort) {
+            'last_active' => $query->orderByDesc('last_active_at'),
+            'featured'    => $query->orderByDesc('is_featured')->orderByDesc('completeness_score'),
+            'score'       => $query->orderByDesc('completeness_score'),
+            default       => $query->orderByDesc('biodatas.created_at'),
+        };
+
+        $perPage = $user->hasActiveMembership() ? 24 : 12;
+        $results = $query->paginate($perPage)->withQueryString();
+
+        // Transform Biodata records into ProfileCard-shaped objects
+        $results->through(function (Biodata $biodata) {
+            $reg    = $biodata->registration;
+            $photos = $biodata->photos ?? [];
+            $primary = collect($photos)->firstWhere('is_primary', true) ?? collect($photos)->first();
+
+            $photoUrl = null;
+            if ($primary && isset($primary['path'])) {
+                $path     = $primary['path'];
+                $photoUrl = str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'));
+            }
+
+            return [
+                'registration_id'       => $biodata->registration_id,
+                'name'                  => $reg?->name ?? '',
+                'gender'                => $reg?->gender ?? 'male',
+                'age'                   => $biodata->birth_date ? (int) now()->diffInYears($biodata->birth_date) : null,
+                'marital_status'        => $biodata->marital_status,
+                'religion'              => $biodata->religion ?? 'Islam',
+                'sect'                  => $biodata->sect,
+                'highest_qualification' => $biodata->highest_qualification,
+                'occupation'            => $biodata->occupation,
+                'occupation_category'   => $biodata->occupation_category,
+                'district'              => $biodata->district,
+                'division'              => $biodata->division,
+                'residing_country'      => $biodata->residing_country ?? 'Bangladesh',
+                'height_cm'             => $biodata->height_cm,
+                'is_featured'           => (bool) $biodata->is_featured,
+                'is_verified'           => $reg?->identity_verification_status === 'verified',
+                'is_boosted'            => false,
+                'platform_mode'         => $reg?->platform_mode ?? 'general',
+                'photo_visibility'      => $reg?->photo_visibility ?? 'members_only',
+                'has_photo'             => !empty($photos),
+                'photo_url'             => $photoUrl,
+                'completeness_score'    => $biodata->completeness_score ?? 0,
+                'last_active_at'        => $biodata->last_active_at?->toISOString(),
+                'match_score'           => null,
+                'score_breakdown'       => null,
+            ];
+        });
 
         return Inertia::render('Dashboard/Search', [
             'results'        => $results,
             'filters'        => $filters,
-            'membershipTier' => $user->membership_tier ?? 'free',
+            'membershipTier' => $user->hasActiveMembership() ? 'premium' : 'free',
             'platformMode'   => $user->platform_mode,
         ]);
     }

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="privBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#ecfdf5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d1fae5;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064e3b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fde68a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#privBg)" rx="16"/>
+
+  <!-- Subtle concentric circles -->
+  <circle cx="200" cy="200" r="170" fill="none" stroke="#059669" stroke-width="1" opacity="0.1"/>
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#059669" stroke-width="1" opacity="0.08"/>
+
+  <!-- Shield shape -->
+  <path d="M 200 60 L 290 95 L 290 210 Q 290 305 200 345 Q 110 305 110 210 L 110 95 Z" fill="url(#shieldGrad)" opacity="0.9"/>
+
+  <!-- Shield inner highlight -->
+  <path d="M 200 80 L 272 110 L 272 210 Q 272 290 200 325 Q 128 290 128 210 L 128 110 Z" fill="#065f46" opacity="0.5"/>
+
+  <!-- Lock body -->
+  <rect x="175" y="195" width="50" height="42" rx="8" fill="url(#lockGrad)"/>
+
+  <!-- Lock shackle -->
+  <path d="M 183 195 L 183 175 Q 183 155 200 155 Q 217 155 217 175 L 217 195" fill="none" stroke="url(#lockGrad)" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Lock keyhole -->
+  <circle cx="200" cy="211" r="6" fill="#064e3b"/>
+  <rect x="197" y="211" width="6" height="12" fill="#064e3b"/>
+
+  <!-- Heart on shield -->
+  <g transform="translate(200, 165)" fill="#fde68a" opacity="0.9">
+    <path d="M 0 -10 C 0 -17 -8 -24 -14 -17 C -20 -24 -28 -17 -28 -10 C -28 3 0 14 0 14 C 0 14 28 3 28 -10 C 28 -17 20 -24 14 -17 C 8 -24 0 -17 0 -10 Z" transform="scale(0.6)"/>
+  </g>
+
+  <!-- Stars around shield -->
+  <g fill="#fbbf24" opacity="0.45">
+    <polygon points="100,120 103,130 113,130 105,136 108,146 100,140 92,146 95,136 87,130 97,130" transform="scale(0.55) translate(80,80)"/>
+    <polygon points="300,120 303,130 313,130 305,136 308,146 300,140 292,146 295,136 287,130 297,130" transform="scale(0.55) translate(250,80)"/>
+    <polygon points="110,300 113,310 123,310 115,316 118,326 110,320 102,326 105,316 97,310 107,310" transform="scale(0.55) translate(70,230)"/>
+    <polygon points="290,300 293,310 303,310 295,316 298,326 290,320 282,326 285,316 277,310 287,310" transform="scale(0.55) translate(240,230)"/>
+  </g>
+
+  <!-- Label -->
+  <text x="200" y="370" font-family="Arial, sans-serif" font-size="15" fill="#064e3b" text-anchor="middle" font-weight="600" opacity="0.8">Your Privacy is Protected</text>
+
+  <!-- Corner flourishes -->
+  <g fill="none" stroke="#059669" stroke-width="1.5" opacity="0.2">
+    <path d="M 15 15 L 45 15 M 15 15 L 15 45"/>
+    <path d="M 385 15 L 355 15 M 385 15 L 385 45"/>
+    <path d="M 15 385 L 45 385 M 15 385 L 15 355"/>
+    <path d="M 385 385 L 355 385 M 385 385 L 385 355"/>
+  </g>
+</svg>

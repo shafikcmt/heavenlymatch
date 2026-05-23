@@ -125,7 +125,7 @@ export default function Payments({ pending, recent, stats }: Props) {
   const [rejectModalId, setRejectModalId] = useState<number | null>(null)
 
   function approve(id: number) {
-    if (!confirm('Approve this payment and activate membership?')) return
+    if (!confirm(t('admin', 'approve_confirm'))) return
     router.post(route('admin.payments.approve', id))
   }
 
@@ -151,12 +151,12 @@ export default function Payments({ pending, recent, stats }: Props) {
             color="amber"
           />
           <StatCard
-            label={`Approved Today`}
+            label={t('admin', 'approved_today')}
             value={stats.approved_today}
             color="green"
           />
           <StatCard
-            label={`Rejected Today`}
+            label={t('admin', 'rejected_today')}
             value={stats.rejected_today}
             color="red"
           />
@@ -165,7 +165,7 @@ export default function Payments({ pending, recent, stats }: Props) {
         {/* Pending queue */}
         <section>
           <h2 className="text-base font-semibold text-slate-900 mb-3">
-            Awaiting Review
+            {t('admin', 'awaiting_review')}
             {stats.pending_count > 0 && (
               <span className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-amber-500 text-white text-xs font-bold">
                 {stats.pending_count}
@@ -206,8 +206,8 @@ export default function Payments({ pending, recent, stats }: Props) {
 
                   {/* Payment details grid */}
                   <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                    <Detail label="Via" value={txn.gateway_name ?? '—'} />
-                    <Detail label="Sender No." value={txn.sender_number ?? '—'} />
+                    <Detail label={t('admin', 'via_method')} value={txn.gateway_name ?? '—'} />
+                    <Detail label={t('admin', 'sender_no_label')} value={txn.sender_number ?? '—'} />
                     <Detail
                       label={t('admin', 'transaction_id')}
                       value={txn.external_transaction_id}
@@ -228,7 +228,7 @@ export default function Payments({ pending, recent, stats }: Props) {
                       className="inline-flex items-center gap-1.5 text-xs text-primary-600 hover:underline mb-4"
                     >
                       <ExternalLink size={12} />
-                      View payment screenshot
+                      {t('admin', 'view_screenshot')}
                     </a>
                   )}
 
@@ -289,16 +289,16 @@ export default function Payments({ pending, recent, stats }: Props) {
         {/* Recent decisions */}
         {recent.length > 0 && (
           <section>
-            <h2 className="text-base font-semibold text-slate-900 mb-3">Recent Decisions</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-3">{t('admin', 'recent_decisions')}</h2>
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">User</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Plan</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Amount</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Decision</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Date</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_user')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_plan')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_amount')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_decision')}</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_date')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -317,7 +317,7 @@ export default function Payments({ pending, recent, stats }: Props) {
                           {txn.status === 'paid'
                             ? <CheckCircle size={10} />
                             : <XCircle size={10} />}
-                          {txn.status === 'paid' ? 'Approved' : 'Rejected'}
+                          {txn.status === 'paid' ? t('admin', 'decision_approved') : t('admin', 'decision_rejected')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-slate-400 text-xs">

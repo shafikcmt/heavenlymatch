@@ -3,8 +3,9 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import GuestLayout from '@/layouts/GuestLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Shield } from 'lucide-react'
+import { Shield, CheckCircle2, Crown } from 'lucide-react'
 import type { PageProps } from '@/types'
+import { useTranslation } from '@/lib/i18n'
 
 interface Props {
   canResetPassword: boolean
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function Login({ canResetPassword, status }: Props) {
+  const { t } = useTranslation()
   const { flash, googleEnabled } = usePage<PageProps & { googleEnabled: boolean }>().props
 
   const { data, setData, post, processing, errors } = useForm({
@@ -25,8 +27,71 @@ export default function Login({ canResetPassword, status }: Props) {
     post(route('login'))
   }
 
+  const loginTrustPoints = [
+    t('auth', 'trust_f4'),
+    t('auth', 'trust_f3'),
+    t('auth', 'trust_f2'),
+  ]
+
+  const panel = (
+    <div className="space-y-7 px-2">
+      {/* Brand mark */}
+      <div className="flex items-center gap-3">
+        <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary-600 to-violet-600 flex items-center justify-center">
+          <Crown size={22} className="text-white" />
+        </div>
+        <span className="font-bold text-slate-900 text-xl tracking-tight">HeavenlyMatch</span>
+      </div>
+
+      {/* Heading */}
+      <div>
+        <h2 className="text-3xl font-bold text-slate-900 leading-tight mb-3">
+          {t('auth', 'login_trust_title')}
+        </h2>
+        <p className="text-slate-600 leading-relaxed text-lg">
+          {t('auth', 'login_trust_subtitle')}
+        </p>
+      </div>
+
+      {/* Trust points */}
+      <ul className="space-y-3">
+        {loginTrustPoints.map(feature => (
+          <li key={feature} className="flex items-center gap-3">
+            <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 size={14} className="text-blue-600" />
+            </div>
+            <span className="text-slate-700 font-medium text-sm">{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* Stats */}
+      <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-blue-50 border border-emerald-100 p-5">
+        <div className="grid grid-cols-2 gap-5">
+          {[
+            { value: '50,000+', label: 'Members' },
+            { value: '2,000+',  label: 'Marriages' },
+            { value: '99.9%',   label: 'Uptime' },
+            { value: '4.8/5',   label: 'Rating' },
+          ].map(s => (
+            <div key={s.label}>
+              <p className="text-xl font-bold text-primary-700">{s.value}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Privacy notice */}
+      <div className="flex items-center gap-2 text-xs text-slate-400">
+        <Shield size={13} />
+        {t('auth', 'login_privacy_notice')}
+      </div>
+    </div>
+  )
+
   return (
-    <GuestLayout title="Welcome back">
+    <GuestLayout panel={panel}>
       <Head title="Login" />
 
       {status && (
@@ -42,20 +107,22 @@ export default function Login({ canResetPassword, status }: Props) {
       )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-card">
+        <h1 className="text-xl font-bold text-slate-900 mb-6">{t('auth', 'login_title')}</h1>
+
         <form onSubmit={submit} className="space-y-5">
           <Input
-            label="Email address"
+            label={t('auth', 'field_email')}
             type="email"
             value={data.email}
             onChange={e => setData('email', e.target.value)}
             error={errors.email}
             autoFocus
             required
-            placeholder="you@example.com"
+            placeholder={t('auth', 'field_email_ph')}
           />
 
           <Input
-            label="Password"
+            label={t('auth', 'field_password')}
             type="password"
             value={data.password}
             onChange={e => setData('password', e.target.value)}
@@ -72,7 +139,7 @@ export default function Login({ canResetPassword, status }: Props) {
                 onChange={e => setData('remember', e.target.checked)}
                 className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
               />
-              <span className="text-sm text-slate-600">Remember me</span>
+              <span className="text-sm text-slate-600">{t('auth', 'remember_me')}</span>
             </label>
 
             {canResetPassword && (
@@ -80,13 +147,13 @@ export default function Login({ canResetPassword, status }: Props) {
                 href={route('password.request')}
                 className="text-sm text-primary-600 hover:underline"
               >
-                Forgot password?
+                {t('auth', 'forgot_password')}
               </Link>
             )}
           </div>
 
           <Button type="submit" className="w-full" size="lg" isLoading={processing}>
-            Sign in
+            {t('auth', 'login_button')}
           </Button>
         </form>
 
@@ -108,23 +175,18 @@ export default function Login({ canResetPassword, status }: Props) {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Continue with Google
+              {t('auth', 'login_google')}
             </a>
           </>
         )}
       </div>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Don't have an account?{' '}
+        {t('auth', 'no_account')}{' '}
         <Link href={route('register')} className="font-semibold text-primary-600 hover:underline">
-          Register free
+          {t('auth', 'register_link')}
         </Link>
       </p>
-
-      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
-        <Shield size={12} />
-        Your data is encrypted and never shared
-      </div>
     </GuestLayout>
   )
 }

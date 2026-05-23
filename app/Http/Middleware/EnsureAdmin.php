@@ -22,12 +22,12 @@ class EnsureAdmin
             abort(403, 'You do not have permission to access the admin dashboard.');
         }
 
-        if (($user->account_status ?? 'active') === 'blocked') {
+        if (in_array($user->account_status ?? 'active', ['banned', 'suspended'], true)) {
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('admin.login')->with('error', 'This admin account is blocked.');
+            return redirect()->route('admin.login')->with('error', 'This admin account has been suspended.');
         }
 
         return $next($request);

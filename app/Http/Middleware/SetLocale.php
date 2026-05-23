@@ -37,13 +37,13 @@ class SetLocale
             }
         }
 
-        // 3. Authenticated user's saved preference
+        // 3. Authenticated user's saved preference (column: preferred_language)
         $user = $request->user();
         if ($user
-            && isset($user->preferred_locale)
-            && is_string($user->preferred_locale)
-            && in_array($user->preferred_locale, self::SUPPORTED, true)) {
-            return $user->preferred_locale;
+            && isset($user->preferred_language)
+            && is_string($user->preferred_language)
+            && in_array($user->preferred_language, self::SUPPORTED, true)) {
+            return $user->preferred_language;
         }
 
         // 4. Cookie (persists locale across sessions without requiring login)
