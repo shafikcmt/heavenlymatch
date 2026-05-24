@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use App\Services\PhotoPrivacyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Inertia\Response;
 
 class ShortlistController extends Controller
 {
+    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+
     public function index(): Response
     {
         /** @var Registration $user */
@@ -47,15 +50,9 @@ class ShortlistController extends Controller
                 $photos  = is_array($decoded) ? $decoded : [];
             }
 
-            $primary  = collect($photos)->firstWhere('is_primary', true) ?? collect($photos)->first();
-            $photoUrl = null;
-
-            if ($primary && isset($primary['path'])) {
-                $path     = $primary['path'];
-                $photoUrl = str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'));
-            }
-
-            $row->photo_url = $photoUrl;
+            $row->photo_url = !empty($photos)
+                ? $this->photoPrivacy->photoUrl($row->registration_id, 0, $user->registration_id)
+                : null;
             $row->has_photo = !empty($photos);
             $row->photos    = $photos;
 
@@ -77,7 +74,7 @@ class ShortlistController extends Controller
         ]);
 
         if ($validated['target_id'] === $user->registration_id) {
-            return back()->with('error', 'Cannot shortlist yourself.');
+            return back()->with('error', __('common.error'));
         }
 
         $exists = DB::table('shortlists')
@@ -91,7 +88,7 @@ class ShortlistController extends Controller
                 ->where('shortlisted_id', $validated['target_id'])
                 ->delete();
 
-            return back()->with('info', 'Removed from shortlist.');
+            return back()->with('info', __('dashboard.shortlist_removed'));
         }
 
         DB::table('shortlists')->insert([
@@ -101,6 +98,6 @@ class ShortlistController extends Controller
             'updated_at'     => now(),
         ]);
 
-        return back()->with('info', 'Added to shortlist.');
+        return back()->with('info', __('dashboard.shortlist_added'));
     }
 }
