@@ -19,16 +19,68 @@ interface BiodataDetail {
   blood_group?: string
   about_me?: string
   profile_headline?: string
-  division?: string; district?: string; residing_country?: string
-  religion?: string; sect?: string; is_practicing?: boolean; prayers_info?: string
-  education_method?: string; highest_qualification?: string
-  occupation?: string; occupation_category?: string; monthly_income?: number
-  family_type?: string; brothers?: number; sisters?: number
-  health_status?: string; diet?: string; smoking?: string
-  is_islamically_educated?: boolean; wali_approval?: boolean
-  partner_age_min?: number; partner_age_max?: number
+  // Location (public fields only — address/guardian stripped server-side for non-connected)
+  nationality?: string
+  division?: string
+  district?: string
+  residing_country?: string
+  residing_city?: string
+  grew_up_in?: string
+  is_nrb?: boolean
+  visa_status?: string
+  // Religion
+  religion?: string
+  sect?: string
+  fiqh?: string
+  is_practicing?: boolean
+  prayers_info?: string
+  quran_recitation?: string
+  clothing_style?: string
+  beard_info?: string
+  hijab_info?: string
+  is_islamically_educated?: boolean
+  wali_approval?: boolean
+  sunni_scale?: number
+  beliefs_on_mazar?: string
+  favorite_scholars?: string
+  // Education
+  education_method?: string
+  highest_qualification?: string
+  occupation?: string
+  occupation_category?: string
+  monthly_income?: number
+  profession_details?: string
+  // Family
+  father_name?: string
+  father_alive?: boolean
+  father_profession?: string
+  mother_name?: string
+  mother_alive?: boolean
+  mother_profession?: string
+  family_type?: string
+  brothers?: number
+  sisters?: number
+  family_financial_status?: string
+  family_religious_condition?: string
+  family_details?: string
+  // Lifestyle
+  health_status?: string
+  diet?: string
+  smoking?: string
+  hobbies?: string
+  watch_entertainment?: string
+  // Partner
+  partner_age_min?: number
+  partner_age_max?: number
+  partner_height_cm_min?: number
+  partner_height_cm_max?: number
+  partner_complexion?: string
+  partner_marital_status?: string
+  partner_education?: string
   partner_expectations?: string
-  guardian_mobile?: string
+  partner_division?: string
+  partner_district?: string
+  // Score
   completeness_score?: number
 }
 
@@ -50,7 +102,7 @@ interface ProfileTrust {
 interface Props {
   profile: ProfileData
   biodata?: BiodataDetail
-  photos: Array<{ path: string; is_primary: boolean; blurred: boolean }>
+  photos: Array<{ url: string; is_primary: boolean; blurred: boolean }>
   interestSent: boolean
   interestReceived: boolean
   isConnected: boolean
@@ -147,7 +199,18 @@ export default function ProfileShow({
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Back button */}
+      <div className="max-w-4xl mx-auto px-4 pt-6">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          <ChevronLeft size={16} />
+          {t('common', 'back')}
+        </button>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* ── Sidebar ─────────────────────────────────────────────────── */}
@@ -165,7 +228,7 @@ export default function ProfileShow({
                       </p>
                     </div>
                   ) : (
-                    <img src={activePhoto.path} alt={profile.name} className="w-full h-full object-cover" />
+                    <img src={activePhoto.url} alt={profile.name} className="w-full h-full object-cover" />
                   )
                 ) : (
                   <span className="text-8xl">{profile.gender === 'male' ? '👨' : '👩'}</span>
@@ -365,30 +428,85 @@ export default function ProfileShow({
                   <ROW label={t('dashboard', 'profile_label_weight')} value={biodata.weight_kg ? `${biodata.weight_kg} kg` : null} />
                   <ROW label={t('dashboard', 'profile_label_complexion')} value={biodata.complexion} />
                   <ROW label={t('dashboard', 'profile_label_blood')} value={biodata.blood_group} />
-                  <ROW label={t('dashboard', 'profile_label_health')} value={biodata.health_status?.replace(/_/g, ' ')} />
                 </SECTION>
+
+                {(biodata.division || biodata.residing_country || biodata.nationality || biodata.grew_up_in) && (
+                  <SECTION title={t('dashboard', 'profile_section_location')}>
+                    <ROW label={t('biodata', 'nationality')} value={biodata.nationality} />
+                    <ROW label={t('biodata', 'division')} value={biodata.division} />
+                    <ROW label={t('biodata', 'district')} value={biodata.district} />
+                    <ROW label={t('biodata', 'residing_country')} value={biodata.residing_country} />
+                    <ROW label={t('biodata', 'residing_city')} value={biodata.residing_city} />
+                    <ROW label={t('biodata', 'grew_up_in')} value={biodata.grew_up_in} />
+                    {biodata.is_nrb && <ROW label={t('biodata', 'is_nrb')} value={t('common', 'yes')} />}
+                    <ROW label={t('biodata', 'visa_status')} value={biodata.visa_status} />
+                  </SECTION>
+                )}
 
                 <SECTION title={t('dashboard', 'profile_section_religion')}>
                   <ROW label={t('dashboard', 'profile_label_religion')} value={biodata.religion} />
                   <ROW label={t('dashboard', 'profile_label_sect')} value={biodata.sect} />
+                  <ROW label={t('biodata', 'fiqh')} value={biodata.fiqh} />
                   <ROW label={t('dashboard', 'profile_label_prayers')} value={biodata.prayers_info?.replace(/_times/, ' times daily')} />
-                  <ROW label={t('dashboard', 'profile_label_islam_edu')} value={biodata.is_islamically_educated ? 'Yes' : null} />
-                  <ROW label={t('dashboard', 'profile_label_wali')} value={biodata.wali_approval ? 'Yes' : null} />
+                  <ROW label={t('biodata', 'quran_recitation')} value={biodata.quran_recitation} />
+                  <ROW label={t('biodata', 'clothing_style')} value={biodata.clothing_style} />
+                  <ROW label={t('dashboard', 'profile_label_islam_edu')} value={biodata.is_islamically_educated ? t('common', 'yes') : null} />
+                  <ROW label={t('dashboard', 'profile_label_wali')} value={biodata.wali_approval ? t('common', 'yes') : null} />
+                  {biodata.sunni_scale != null && (
+                    <ROW label={t('biodata', 'sunni_scale')} value={`${biodata.sunni_scale} / 10`} />
+                  )}
+                  {biodata.beliefs_on_mazar && (
+                    <div className="pt-1.5 text-sm">
+                      <p className="text-slate-500">{t('biodata', 'beliefs_on_mazar')}</p>
+                      <p className="text-slate-800 mt-0.5">{biodata.beliefs_on_mazar}</p>
+                    </div>
+                  )}
                 </SECTION>
 
                 <SECTION title={t('dashboard', 'profile_section_education')}>
+                  <ROW label={t('biodata', 'education_method')} value={biodata.education_method} />
                   <ROW label={t('dashboard', 'profile_label_qual')} value={biodata.highest_qualification?.replace(/_/g, ' ')} />
                   <ROW label={t('dashboard', 'profile_label_occupation')} value={biodata.occupation} />
+                  <ROW label={t('biodata', 'occupation_category')} value={biodata.occupation_category?.replace(/_/g, ' ')} />
                   <ROW label={t('dashboard', 'profile_label_income')} value={biodata.monthly_income ? `৳${biodata.monthly_income.toLocaleString()}` : null} />
+                  {biodata.profession_details && (
+                    <div className="pt-1.5 text-sm">
+                      <p className="text-slate-500">{t('biodata', 'profession_details')}</p>
+                      <p className="text-slate-800 mt-0.5">{biodata.profession_details}</p>
+                    </div>
+                  )}
                 </SECTION>
 
                 <SECTION title={t('dashboard', 'profile_section_family')}>
+                  <ROW label={t('biodata', 'father_name')} value={biodata.father_name} />
+                  <ROW label={t('biodata', 'father_profession')} value={biodata.father_profession} />
+                  <ROW label={t('biodata', 'mother_name')} value={biodata.mother_name} />
+                  <ROW label={t('biodata', 'mother_profession')} value={biodata.mother_profession} />
                   <ROW label={t('dashboard', 'profile_label_family_type')} value={biodata.family_type} />
                   <ROW label={t('dashboard', 'profile_label_brothers')} value={biodata.brothers ?? null} />
                   <ROW label={t('dashboard', 'profile_label_sisters')} value={biodata.sisters ?? null} />
+                  <ROW label={t('biodata', 'family_financial_status')} value={biodata.family_financial_status} />
+                  <ROW label={t('biodata', 'family_religious_condition')} value={biodata.family_religious_condition} />
                 </SECTION>
 
-                {(biodata.partner_expectations || biodata.partner_age_min || biodata.partner_age_max) && (
+                {(biodata.health_status || biodata.diet || biodata.smoking || biodata.hobbies) && (
+                  <SECTION title={t('dashboard', 'profile_section_lifestyle')}>
+                    <ROW label={t('dashboard', 'profile_label_health')} value={biodata.health_status?.replace(/_/g, ' ')} />
+                    <ROW label={t('biodata', 'diet')} value={biodata.diet?.replace(/_/g, ' ')} />
+                    <ROW label={t('biodata', 'smoking')} value={biodata.smoking} />
+                    {biodata.watch_entertainment && (
+                      <ROW label={t('biodata', 'watch_entertainment')} value={biodata.watch_entertainment} />
+                    )}
+                    {biodata.hobbies && (
+                      <div className="pt-1.5 text-sm">
+                        <p className="text-slate-500">{t('biodata', 'hobbies')}</p>
+                        <p className="text-slate-800 mt-0.5">{biodata.hobbies}</p>
+                      </div>
+                    )}
+                  </SECTION>
+                )}
+
+                {(biodata.partner_expectations || biodata.partner_age_min != null || biodata.partner_age_max != null) && (
                   <SECTION title={t('dashboard', 'profile_section_partner')}>
                     {(biodata.partner_age_min != null || biodata.partner_age_max != null) && (
                       <ROW
@@ -396,8 +514,22 @@ export default function ProfileShow({
                         value={`${biodata.partner_age_min ?? '?'}–${biodata.partner_age_max ?? '?'} yrs`}
                       />
                     )}
+                    {(biodata.partner_height_cm_min != null || biodata.partner_height_cm_max != null) && (
+                      <ROW
+                        label={t('biodata', 'partner_height_range')}
+                        value={`${biodata.partner_height_cm_min ?? '?'}–${biodata.partner_height_cm_max ?? '?'} cm`}
+                      />
+                    )}
+                    <ROW label={t('biodata', 'partner_complexion')} value={biodata.partner_complexion} />
+                    <ROW label={t('biodata', 'partner_marital_status')} value={biodata.partner_marital_status} />
+                    <ROW label={t('biodata', 'partner_education')} value={biodata.partner_education} />
+                    <ROW label={t('biodata', 'partner_division')} value={biodata.partner_division} />
+                    <ROW label={t('biodata', 'partner_district')} value={biodata.partner_district} />
                     {biodata.partner_expectations && (
-                      <p className="text-sm text-slate-700 mt-2 leading-relaxed">{biodata.partner_expectations}</p>
+                      <div className="pt-1.5 text-sm">
+                        <p className="text-slate-500">{t('biodata', 'partner_expectations')}</p>
+                        <p className="text-slate-800 mt-0.5 leading-relaxed">{biodata.partner_expectations}</p>
+                      </div>
                     )}
                   </SECTION>
                 )}

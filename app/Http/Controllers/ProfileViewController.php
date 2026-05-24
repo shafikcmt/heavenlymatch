@@ -23,10 +23,10 @@ class ProfileViewController extends Controller
             ->where('account_status', 'active')
             ->firstOrFail();
 
-        $biodata = $profile->biodata;
+        $biodata  = $profile->biodata;
 
         /** @var Registration|null $viewer */
-        $viewer  = Auth::user();
+        $viewer   = Auth::user();
         $viewerId = $viewer?->registration_id;
 
         if ($viewerId && $viewerId !== $registrationId) {
@@ -34,13 +34,14 @@ class ProfileViewController extends Controller
                 ['profile_id' => $registrationId, 'viewer_id' => $viewerId],
                 ['created_at' => now()]
             );
-            $biodata?->update(['last_active_at' => $biodata->last_active_at]); // no touch
         }
 
-        $interestSent    = false;
-        $interestReceived = false;
-        $isConnected     = false;
-        $isShortlisted   = false;
+        // ── Social state ──────────────────────────────────────────────────────
+        $interestSent      = false;
+        $interestReceived  = false;
+        $isConnected       = false;
+        $isShortlisted     = false;
+        $isAlreadyReported = false;
 
         if ($viewerId) {
             $interestSent = ConnectionRequest::where('sender_id', $viewerId)
@@ -50,12 +51,9 @@ class ProfileViewController extends Controller
                 ->where('receiver_id', $viewerId)->pending()->exists();
 
             $isConnected = ConnectionRequest::where('status', 'accepted')
-                ->where(fn($q) =>
-                    $q->where('sender_id', $viewerId)->where('receiver_id', $registrationId)
-                )
-                ->orWhere(fn($q) =>
-                    $q->where('sender_id', $registrationId)->where('receiver_id', $viewerId)->where('status', 'accepted')
-                )->exists();
+                ->where(fn ($q) => $q->where('sender_id', $viewerId)->where('receiver_id', $registrationId))
+                ->orWhere(fn ($q) => $q->where('sender_id', $registrationId)->where('receiver_id', $viewerId)->where('status', 'accepted'))
+                ->exists();
 
             $isShortlisted = \Illuminate\Support\Facades\DB::table('shortlists')
                 ->where('user_id', $viewerId)
@@ -66,28 +64,56 @@ class ProfileViewController extends Controller
                 ->where('reporter_id', $viewerId)
                 ->where('reported_id', $registrationId)
                 ->exists();
-        } else {
-            $isAlreadyReported = false;
         }
 
-        // Determine photo visibility
+        // ── Sanitize biodata ─────────────────────────────────────────────────
+        // Strip private contact fields for viewers who are not connected and
+        // not viewing their own profile. Guardian contact is shown only via
+        // the Dashboard/Profile page (own view) or after connection.
+        $biodataData = null;
+        if ($biodata) {
+            $biodataData = $biodata->toArray();
+            $biodataData['birth_date'] = $biodata->birth_date?->format('Y-m-d');
+
+            $isOwner = $viewerId === $registrationId;
+            if (! $isOwner && ! $isConnected) {
+                unset(
+                    $biodataData['guardian_mobile'],
+                    $biodataData['guardian_email'],
+                    $biodataData['guardian_relationship'],
+                    $biodataData['permanent_address'],
+                );
+            }
+        }
+
+        // ── Photos via signed serving URLs (no raw storage paths) ────────────
         $photos = collect($biodata?->photos ?? [])
-            ->map(function ($photo) use ($viewer, $profile) {
-                $blurred = $this->photoPrivacy->shouldBlur($profile, $viewer);
-                return array_merge($photo, ['blurred' => $blurred]);
-            });
+            ->values()
+            ->map(function ($photo, int $index) use ($profile, $viewer, $viewerId) {
+                return [
+                    'url'        => $this->photoPrivacy->photoUrl($profile->registration_id, $index, $viewerId),
+                    'is_primary' => (bool) ($photo['is_primary'] ?? ($index === 0)),
+                    'blurred'    => $this->photoPrivacy->shouldBlur($profile, $viewer),
+                ];
+            })
+            ->all();
 
         return Inertia::render('Profile/Show', [
-            'profile'            => $profile,
-            'biodata'            => $biodata,
-            'photos'             => $photos,
-            'interestSent'       => $interestSent,
-            'interestReceived'   => $interestReceived,
-            'isConnected'        => $isConnected,
-            'isShortlisted'      => $isShortlisted,
-            'isOwnProfile'       => $viewerId === $registrationId,
-            'isAlreadyReported'  => $isAlreadyReported,
-            'profileTrust'       => [
+            'profile' => [
+                'registration_id' => $profile->registration_id,
+                'name'            => $profile->name,
+                'gender'          => $profile->gender,
+                'platform_mode'   => $profile->platform_mode,
+            ],
+            'biodata'           => $biodataData,
+            'photos'            => $photos,
+            'interestSent'      => $interestSent,
+            'interestReceived'  => $interestReceived,
+            'isConnected'       => $isConnected,
+            'isShortlisted'     => $isShortlisted,
+            'isOwnProfile'      => $viewerId === $registrationId,
+            'isAlreadyReported' => $isAlreadyReported,
+            'profileTrust'      => [
                 'isEmailVerified'    => $profile->is_email_verified,
                 'isIdentityVerified' => $profile->identity_verification_status === 'verified',
                 'biodataApproved'    => $biodata?->status === 'approved',

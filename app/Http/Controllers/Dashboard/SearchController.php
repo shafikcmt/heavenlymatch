@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Registration;
+use App\Services\PhotoPrivacyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class SearchController extends Controller
 {
+    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+
     public function index(Request $request): Response
     {
         /** @var Registration $user */
@@ -103,16 +106,13 @@ class SearchController extends Controller
         $results = $query->paginate($perPage)->withQueryString();
 
         // Transform Biodata records into ProfileCard-shaped objects
-        $results->through(function (Biodata $biodata) {
+        $results->through(function (Biodata $biodata) use ($user) {
             $reg    = $biodata->registration;
             $photos = $biodata->photos ?? [];
-            $primary = collect($photos)->firstWhere('is_primary', true) ?? collect($photos)->first();
 
-            $photoUrl = null;
-            if ($primary && isset($primary['path'])) {
-                $path     = $primary['path'];
-                $photoUrl = str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'));
-            }
+            $photoUrl = !empty($photos)
+                ? $this->photoPrivacy->photoUrl($biodata->registration_id, 0, $user->registration_id)
+                : null;
 
             return [
                 'registration_id'       => $biodata->registration_id,

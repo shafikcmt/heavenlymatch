@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Contracts\MatchingScorerInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use App\Services\PhotoPrivacyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -12,7 +13,10 @@ use Inertia\Response;
 
 class MatchController extends Controller
 {
-    public function __construct(private MatchingScorerInterface $scorer) {}
+    public function __construct(
+        private MatchingScorerInterface $scorer,
+        private PhotoPrivacyService $photoPrivacy,
+    ) {}
 
     public function index(): Response
     {
@@ -32,17 +36,14 @@ class MatchController extends Controller
         $matches = $this->scorer->topMatches($biodata, $limit);
 
         // Transform into ProfileCard-shaped objects
-        $transformed = $matches->map(function (array $item) {
+        $transformed = $matches->map(function (array $item) use ($user) {
             $candidate = $item['biodata'];
             $reg       = $candidate->registration;
             $photos    = $candidate->photos ?? [];
-            $primary   = collect($photos)->firstWhere('is_primary', true) ?? collect($photos)->first();
 
-            $photoUrl = null;
-            if ($primary && isset($primary['path'])) {
-                $path     = $primary['path'];
-                $photoUrl = str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'));
-            }
+            $photoUrl = !empty($photos)
+                ? $this->photoPrivacy->photoUrl($candidate->registration_id, 0, $user->registration_id)
+                : null;
 
             return [
                 'registration_id'       => $candidate->registration_id,
