@@ -65,7 +65,7 @@ export default function InboxIndex({ conversations, myId }: Props) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={cn('font-semibold text-slate-900 truncate', hasUnread && 'text-primary-700')}>
-                        {other?.name ?? convo.user_a_id === myId ? convo.user_b_id : convo.user_a_id}
+                        {other?.name ?? (convo.user_a_id === myId ? convo.user_b_id : convo.user_a_id)}
                       </p>
                       <p className={cn(
                         'text-sm truncate',
