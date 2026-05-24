@@ -35,10 +35,15 @@ class BiodataWizardController extends Controller
         $user = Auth::user();
         $biodata = $user->biodata ?? new Biodata();
 
+        // Serialize to array and normalise birth_date to Y-m-d so <input type="date"> pre-fills correctly.
+        $biodataData = $biodata->toArray();
+        $biodataData['birth_date'] = $biodata->birth_date?->format('Y-m-d');
+        $biodataData['completeness_score'] = $biodata->completeness_score ?? 0;
+
         return Inertia::render('Biodata/Wizard', [
             'step'    => $step,
             'steps'   => self::STEPS,
-            'biodata' => $biodata,
+            'biodata' => $biodataData,
             'user'    => [
                 'name'   => $user->name,
                 'gender' => $user->gender,
@@ -74,7 +79,7 @@ class BiodataWizardController extends Controller
         $nextStep = $step + 1;
 
         if ($nextStep > count(self::STEPS)) {
-            return redirect()->route('dashboard')->with('success', 'Your biodata has been submitted for review!');
+            return redirect()->route('dashboard')->with('success', __('biodata.submitted'));
         }
 
         return redirect()->route('biodata.wizard', ['step' => $nextStep]);

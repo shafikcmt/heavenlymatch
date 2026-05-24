@@ -71,9 +71,12 @@ interface BiodataData {
   wife_in_veil?: boolean
   wife_study_allowed?: boolean
   wife_job_allowed?: boolean
+  polygamy_open?: boolean
+  children_count?: number | ''
   residence_after_marriage?: string
   post_marriage_plan?: string
   guardian_mobile?: string
+  guardian_relationship?: string
   guardian_email?: string
   // Step 8: Partner
   partner_age_min?: number | ''
@@ -549,17 +552,20 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                     <Toggle name="wife_in_veil" label={t('biodata', 'wife_in_veil')} />
                     <Toggle name="wife_study_allowed" label={t('biodata', 'wife_study_allowed')} />
                     <Toggle name="wife_job_allowed" label={t('biodata', 'wife_job_allowed')} />
+                    <Toggle name="polygamy_open" label={t('biodata', 'polygamy_open')} />
                   </div>
                 )}
                 <Toggle name="guardian_agree" label={t('biodata', 'guardian_agree')} />
                 <Field name="residence_after_marriage" label={t('biodata', 'residence_after_marriage')} placeholder="Dhaka / Abroad / Flexible" />
                 <Field name="post_marriage_plan" label={t('biodata', 'post_marriage_plan')} placeholder="Stay in BD / Move abroad / Flexible" />
+                <Field name="children_count" label={t('biodata', 'children_count')} type="number" placeholder="0" />
                 <div className="border-t border-slate-200 pt-5">
                   <p className="text-sm font-semibold text-slate-700 mb-3">
                     {t('biodata', 'guardian_contact_section')}
                   </p>
                   <div className="space-y-4">
                     <Field name="guardian_mobile" label={t('biodata', 'guardian_mobile')} placeholder="+88017XXXXXXXX" />
+                    <Field name="guardian_relationship" label={t('biodata', 'guardian_relationship')} placeholder="Father / Brother / Uncle" />
                     <Field name="guardian_email" label={t('biodata', 'guardian_email')} type="email" placeholder="guardian@example.com" />
                   </div>
                 </div>
