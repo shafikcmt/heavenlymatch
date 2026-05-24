@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Auth\RegisterController (Inertia).
+ * Broken route refs: route('email.verify.notice') — now route('verification.notice').
+ */
+
+namespace App\Http\Controllers\Legacy;
 
 use App\Models\Registration;
 use App\Models\SystemSetting;

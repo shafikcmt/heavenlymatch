@@ -15,14 +15,12 @@ class RedirectIfAuthenticatedUser
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-   public function handle($request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        // If user is logged in, redirect to dashboard
         if (Auth::check()) {
-            return redirect()->route('myhome');
+            return redirect()->route('dashboard');
         }
 
-        // Otherwise, continue to frontend pages
         return $next($request);
     }
 }

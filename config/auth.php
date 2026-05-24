@@ -59,24 +59,12 @@ return [
     |
     */
 
-    // 'providers' => [
-    //     'users' => [
-    //         'driver' => 'eloquent',
-    //         'model' => App\Models\User::class,
-    //     ],
-
-    //     // 'users' => [
-    //     //     'driver' => 'database',
-    //     //     'table' => 'users',
-    //     // ],
-    // ],
-
     'providers' => [
-    'users' => [
-        'driver' => 'eloquent',
-        'model' => App\Models\Registration::class,
+        'users' => [
+            'driver' => 'eloquent',
+            'model'  => App\Models\Registration::class,
+        ],
     ],
-],
     /*
     |--------------------------------------------------------------------------
     | Resetting Passwords

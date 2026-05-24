@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Auth\LoginController (Inertia).
+ * Broken route refs: route('myhome'), route('email.verify.notice') — both defunct.
+ */
+
+namespace App\Http\Controllers\Legacy\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

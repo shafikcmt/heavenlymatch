@@ -11,7 +11,9 @@ use App\Notifications\HeavenlyMatchNotification;
 use App\Services\MembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,7 +38,7 @@ class AdminPaymentController extends Controller
                 'external_transaction_id' => $txn->external_transaction_id,
                 'sender_number'           => $txn->sender_number,
                 'screenshot_path'         => $txn->screenshot_path
-                    ? asset('storage/' . $txn->screenshot_path)
+                    ? route('admin.payments.screenshot', ['id' => $txn->id])
                     : null,
                 'submitted_at'            => $txn->updated_at->toDateTimeString(),
                 'user'                    => $txn->registration ? [
@@ -128,6 +130,21 @@ class AdminPaymentController extends Controller
         }
 
         return back()->with('success', __('admin.payment_approved'));
+    }
+
+    /** GET /admin/payments/screenshot/{id} — serves payment proof from private disk. */
+    public function serveScreenshot(int $id): HttpResponse|RedirectResponse
+    {
+        $txn = PaymentTransaction::findOrFail($id);
+
+        abort_if(! $txn->screenshot_path, 404);
+
+        abort_unless(Storage::disk('private')->exists($txn->screenshot_path), 404);
+
+        $file     = Storage::disk('private')->get($txn->screenshot_path);
+        $mimeType = Storage::disk('private')->mimeType($txn->screenshot_path) ?: 'image/jpeg';
+
+        return response($file, 200)->header('Content-Type', $mimeType);
     }
 
     public function reject(Request $request, int $id): RedirectResponse

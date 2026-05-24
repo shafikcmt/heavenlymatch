@@ -177,8 +177,9 @@ class PaymentController extends Controller
 
         $screenshotPath = null;
         if ($request->hasFile('screenshot')) {
+            // Store in private disk — not web-accessible. Admin serves via signed route.
             $screenshotPath = $request->file('screenshot')
-                ->store("payment-screenshots/{$user->registration_id}", 'public');
+                ->store("payment-screenshots/{$user->registration_id}", 'private');
         }
 
         $txn->update([

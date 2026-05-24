@@ -1,6 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Payment\PaymentController (Inertia).
+ * Broken route refs: route('myhome'), route('payments.show/.success/.fail/.cancel') — all defunct.
+ * Uses 'submitted' payment status (removed from enum). Safe to delete.
+ */
+
+namespace App\Http\Controllers\Legacy;
 
 use App\Models\MembershipPlan;
 use App\Models\PaymentGateway;

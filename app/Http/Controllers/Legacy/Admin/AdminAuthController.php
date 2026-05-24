@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Admin\AdminLoginController (Inertia).
+ * Used old Blade views: admin.login. Now fully replaced.
+ */
+
+namespace App\Http\Controllers\Legacy\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

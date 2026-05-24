@@ -180,9 +180,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/biodatas',              [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
     Route::post('/biodatas/{id}/approve',[\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
     Route::post('/biodatas/{id}/reject', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
-    Route::get('/payments',               [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
-    Route::post('/payments/{id}/approve', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
-    Route::post('/payments/{id}/reject',  [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/payments',                    [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments/{id}/approve',      [\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
+    Route::post('/payments/{id}/reject',       [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/payments/screenshot/{id}',    [\App\Http\Controllers\Admin\AdminPaymentController::class, 'serveScreenshot'])->name('payments.screenshot');
     Route::get('/reports',                [\App\Http\Controllers\Admin\AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/{id}/resolve',  [\App\Http\Controllers\Admin\AdminReportController::class, 'resolve'])->name('reports.resolve');
     Route::post('/reports/{id}/dismiss',  [\App\Http\Controllers\Admin\AdminReportController::class, 'dismiss'])->name('reports.dismiss');

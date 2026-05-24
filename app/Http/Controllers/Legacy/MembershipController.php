@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Payment\PaymentController::plans() (Inertia).
+ * Broken route refs: route('myhome') — now route('dashboard').
+ */
+
+namespace App\Http\Controllers\Legacy;
 
 use App\Models\MembershipPlan;
 use App\Models\PaymentGateway;

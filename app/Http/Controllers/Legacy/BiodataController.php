@@ -1,7 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Superseded by App\Http\Controllers\Biodata\BiodataWizardController (Inertia).
+ * Broken route refs: route('biodata.create'), route('myhome') — both defunct.
+ * Safe to delete after confirming no session/Blade view depends on it.
+ */
 
+namespace App\Http\Controllers\Legacy;
+
+use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\SystemSetting;
 use App\Models\UserAttribute;

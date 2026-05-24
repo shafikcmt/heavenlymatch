@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Email verification now handled by App\Http\Controllers\Auth\LoginController + Laravel MustVerifyEmail.
+ * Broken route refs: route('email.verify.notice'), route('email.verify.code') — both defunct.
+ */
+
+namespace App\Http\Controllers\Legacy;
 
 use App\Models\Registration;
 use App\Services\EmailVerificationSender;

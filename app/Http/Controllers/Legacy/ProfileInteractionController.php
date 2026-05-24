@@ -1,6 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * LEGACY — No active routes reference this controller.
+ * Shortlist/interest actions now in Dashboard\ShortlistController and Dashboard\InterestController.
+ * Broken route refs: route('inbox') — now route('inbox.index').
+ */
+
+namespace App\Http\Controllers\Legacy;
 
 use App\Models\Biodata;
 use Illuminate\Http\RedirectResponse;
