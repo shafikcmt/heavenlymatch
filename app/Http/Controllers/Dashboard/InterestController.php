@@ -83,7 +83,7 @@ class InterestController extends Controller
         // Block if profile completion is too low
         $completion = ProfileCompletionService::compute($user);
         if (!$completion['can_send_interest']) {
-            return back()->with('error', 'Complete at least 30% of your biodata to send interest.');
+            return back()->with('error', __('dashboard.interest_block_body'));
         }
 
         $validated = $request->validate([
@@ -92,7 +92,15 @@ class InterestController extends Controller
         ]);
 
         if ($validated['receiver_id'] === $user->registration_id) {
-            return back()->with('error', 'You cannot send interest to yourself.');
+            return back()->with('error', __('common.error'));
+        }
+
+        $receiverOk = Registration::where('registration_id', $validated['receiver_id'])
+            ->where('account_status', 'active')
+            ->whereHas('biodata', fn($q) => $q->where('status', 'approved'))
+            ->exists();
+        if (!$receiverOk) {
+            return back()->with('error', __('common.error'));
         }
 
         $exists = ConnectionRequest::where('sender_id', $user->registration_id)
@@ -100,7 +108,7 @@ class InterestController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('info', 'Interest already sent.');
+            return back()->with('info', __('dashboard.interest_sent_label'));
         }
 
         ConnectionRequest::create([
@@ -136,7 +144,7 @@ class InterestController extends Controller
             ));
         }
 
-        return back()->with('success', 'Interest sent successfully!');
+        return back()->with('success', __('dashboard.interest_sent_success'));
     }
 
     public function respond(Request $request, int $id): RedirectResponse
@@ -211,7 +219,9 @@ class InterestController extends Controller
             }
         }
 
-        $message = $validated['action'] === 'accept' ? 'Interest accepted!' : 'Interest declined.';
+        $message = $validated['action'] === 'accept'
+            ? __('dashboard.interest_accepted_success')
+            : __('dashboard.interest_declined_success');
 
         return back()->with('success', $message);
     }
@@ -227,6 +237,6 @@ class InterestController extends Controller
             ->firstOrFail()
             ->delete();
 
-        return back()->with('success', 'Interest withdrawn.');
+        return back()->with('success', __('dashboard.interest_withdrawn_success'));
     }
 }
