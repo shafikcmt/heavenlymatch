@@ -12,6 +12,7 @@ return [
     'wizard_subtitle'   => 'Step :step of :total',
     'wizard_save_draft' => 'Save Draft',
     'wizard_complete'   => 'Complete & Submit',
+    'wizard_next'       => 'Save & Continue',
     'wizard_progress'   => ':percent% Complete',
     'step_labels' => [
         1 => 'General',
@@ -288,5 +289,25 @@ return [
     'approved'          => 'Your biodata has been approved.',
     'rejected'          => 'Your biodata needs corrections.',
     'pending_review'    => 'Under Review',
+
+    // ── Wizard misc ───────────────────────────────────────────────────────────
+    'profile_completion'      => 'Profile Completion',
+    'wizard_review_notice'    => 'Your biodata will be reviewed before going live. Usually takes 24 hours.',
+    'about_me_tip'            => 'Tip: profiles with 100+ characters in About Me get a 10% completeness bonus.',
+    'after_marriage_section'  => 'After Marriage',
+    'guardian_contact_section'=> 'Guardian Contact',
+    'practicing_scale_min'    => '1 – Minimal',
+    'practicing_scale_max'    => '10 – Devout',
+    'married'                 => 'Married',
+    'partner_height_cm_min'   => 'Min Height (cm)',
+    'partner_height_cm_max'   => 'Max Height (cm)',
+    'partner_income_max'      => 'Maximum Income Preferred',
+    'partner_income_range'    => 'Preferred Income Range',
+
+    // ── Wizard step 9 content ─────────────────────────────────────────────────
+    'step9_title'       => 'Upload Your Profile Photo',
+    'step9_desc'        => 'Profiles with a photo get 3× more match requests. Your privacy settings control who can see it.',
+    'step9_note'        => 'You can upload photos from your Profile page after completing this step.',
+    'step9_submit_hint' => 'Click "Complete & Submit" below to finish — then visit your profile to upload photos.',
 
 ];
