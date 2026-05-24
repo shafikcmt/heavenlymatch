@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { calcAge, cmToFeetInches, scoreColor } from '@/lib/utils'
-import { Heart, Send, Eye, EyeOff, Flag, Edit, ChevronLeft, ChevronRight, X, Shield, CheckCircle2, Star, Mail, ShieldCheck, AlertTriangle } from 'lucide-react'
+import { Heart, Send, Eye, EyeOff, Flag, Edit, ChevronLeft, ChevronRight, X, Shield, CheckCircle2, Star, Mail, ShieldCheck, AlertTriangle, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
@@ -106,6 +106,7 @@ interface Props {
   interestSent: boolean
   interestReceived: boolean
   isConnected: boolean
+  conversationId?: number | null
   isShortlisted: boolean
   isOwnProfile: boolean
   isAlreadyReported: boolean
@@ -129,7 +130,7 @@ const ROW = ({ label, value }: { label: string; value?: string | number | null }
 
 export default function ProfileShow({
   profile, biodata, photos,
-  interestSent, interestReceived, isConnected, isShortlisted, isOwnProfile,
+  interestSent, interestReceived, isConnected, conversationId, isShortlisted, isOwnProfile,
   isAlreadyReported, profileTrust,
 }: Props) {
   const { completion } = usePage<PageProps>().props
@@ -343,9 +344,19 @@ export default function ProfileShow({
             ) : (
               <div className="space-y-2">
                 {isConnected ? (
-                  <Button className="w-full" variant="outline" disabled>
-                    ✓ {t('dashboard', 'connected_label')}
-                  </Button>
+                  <>
+                    <Button className="w-full" variant="outline" disabled>
+                      ✓ {t('dashboard', 'connected_label')}
+                    </Button>
+                    {conversationId && (
+                      <Link href={route('inbox.show', { conversationId })}>
+                        <Button className="w-full gap-2">
+                          <MessageCircle size={16} />
+                          {t('interests', 'message')}
+                        </Button>
+                      </Link>
+                    )}
+                  </>
                 ) : sent ? (
                   <Button className="w-full" variant="outline" disabled>
                     {t('dashboard', 'interest_sent_label')}

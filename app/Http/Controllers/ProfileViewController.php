@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Biodata;
 use App\Models\ConnectionRequest;
+use App\Models\Conversation;
 use App\Models\ProfileView;
 use App\Models\Registration;
 use App\Services\PhotoPrivacyService;
@@ -42,6 +43,7 @@ class ProfileViewController extends Controller
         $isConnected       = false;
         $isShortlisted     = false;
         $isAlreadyReported = false;
+        $conversationId    = null;
 
         if ($viewerId) {
             $interestSent = ConnectionRequest::where('sender_id', $viewerId)
@@ -54,6 +56,14 @@ class ProfileViewController extends Controller
                 ->where(fn ($q) => $q->where('sender_id', $viewerId)->where('receiver_id', $registrationId))
                 ->orWhere(fn ($q) => $q->where('sender_id', $registrationId)->where('receiver_id', $viewerId)->where('status', 'accepted'))
                 ->exists();
+
+            if ($isConnected) {
+                $conversationId = Conversation::where(function ($q) use ($viewerId, $registrationId) {
+                    $q->where('user_a_id', $viewerId)->where('user_b_id', $registrationId);
+                })->orWhere(function ($q) use ($viewerId, $registrationId) {
+                    $q->where('user_a_id', $registrationId)->where('user_b_id', $viewerId);
+                })->value('id');
+            }
 
             $isShortlisted = \Illuminate\Support\Facades\DB::table('shortlists')
                 ->where('user_id', $viewerId)
@@ -110,6 +120,7 @@ class ProfileViewController extends Controller
             'interestSent'      => $interestSent,
             'interestReceived'  => $interestReceived,
             'isConnected'       => $isConnected,
+            'conversationId'    => $conversationId,
             'isShortlisted'     => $isShortlisted,
             'isOwnProfile'      => $viewerId === $registrationId,
             'isAlreadyReported' => $isAlreadyReported,
