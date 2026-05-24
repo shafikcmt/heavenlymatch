@@ -2,8 +2,29 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/heavwzih/develop.heavenlymatch.net/
-    - /bin/rsync -av --delete --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='storage/logs' --exclude='storage/framework/cache' --exclude='storage/framework/sessions' --exclude='storage/framework/views' ./ $DEPLOYPATH
-    - cd $DEPLOYPATH && /usr/local/bin/php artisan optimize:clear
-    - cd $DEPLOYPATH && /usr/local/bin/php artisan config:cache
-    - cd $DEPLOYPATH && /usr/local/bin/php artisan route:cache
-    - cd $DEPLOYPATH && /usr/local/bin/php artisan view:cache
+
+    # Copy latest code safely
+    - /bin/rsync -av --delete ./ $DEPLOYPATH --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' --exclude='database/database.sqlite' --exclude='database/*.sqlite'
+
+    # Install/update PHP dependencies
+    - cd $DEPLOYPATH && composer install --no-dev --optimize-autoloader --no-interaction
+
+    # Ensure Laravel writable folders exist
+    - cd $DEPLOYPATH && mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions bootstrap/cache
+
+    # Run only new pending migrations
+    - cd $DEPLOYPATH && php artisan migrate --force
+
+    # Create storage symlink
+    - cd $DEPLOYPATH && php artisan storage:link || true
+
+    # Fix writable folders
+    - chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache || true
+
+    # Clear old Laravel cache
+    - cd $DEPLOYPATH && php artisan optimize:clear
+
+    # Rebuild production cache
+    - cd $DEPLOYPATH && php artisan config:cache
+    - cd $DEPLOYPATH && php artisan route:cache || true
+    - cd $DEPLOYPATH && php artisan view:cache
