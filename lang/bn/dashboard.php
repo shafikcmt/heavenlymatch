@@ -221,6 +221,21 @@ return [
     'safety_tip_guardian'     => 'অভিভাবক / ওয়ালির সম্পৃক্ততা এই প্ল্যাটফর্মে সম্পূর্ণ সমর্থিত।',
     'safety_tip_report'       => 'যেকোনো সন্দেহজনক, ভুয়া বা অপমানজনক প্রোফাইল অবিলম্বে রিপোর্ট করুন।',
 
+    // ── My Profile page ──────────────────────────────────────────────────────
+    'my_profile_title'          => 'আমার প্রোফাইল',
+    'manage_photos'             => 'ছবি পরিচালনা',
+    'edit_section'              => 'সম্পাদনা',
+    'start_biodata_cta'         => 'বায়োডাটা শুরু করুন',
+    'no_biodata_desc'           => 'আপনি এখনো বায়োডাটা পূরণ করেননি। এখনই শুরু করুন এবং আপনার ম্যাচ খুঁজুন।',
+    'profile_section_location'  => 'অবস্থান',
+    'profile_section_lifestyle' => 'জীবনধারা ও স্বাস্থ্য',
+    'profile_section_marriage'  => 'বিবাহ প্রত্যাশা',
+    'profile_section_contact'   => 'যোগাযোগ ও অভিভাবক',
+    'biodata_status_draft'      => 'খসড়া',
+    'biodata_status_pending'    => 'পর্যালোচনায়',
+    'biodata_status_approved'   => 'অনুমোদিত',
+    'biodata_status_rejected'   => 'সংশোধন প্রয়োজন',
+
     // ── Dashboard home (Phase 2I) ─────────────────────────────────────────────
     'dash_greeting'        => 'আসসালামু আলাইকুম, :name',
     'dash_upgrade_btn'     => 'আপগ্রেড করুন',

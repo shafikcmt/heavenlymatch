@@ -221,6 +221,21 @@ return [
     'safety_tip_guardian'     => 'Guardian / Wali involvement is fully supported on this platform.',
     'safety_tip_report'       => 'Report any suspicious, fake, or abusive profiles immediately.',
 
+    // ── My Profile page ──────────────────────────────────────────────────────
+    'my_profile_title'          => 'My Profile',
+    'manage_photos'             => 'Manage Photos',
+    'edit_section'              => 'Edit',
+    'start_biodata_cta'         => 'Start Your Biodata',
+    'no_biodata_desc'           => 'You haven\'t filled your biodata yet. Start now to appear in search results and find your match.',
+    'profile_section_location'  => 'Location',
+    'profile_section_lifestyle' => 'Lifestyle & Health',
+    'profile_section_marriage'  => 'Marriage Preferences',
+    'profile_section_contact'   => 'Contact & Guardian',
+    'biodata_status_draft'      => 'Draft',
+    'biodata_status_pending'    => 'Under Review',
+    'biodata_status_approved'   => 'Approved',
+    'biodata_status_rejected'   => 'Needs Corrections',
+
     // ── Dashboard home (Phase 2I) ─────────────────────────────────────────────
     'dash_greeting'        => 'Assalamu Alaikum, :name',
     'dash_upgrade_btn'     => 'Upgrade Plan',

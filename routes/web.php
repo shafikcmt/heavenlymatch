@@ -128,6 +128,7 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
         // Profile pages
+        Route::get('/dashboard/profile',        [ProfileViewController::class, 'myProfile'])->name('dashboard.profile');
         Route::get('/profile/{registrationId}', [ProfileViewController::class, 'show'])->name('profile.show');
         Route::get('/who-viewed',               [ProfileViewController::class, 'whoViewed'])->name('profile.who-viewed');
 

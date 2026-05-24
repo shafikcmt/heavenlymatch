@@ -96,6 +96,43 @@ class ProfileViewController extends Controller
         ]);
     }
 
+    public function myProfile(): Response
+    {
+        /** @var Registration $user */
+        $user    = Auth::user();
+        $biodata = $user->biodata;
+
+        $biodataData = null;
+        if ($biodata) {
+            $biodataData = $biodata->toArray();
+            $biodataData['birth_date'] = $biodata->birth_date?->format('Y-m-d');
+        }
+
+        $photos = collect($biodata?->photos ?? [])
+            ->map(fn ($photo) => array_merge($photo, ['blurred' => false]))
+            ->values()
+            ->all();
+
+        return Inertia::render('Dashboard/Profile', [
+            'biodata' => $biodataData,
+            'photos'  => $photos,
+            'user'    => [
+                'name'                         => $user->name,
+                'gender'                       => $user->gender,
+                'registration_id'              => $user->registration_id,
+                'account_status'               => $user->account_status,
+                'is_email_verified'            => $user->is_email_verified,
+                'identity_verification_status' => $user->identity_verification_status,
+            ],
+            'trust' => [
+                'isEmailVerified'    => $user->is_email_verified,
+                'isIdentityVerified' => $user->identity_verification_status === 'verified',
+                'biodataApproved'    => $biodata?->status === 'approved',
+                'isPremium'          => $user->hasActiveMembership(),
+            ],
+        ]);
+    }
+
     public function whoViewed(): Response
     {
         /** @var Registration $user */
