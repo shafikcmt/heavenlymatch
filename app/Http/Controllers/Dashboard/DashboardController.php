@@ -30,11 +30,13 @@ class DashboardController extends Controller
         $regId = $user->registration_id;
 
         // ── Stats (cached 15 min) ─────────────────────────────────────────────
-        $stats = Cache::remember("dashboard_stats:{$regId}", 900, function () use ($regId, $user) {
+        $stats = Cache::remember("dashboard_stats:{$regId}", 900, function () use ($regId) {
             return [
                 'matches_today'      => MatchScore::where('user_id', $regId)
                     ->where('computed_at', '>=', now()->startOfDay())->count(),
                 'interests_received' => ConnectionRequest::where('receiver_id', $regId)
+                    ->where('status', 'pending')->count(),
+                'interests_sent'     => ConnectionRequest::where('sender_id', $regId)
                     ->where('status', 'pending')->count(),
                 'profile_views'      => \App\Models\ProfileView::where('profile_id', $regId)
                     ->where('viewed_at', '>=', now()->subDays(7))->count(),
@@ -44,6 +46,8 @@ class DashboardController extends Controller
                     ->where('sender_id', '!=', $regId)
                     ->whereNull('read_at')
                     ->count(),
+                'shortlisted_count'  => \Illuminate\Support\Facades\DB::table('shortlists')
+                    ->where('user_id', $regId)->count(),
             ];
         });
 
@@ -100,6 +104,7 @@ class DashboardController extends Controller
             'stats'               => $stats,
             'daily_picks'         => $dailyPicks,
             'biodata_completeness'=> $completeness,
+            'biodata_status'      => $user->biodata?->status,
             'recent_visitors'     => $recentVisitors,
             'is_verified'         => $user->identity_verification_status === 'verified',
         ]);

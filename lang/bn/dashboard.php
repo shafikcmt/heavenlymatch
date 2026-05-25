@@ -259,5 +259,27 @@ return [
     'dash_visitors_title'  => 'কে আপনার প্রোফাইল দেখেছেন',
     'dash_trust_title'     => 'আপনার বিশ্বাস প্রোফাইল',
 
+    // ── Dashboard quick access & new stats (Stage 2 MVP) ─────────────────────
+    'dash_quick_title'          => 'দ্রুত অ্যাক্সেস',
+    'dash_quick_biodata'        => 'বায়োডাটা সম্পাদনা',
+    'dash_quick_profile'        => 'আমার প্রোফাইল',
+    'dash_quick_search'         => 'অনুসন্ধান',
+    'dash_quick_matches'        => 'ম্যাচ',
+    'dash_quick_interests'      => 'আগ্রহ',
+    'dash_quick_inbox'          => 'বার্তা',
+    'dash_quick_shortlist'      => 'সংরক্ষিত',
+    'dash_quick_upgrade'        => 'আপগ্রেড',
+    'dash_stat_interests_sent'  => 'পাঠানো',
+    'dash_stat_shortlist'       => 'সংরক্ষিত',
+    'dash_nudge_pending_title'  => 'প্রোফাইল পর্যালোচনায়',
+    'dash_nudge_pending_desc'   => 'আপনার বায়োডাটা পর্যালোচনার জন্য জমা দেওয়া হয়েছে। অনুমোদন হলে আপনাকে জানানো হবে।',
+    'dash_nudge_rejected_title' => 'বায়োডাটায় সংশোধন প্রয়োজন',
+    'dash_nudge_rejected_desc'  => 'আপনার বায়োডাটা পর্যালোচিত হয়েছে এবং সংশোধন প্রয়োজন। অনুগ্রহ করে আপডেট করুন।',
+    'dash_nudge_messages'       => ':count টি অপঠিত বার্তা আছে',
+    'dash_nudge_interests'      => ':count টি আগ্রহ অনুরোধ অপেক্ষায়',
+    'dash_go_inbox'             => 'ইনবক্স খুলুন',
+    'dash_go_interests'         => 'আগ্রহ দেখুন',
+    'dash_go_biodata'           => 'বায়োডাটা আপডেট করুন',
+
 ];
 

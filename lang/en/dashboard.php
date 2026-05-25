@@ -259,5 +259,27 @@ return [
     'dash_visitors_title'  => 'Who Viewed Your Profile',
     'dash_trust_title'     => 'Your Trust Profile',
 
+    // ── Dashboard quick access & new stats (Stage 2 MVP) ─────────────────────
+    'dash_quick_title'          => 'Quick Access',
+    'dash_quick_biodata'        => 'Edit Biodata',
+    'dash_quick_profile'        => 'My Profile',
+    'dash_quick_search'         => 'Search',
+    'dash_quick_matches'        => 'Matches',
+    'dash_quick_interests'      => 'Interests',
+    'dash_quick_inbox'          => 'Messages',
+    'dash_quick_shortlist'      => 'Saved',
+    'dash_quick_upgrade'        => 'Upgrade',
+    'dash_stat_interests_sent'  => 'Sent',
+    'dash_stat_shortlist'       => 'Saved',
+    'dash_nudge_pending_title'  => 'Profile Under Review',
+    'dash_nudge_pending_desc'   => "Your biodata has been submitted for admin review. You'll be notified once it's approved.",
+    'dash_nudge_rejected_title' => 'Biodata Needs Corrections',
+    'dash_nudge_rejected_desc'  => 'Your biodata was reviewed and needs corrections. Please update and resubmit.',
+    'dash_nudge_messages'       => 'You have :count unread messages',
+    'dash_nudge_interests'      => ':count pending interest requests',
+    'dash_go_inbox'             => 'Open Inbox',
+    'dash_go_interests'         => 'View Interests',
+    'dash_go_biodata'           => 'Update Biodata',
+
 ];
 
