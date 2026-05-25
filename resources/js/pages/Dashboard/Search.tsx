@@ -218,9 +218,9 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   name="marital_status" label={t('dashboard', 'filter_marital_status')}
                   value={data.marital_status ?? ''} onChange={v => setData('marital_status', v)}
                   options={[
-                    { value: 'never_married', label: 'Never Married' },
-                    { value: 'divorced',      label: 'Divorced' },
-                    { value: 'widowed',       label: 'Widowed' },
+                    { value: 'never_married', label: t('biodata', 'never_married') },
+                    { value: 'divorced',      label: t('biodata', 'divorced') },
+                    { value: 'widowed',       label: t('biodata', 'widowed') },
                   ]}
                 />
 
@@ -228,10 +228,10 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   name="education" label={t('dashboard', 'filter_education')}
                   value={data.education ?? ''} onChange={v => setData('education', v)}
                   options={[
-                    { value: 'hsc',             label: 'HSC / A-Level' },
-                    { value: 'graduation',      label: "Bachelor's" },
-                    { value: 'post_graduation', label: "Master's" },
-                    { value: 'phd',             label: 'PhD' },
+                    { value: 'hsc',             label: t('biodata', 'qual_hsc') },
+                    { value: 'graduation',      label: t('biodata', 'qual_graduation') },
+                    { value: 'post_graduation', label: t('biodata', 'qual_post_graduation') },
+                    { value: 'phd',             label: t('biodata', 'qual_phd') },
                   ]}
                 />
 
@@ -239,13 +239,13 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   name="occupation_category" label={t('dashboard', 'filter_profession')}
                   value={data.occupation_category ?? ''} onChange={v => setData('occupation_category', v)}
                   options={[
-                    { value: 'business',       label: 'Business' },
-                    { value: 'service_govt',   label: 'Govt Job' },
-                    { value: 'service_private',label: 'Private Job' },
-                    { value: 'medical',        label: 'Medical' },
-                    { value: 'engineering',    label: 'Engineering' },
-                    { value: 'it',             label: 'IT / Tech' },
-                    { value: 'abroad_job',     label: 'Abroad Job' },
+                    { value: 'business',        label: t('biodata', 'occ_business') },
+                    { value: 'service_govt',    label: t('biodata', 'occ_service_govt') },
+                    { value: 'service_private', label: t('biodata', 'occ_service_private') },
+                    { value: 'medical',         label: t('biodata', 'occ_medical') },
+                    { value: 'engineering',     label: t('biodata', 'occ_engineering') },
+                    { value: 'it',              label: t('biodata', 'occ_it') },
+                    { value: 'abroad_job',      label: t('biodata', 'occ_abroad_job') },
                   ]}
                 />
 
@@ -339,7 +339,12 @@ export default function Search({ results, filters, membershipTier, platformMode 
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {results.data.map(profile => (
-                <ProfileCard key={profile.registration_id} profile={profile} />
+                <ProfileCard
+                  key={profile.registration_id}
+                  profile={profile}
+                  interestSent={profile.interest_sent ?? false}
+                  isShortlisted={profile.is_shortlisted ?? false}
+                />
               ))}
             </div>
 

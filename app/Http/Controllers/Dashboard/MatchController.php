@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Contracts\MatchingScorerInterface;
 use App\Http\Controllers\Controller;
+use App\Models\ConnectionRequest;
 use App\Models\Registration;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,8 +37,23 @@ class MatchController extends Controller
         $limit   = $user->hasActiveMembership() ? 50 : 10;
         $matches = $this->scorer->topMatches($biodata, $limit);
 
+        $candidateIds = $matches->map(fn($item) => $item['biodata']->registration_id)->all();
+        $sentInterestIds = array_flip(
+            ConnectionRequest::where('sender_id', $user->registration_id)
+                ->whereIn('receiver_id', $candidateIds)
+                ->pluck('receiver_id')
+                ->all()
+        );
+        $shortlistedIds = array_flip(
+            DB::table('shortlists')
+                ->where('user_id', $user->registration_id)
+                ->whereIn('shortlisted_id', $candidateIds)
+                ->pluck('shortlisted_id')
+                ->all()
+        );
+
         // Transform into ProfileCard-shaped objects
-        $transformed = $matches->map(function (array $item) use ($user) {
+        $transformed = $matches->map(function (array $item) use ($user, $sentInterestIds, $shortlistedIds) {
             $candidate = $item['biodata'];
             $reg       = $candidate->registration;
             $photos    = $candidate->photos ?? [];
@@ -73,6 +90,8 @@ class MatchController extends Controller
                 'last_active_at'        => $candidate->last_active_at?->toISOString(),
                 'match_score'           => $item['total_score'],
                 'score_breakdown'       => $item['score_breakdown'],
+                'interest_sent'         => isset($sentInterestIds[$candidate->registration_id]),
+                'is_shortlisted'        => isset($shortlistedIds[$candidate->registration_id]),
             ];
         });
 

@@ -225,8 +225,8 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
 
           {/* Age, marital status */}
           <p className="text-xs text-slate-500">
-            {profile.age ? `${profile.age} yrs` : '—'}
-            {profile.marital_status ? ` · ${profile.marital_status.replace(/_/g, ' ')}` : ''}
+            {profile.age ? `${profile.age} ${t('common', 'yrs')}` : '—'}
+            {profile.marital_status ? ` · ${t('biodata', profile.marital_status)}` : ''}
           </p>
 
           {/* Location */}
@@ -243,7 +243,7 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
             {profile.highest_qualification && (
               <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
                 <GraduationCap size={9} />
-                {profile.highest_qualification.replace(/_/g, ' ')}
+                {t('biodata', `qual_${profile.highest_qualification}`)}
               </span>
             )}
             {profile.occupation && (

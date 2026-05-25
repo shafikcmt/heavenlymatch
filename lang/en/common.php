@@ -50,6 +50,7 @@ return [
     'any'            => 'Any',
     'filter_min'     => 'Min',
     'filter_max'     => 'Max',
+    'yrs'            => 'yrs',
     'reset'          => 'Reset',
     'refresh'        => 'Refresh',
 

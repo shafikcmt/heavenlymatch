@@ -112,7 +112,11 @@ export default function Matches({ matches, hasBiodata, membershipTier }: Props) 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {matches.map(profile => (
               <div key={profile.registration_id}>
-                <ProfileCard profile={profile} />
+                <ProfileCard
+                  profile={profile}
+                  interestSent={profile.interest_sent ?? false}
+                  isShortlisted={profile.is_shortlisted ?? false}
+                />
                 {profile.score_breakdown && Object.keys(profile.score_breakdown).length > 0 && (
                   <ScoreBreakdown breakdown={profile.score_breakdown} t={t} />
                 )}

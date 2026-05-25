@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
+use App\Models\ConnectionRequest;
 use App\Models\Registration;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -106,8 +108,23 @@ class SearchController extends Controller
         $perPage = $user->hasActiveMembership() ? 24 : 12;
         $results = $query->paginate($perPage)->withQueryString();
 
+        $pageIds = $results->getCollection()->pluck('registration_id')->all();
+        $sentInterestIds = array_flip(
+            ConnectionRequest::where('sender_id', $user->registration_id)
+                ->whereIn('receiver_id', $pageIds)
+                ->pluck('receiver_id')
+                ->all()
+        );
+        $shortlistedIds = array_flip(
+            DB::table('shortlists')
+                ->where('user_id', $user->registration_id)
+                ->whereIn('shortlisted_id', $pageIds)
+                ->pluck('shortlisted_id')
+                ->all()
+        );
+
         // Transform Biodata records into ProfileCard-shaped objects
-        $results->through(function (Biodata $biodata) use ($user) {
+        $results->through(function (Biodata $biodata) use ($user, $sentInterestIds, $shortlistedIds) {
             $reg    = $biodata->registration;
             $photos = $biodata->photos ?? [];
 
@@ -143,6 +160,8 @@ class SearchController extends Controller
                 'last_active_at'        => $biodata->last_active_at?->toISOString(),
                 'match_score'           => null,
                 'score_breakdown'       => null,
+                'interest_sent'         => isset($sentInterestIds[$biodata->registration_id]),
+                'is_shortlisted'        => isset($shortlistedIds[$biodata->registration_id]),
             ];
         });
 

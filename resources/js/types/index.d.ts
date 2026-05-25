@@ -71,6 +71,8 @@ export interface ProfileCard {
   last_active_at: string | null
   match_score: number | null
   score_breakdown: Record<string, number> | null
+  interest_sent?: boolean
+  is_shortlisted?: boolean
 }
 
 export interface PaginatedResponse<T> {
