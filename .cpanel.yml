@@ -1,30 +1,20 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/heavwzih/develop.heavenlymatch.net/
+    - export APPPATH=/home/heavwzih/develop.heavenlymatch.net
 
-    # Copy latest code safely
-    - /bin/rsync -av --delete ./ $DEPLOYPATH --exclude='.git' --exclude='.env' --exclude='node_modules' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' --exclude='database/database.sqlite' --exclude='database/*.sqlite'
+    - cd $APPPATH && composer install --no-dev --optimize-autoloader --no-interaction
 
-    # Install/update PHP dependencies
-    - cd $DEPLOYPATH && composer install --no-dev --optimize-autoloader --no-interaction
+    - cd $APPPATH && mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions bootstrap/cache
 
-    # Ensure Laravel writable folders exist
-    - cd $DEPLOYPATH && mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions bootstrap/cache
+    - cd $APPPATH && php artisan migrate --force
 
-    # Run only new pending migrations
-    - cd $DEPLOYPATH && php artisan migrate --force
+    - cd $APPPATH && php artisan storage:link || true
 
-    # Create storage symlink
-    - cd $DEPLOYPATH && php artisan storage:link || true
+    - chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache || true
 
-    # Fix writable folders
-    - chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache || true
+    - cd $APPPATH && php artisan optimize:clear
 
-    # Clear old Laravel cache
-    - cd $DEPLOYPATH && php artisan optimize:clear
-
-    # Rebuild production cache
-    - cd $DEPLOYPATH && php artisan config:cache
-    - cd $DEPLOYPATH && php artisan route:cache || true
-    - cd $DEPLOYPATH && php artisan view:cache
+    - cd $APPPATH && php artisan config:cache
+    - cd $APPPATH && php artisan route:cache || true
+    - cd $APPPATH && php artisan view:cache
