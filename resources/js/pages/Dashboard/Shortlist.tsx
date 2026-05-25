@@ -100,7 +100,7 @@ export default function Shortlist({ shortlisted }: Props) {
                         <p className="font-semibold text-slate-900 truncate">{profile.name}</p>
                         <p className="text-sm text-slate-500 mt-0.5">
                           {[
-                            age ? `${age} yrs` : null,
+                            age ? `${age} ${t('common', 'yrs')}` : null,
                             profile.district,
                             profile.occupation,
                           ].filter(Boolean).join(' · ')}

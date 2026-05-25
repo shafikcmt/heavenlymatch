@@ -156,7 +156,7 @@ class AdminPaymentController extends Controller
         $txn = PaymentTransaction::with('registration')->findOrFail($id);
 
         if ($txn->status !== 'pending') {
-            return back()->with('info', 'Payment has already been reviewed.');
+            return back()->with('info', __('admin.payment_already_reviewed'));
         }
 
         $txn->forceFill([

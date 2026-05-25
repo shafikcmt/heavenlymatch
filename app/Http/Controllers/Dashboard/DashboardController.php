@@ -66,11 +66,11 @@ class DashboardController extends Controller
                     ->get();
 
                 if ($precomputed->isNotEmpty()) {
-                    return $precomputed->map(fn ($ms) => $this->formatProfile($ms->candidate, $ms->total_score, $ms->score_breakdown))->filter()->values()->all();
+                    return $precomputed->map(fn ($ms) => $this->formatProfile($ms->candidate, $ms->total_score, $ms->score_breakdown, $user))->filter()->values()->all();
                 }
 
                 return $this->engine->topMatchesForUser($user, 5)
-                    ->map(fn ($m) => $this->formatProfile($m['biodata']->registration, $m['total_score'], $m['score_breakdown']))
+                    ->map(fn ($m) => $this->formatProfile($m['biodata']->registration, $m['total_score'], $m['score_breakdown'], $user))
                     ->filter()->values()->all();
             }
         );
@@ -111,7 +111,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function formatProfile(Registration $reg, int $score, ?array $breakdown): ?array
+    private function formatProfile(Registration $reg, int $score, ?array $breakdown, Registration $viewer): ?array
     {
         $bio = $reg->biodata;
         if (! $bio) return null;
@@ -138,7 +138,8 @@ class DashboardController extends Controller
             'platform_mode'         => $reg->platform_mode,
             'photo_visibility'      => $reg->photo_visibility,
             'has_photo'             => ! empty($bio->photos),
-            'photo_url'             => null, // frontend requests with token separately
+            'photo_url'             => null,
+            'blurred'               => $this->photoService->shouldBlur($reg, $viewer),
             'completeness_score'    => $bio->completeness_score,
             'last_active_at'        => $bio->last_active_at?->toISOString(),
             'match_score'           => $score,
