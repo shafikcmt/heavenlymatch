@@ -70,6 +70,7 @@ return [
 
     // ── Account status ────────────────────────────────────────────────────────
     'account_suspended'  => 'Your account has been banned or suspended. Please contact support.',
+    'admin_no_access'    => 'You do not have admin access.',
 
     // ── Logout ────────────────────────────────────────────────────────────────
     'logout_success'     => 'You have been signed out.',

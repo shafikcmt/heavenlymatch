@@ -62,14 +62,14 @@ class AdminLoginController extends Controller
             Auth::logout();
             RateLimiter::hit($throttleKey, 60);
             throw ValidationException::withMessages([
-                'email' => 'You do not have admin access.',
+                'email' => trans('auth.admin_no_access'),
             ]);
         }
 
         if (in_array($user->account_status ?? 'active', ['banned', 'suspended'], true)) {
             Auth::logout();
             throw ValidationException::withMessages([
-                'email' => 'This admin account has been suspended.',
+                'email' => trans('auth.account_suspended'),
             ]);
         }
 

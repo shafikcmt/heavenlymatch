@@ -1,12 +1,14 @@
-import { Head, useForm } from '@inertiajs/react'
+import { Head, useForm, usePage } from '@inertiajs/react'
 import { Crown, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
+import type { PageProps } from '@/types'
 
 interface Props {
   status?: string
 }
 
 export default function AdminLogin({ status }: Props) {
+  const { flash } = usePage<PageProps>().props
   const { data, setData, post, processing, errors } = useForm({
     email: '',
     password: '',
@@ -33,10 +35,15 @@ export default function AdminLogin({ status }: Props) {
             <p className="text-sm text-slate-400 mt-1">Sign in to the admin panel</p>
           </div>
 
-          {/* Status flash */}
+          {/* Status / error flash */}
           {status && (
             <div className="mb-4 rounded-lg bg-emerald-900/50 border border-emerald-700 px-4 py-3 text-sm text-emerald-300">
               {status}
+            </div>
+          )}
+          {flash.error && (
+            <div className="mb-4 rounded-lg bg-red-900/50 border border-red-700 px-4 py-3 text-sm text-red-300">
+              {flash.error}
             </div>
           )}
 

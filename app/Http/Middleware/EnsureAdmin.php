@@ -27,7 +27,7 @@ class EnsureAdmin
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('admin.login')->with('error', 'This admin account has been suspended.');
+            return redirect()->route('admin.login')->with('error', trans('auth.account_suspended'));
         }
 
         return $next($request);

@@ -51,7 +51,7 @@ class RegisterController extends Controller
 
         $reg->sendEmailVerificationNotification();
 
-        return redirect()->route('biodata.wizard', ['step' => 1])
-            ->with('success', 'Welcome to HeavenlyMatch! Please complete your biodata to find matches.');
+        return redirect()->route('verification.notice')
+            ->with('status', trans('auth.register_success'));
     }
 }
