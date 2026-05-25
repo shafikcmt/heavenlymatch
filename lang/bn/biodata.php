@@ -112,6 +112,12 @@ return [
     'mother_tongue'     => 'মাতৃভাষা',
     'visa_status'       => 'ভিসা / আবাসন অবস্থা',
 
+    // Visa status options
+    'visa_citizen'            => 'নাগরিক',
+    'visa_permanent_resident' => 'স্থায়ী বাসিন্দা',
+    'visa_work_visa'          => 'ওয়ার্ক ভিসা',
+    'visa_student_visa'       => 'স্টুডেন্ট ভিসা',
+
     // ── Religion & practice ───────────────────────────────────────────────────
     'religion'                => 'ধর্ম',
     'sect'                    => 'মাযহাব / সম্প্রদায়',
@@ -142,9 +148,20 @@ return [
     'quran_learning' => 'শিখছেন',
     'quran_no'       => 'পারেন না',
 
+    // Hijab options
+    'hijab_wears_niqab' => 'নেকাব পরেন',
+    'hijab_wears_hijab' => 'হিজাব পরেন',
+    'hijab_trying'      => 'পরার চেষ্টা করছেন',
+    'hijab_no_hijab'    => 'পরেন না',
+
     // ── Education ─────────────────────────────────────────────────────────────
     'education_method'       => 'শিক্ষা পদ্ধতি',
     'highest_qualification'  => 'সর্বোচ্চ শিক্ষাগত যোগ্যতা',
+
+    // Education method options
+    'edu_method_general' => 'সাধারণ',
+    'edu_method_islamic' => 'ইসলামিক (মাদ্রাসা)',
+    'edu_method_both'    => 'সাধারণ ও ইসলামিক উভয়',
     'education_details'      => 'শিক্ষার বিস্তারিত',
     'institution'            => 'প্রতিষ্ঠান / বিশ্ববিদ্যালয়',
     'passing_year'           => 'পাশের সাল',
@@ -189,12 +206,31 @@ return [
     'finance_upper_middle' => 'উচ্চ-মধ্যবিত্ত',
     'finance_upper'        => 'উচ্চবিত্ত',
 
+    // Home ownership options
+    'home_own_house'    => 'নিজস্ব বাড়ি',
+    'home_family_house' => 'পারিবারিক বাড়ি',
+    'home_rented'       => 'ভাড়া বাড়ি',
+
     // ── Profession ────────────────────────────────────────────────────────────
     'occupation'              => 'পেশা',
     'occupation_category'     => 'পেশার ধরন',
     'profession_details'      => 'পেশার বিস্তারিত',
     'monthly_income'          => 'মাসিক আয় (টাকা)',
     'profession_halal_status' => 'পেশা কি হালাল?',
+
+    // Occupation category options
+    'occ_business'        => 'ব্যবসা / উদ্যোক্তা',
+    'occ_service_govt'    => 'সরকারি চাকরি',
+    'occ_service_private' => 'বেসরকারি চাকরি',
+    'occ_education'       => 'শিক্ষা / শিক্ষকতা',
+    'occ_medical'         => 'চিকিৎসা / স্বাস্থ্যসেবা',
+    'occ_engineering'     => 'প্রকৌশল',
+    'occ_it'              => 'আইটি / প্রযুক্তি',
+    'occ_abroad_job'      => 'বিদেশে কর্মরত',
+    'occ_student'         => 'ছাত্র/ছাত্রী',
+    'occ_housewife'       => 'গৃহিণী',
+    'occ_agriculture'     => 'কৃষি',
+    'occ_other'           => 'অন্যান্য',
 
     // ── Lifestyle ─────────────────────────────────────────────────────────────
     'diet'               => 'খাদ্যাভ্যাস',
@@ -203,6 +239,22 @@ return [
     'hobbies'            => 'শখ ও আগ্রহ',
     'health_status'      => 'স্বাস্থ্য অবস্থা',
     'health_details'     => 'স্বাস্থ্য সংক্রান্ত তথ্য',
+
+    // Health status options
+    'health_healthy'         => 'সুস্থ',
+    'health_minor_condition' => 'সামান্য অসুস্থতা',
+    'health_disability'      => 'শারীরিক প্রতিবন্ধিতা',
+    'health_prefer_not_say'  => 'বলতে চাই না',
+
+    // Diet options
+    'diet_halal_only'     => 'শুধু হালাল',
+    'diet_vegetarian'     => 'নিরামিষ',
+    'diet_no_restriction' => 'কোনো বাধা নেই',
+
+    // Smoking options
+    'smoking_never'        => 'কখনো নয়',
+    'smoking_occasionally' => 'মাঝে মাঝে',
+    'smoking_regularly'    => 'নিয়মিত',
 
     // ── Marriage ─────────────────────────────────────────────────────────────
     'guardian_agree'          => 'অভিভাবক অবগত ও সম্মত',
@@ -300,6 +352,9 @@ return [
     'partner_height_cm_max'   => 'সর্বোচ্চ উচ্চতা (সেমি)',
     'partner_income_max'      => 'সর্বোচ্চ আয়',
     'partner_income_range'    => 'পছন্দের আয়ের পরিসর',
+    'any'                     => 'যেকোনো',
+    'no_preference'           => 'কোনো পছন্দ নেই',
+    'any_division'            => 'যেকোনো বিভাগ',
 
     // ── Wizard step 9 content ─────────────────────────────────────────────────
     'step9_title'       => 'প্রোফাইল ছবি আপলোড করুন',

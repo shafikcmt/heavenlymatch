@@ -115,6 +115,12 @@ return [
     'mother_tongue'     => 'Mother Tongue',
     'visa_status'       => 'Visa / Residence Status',
 
+    // Visa status options
+    'visa_citizen'            => 'Citizen',
+    'visa_permanent_resident' => 'Permanent Resident',
+    'visa_work_visa'          => 'Work Visa',
+    'visa_student_visa'       => 'Student Visa',
+
     // ── Religion & practice ───────────────────────────────────────────────────
     'religion'                => 'Religion',
     'sect'                    => 'Sect / Madhhab',
@@ -145,9 +151,20 @@ return [
     'quran_learning' => 'Currently Learning',
     'quran_no'       => 'Cannot Recite',
 
+    // Hijab options
+    'hijab_wears_niqab' => 'Wears Niqab',
+    'hijab_wears_hijab' => 'Wears Hijab',
+    'hijab_trying'      => 'Trying to Wear',
+    'hijab_no_hijab'    => 'Does Not Wear',
+
     // ── Education ─────────────────────────────────────────────────────────────
     'education_method'       => 'Education System',
     'highest_qualification'  => 'Highest Qualification',
+
+    // Education method options
+    'edu_method_general' => 'General',
+    'edu_method_islamic' => 'Islamic (Madrasa)',
+    'edu_method_both'    => 'Both General & Islamic',
     'education_details'      => 'Education Details',
     'institution'            => 'Institution / University',
     'passing_year'           => 'Passing Year',
@@ -192,12 +209,31 @@ return [
     'finance_upper_middle' => 'Upper Middle Class',
     'finance_upper'        => 'Upper Class',
 
+    // Home ownership options
+    'home_own_house'    => 'Own House',
+    'home_family_house' => 'Family House',
+    'home_rented'       => 'Rented',
+
     // ── Profession ────────────────────────────────────────────────────────────
     'occupation'              => 'Occupation',
     'occupation_category'     => 'Occupation Category',
     'profession_details'      => 'Details About Profession',
     'monthly_income'          => 'Monthly Income (BDT)',
     'profession_halal_status' => 'Is Profession Halal?',
+
+    // Occupation category options
+    'occ_business'        => 'Business / Entrepreneur',
+    'occ_service_govt'    => 'Government Job',
+    'occ_service_private' => 'Private Job',
+    'occ_education'       => 'Education / Teacher',
+    'occ_medical'         => 'Medical / Healthcare',
+    'occ_engineering'     => 'Engineering',
+    'occ_it'              => 'IT / Tech',
+    'occ_abroad_job'      => 'Working Abroad',
+    'occ_student'         => 'Student',
+    'occ_housewife'       => 'Housewife',
+    'occ_agriculture'     => 'Agriculture',
+    'occ_other'           => 'Other',
 
     // ── Lifestyle ─────────────────────────────────────────────────────────────
     'diet'               => 'Diet',
@@ -207,6 +243,22 @@ return [
     'health_status'      => 'Health Status',
     'health_details'     => 'Health Details',
     'special_category'   => 'Special Category',
+
+    // Health status options
+    'health_healthy'         => 'Healthy',
+    'health_minor_condition' => 'Minor Condition',
+    'health_disability'      => 'Disability',
+    'health_prefer_not_say'  => 'Prefer Not to Say',
+
+    // Diet options
+    'diet_halal_only'     => 'Halal Only',
+    'diet_vegetarian'     => 'Vegetarian',
+    'diet_no_restriction' => 'No Restriction',
+
+    // Smoking options
+    'smoking_never'        => 'Never',
+    'smoking_occasionally' => 'Occasionally',
+    'smoking_regularly'    => 'Regularly',
 
     // ── Marriage ─────────────────────────────────────────────────────────────
     'guardian_agree'          => 'Guardian is Aware & Agreed',
@@ -306,6 +358,9 @@ return [
     'partner_height_cm_max'   => 'Max Height (cm)',
     'partner_income_max'      => 'Maximum Income Preferred',
     'partner_income_range'    => 'Preferred Income Range',
+    'any'                     => 'Any',
+    'no_preference'           => 'No Preference',
+    'any_division'            => 'Any Division',
 
     // ── Wizard step 9 content ─────────────────────────────────────────────────
     'step9_title'       => 'Upload Your Profile Photo',

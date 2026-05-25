@@ -361,10 +361,10 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                 <Field name="upazila" label={t('biodata', 'upazila')} placeholder="e.g. Mirpur" />
                 <Toggle name="is_nrb" label={t('biodata', 'is_nrb')} />
                 <Sel name="visa_status" label={t('biodata', 'visa_status')} options={[
-                  { value: 'citizen',            label: 'Citizen' },
-                  { value: 'permanent_resident', label: 'Permanent Resident' },
-                  { value: 'work_visa',           label: 'Work Visa' },
-                  { value: 'student_visa',        label: 'Student Visa' },
+                  { value: 'citizen',            label: t('biodata', 'visa_citizen') },
+                  { value: 'permanent_resident', label: t('biodata', 'visa_permanent_resident') },
+                  { value: 'work_visa',           label: t('biodata', 'visa_work_visa') },
+                  { value: 'student_visa',        label: t('biodata', 'visa_student_visa') },
                 ]} />
               </>
             )}
@@ -390,10 +390,10 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                 ]} />
                 {user.gender === 'female'
                   ? <Sel name="hijab_info" label={t('biodata', 'hijab_info')} options={[
-                      { value: 'wears_niqab', label: 'Wears Niqab' },
-                      { value: 'wears_hijab', label: 'Wears Hijab' },
-                      { value: 'trying',      label: 'Trying to wear' },
-                      { value: 'no_hijab',    label: 'Does not wear' },
+                      { value: 'wears_niqab', label: t('biodata', 'hijab_wears_niqab') },
+                      { value: 'wears_hijab', label: t('biodata', 'hijab_wears_hijab') },
+                      { value: 'trying',      label: t('biodata', 'hijab_trying') },
+                      { value: 'no_hijab',    label: t('biodata', 'hijab_no_hijab') },
                     ]} />
                   : <Field name="beard_info" label={t('biodata', 'beard_info')} placeholder="e.g. Full beard, Trimmed" />
                 }
@@ -428,9 +428,9 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
             {step === 4 && (
               <>
                 <Sel name="education_method" label={t('biodata', 'education_method')} options={[
-                  { value: 'general', label: 'General' },
-                  { value: 'islamic', label: 'Islamic (Madrasa)' },
-                  { value: 'both',    label: 'Both General & Islamic' },
+                  { value: 'general', label: t('biodata', 'edu_method_general') },
+                  { value: 'islamic', label: t('biodata', 'edu_method_islamic') },
+                  { value: 'both',    label: t('biodata', 'edu_method_both') },
                 ]} />
                 <Sel name="highest_qualification" label={t('biodata', 'highest_qualification')} options={[
                   { value: 'below_ssc',       label: t('biodata', 'qual_below_ssc') },
@@ -447,18 +447,18 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                 ]} />
                 <Field name="occupation" label={t('biodata', 'occupation')} placeholder="e.g. Software Engineer" />
                 <Sel name="occupation_category" label={t('biodata', 'occupation_category')} options={[
-                  { value: 'business',       label: 'Business / Entrepreneur' },
-                  { value: 'service_govt',   label: 'Government Job' },
-                  { value: 'service_private',label: 'Private Job' },
-                  { value: 'education',      label: 'Education / Teacher' },
-                  { value: 'medical',        label: 'Medical / Healthcare' },
-                  { value: 'engineering',    label: 'Engineering' },
-                  { value: 'it',             label: 'IT / Tech' },
-                  { value: 'abroad_job',     label: 'Working Abroad' },
-                  { value: 'student',        label: 'Student' },
-                  { value: 'housewife',      label: 'Housewife' },
-                  { value: 'agriculture',    label: 'Agriculture' },
-                  { value: 'other',          label: 'Other' },
+                  { value: 'business',       label: t('biodata', 'occ_business') },
+                  { value: 'service_govt',   label: t('biodata', 'occ_service_govt') },
+                  { value: 'service_private',label: t('biodata', 'occ_service_private') },
+                  { value: 'education',      label: t('biodata', 'occ_education') },
+                  { value: 'medical',        label: t('biodata', 'occ_medical') },
+                  { value: 'engineering',    label: t('biodata', 'occ_engineering') },
+                  { value: 'it',             label: t('biodata', 'occ_it') },
+                  { value: 'abroad_job',     label: t('biodata', 'occ_abroad_job') },
+                  { value: 'student',        label: t('biodata', 'occ_student') },
+                  { value: 'housewife',      label: t('biodata', 'occ_housewife') },
+                  { value: 'agriculture',    label: t('biodata', 'occ_agriculture') },
+                  { value: 'other',          label: t('biodata', 'occ_other') },
                 ]} />
                 <Field name="monthly_income" label={t('biodata', 'monthly_income')} type="number" placeholder="e.g. 50000" />
                 <Textarea
@@ -500,9 +500,9 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   { value: 'upper',        label: t('biodata', 'finance_upper') },
                 ]} />
                 <Sel name="home_ownership" label={t('biodata', 'home_ownership')} options={[
-                  { value: 'own_house',    label: 'Own House' },
-                  { value: 'family_house', label: 'Family House' },
-                  { value: 'rented',       label: 'Rented' },
+                  { value: 'own_house',    label: t('biodata', 'home_own_house') },
+                  { value: 'family_house', label: t('biodata', 'home_family_house') },
+                  { value: 'rented',       label: t('biodata', 'home_rented') },
                 ]} />
                 <Textarea
                   name="family_details"
@@ -517,20 +517,20 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
             {step === 6 && (
               <>
                 <Sel name="health_status" label={t('biodata', 'health_status')} options={[
-                  { value: 'healthy',          label: 'Healthy' },
-                  { value: 'minor_condition',  label: 'Minor Condition' },
-                  { value: 'disability',       label: 'Disability' },
-                  { value: 'prefer_not_say',   label: 'Prefer not to say' },
+                  { value: 'healthy',          label: t('biodata', 'health_healthy') },
+                  { value: 'minor_condition',  label: t('biodata', 'health_minor_condition') },
+                  { value: 'disability',       label: t('biodata', 'health_disability') },
+                  { value: 'prefer_not_say',   label: t('biodata', 'health_prefer_not_say') },
                 ]} />
                 <Sel name="diet" label={t('biodata', 'diet')} options={[
-                  { value: 'halal_only',     label: 'Halal Only' },
-                  { value: 'vegetarian',     label: 'Vegetarian' },
-                  { value: 'no_restriction', label: 'No Restriction' },
+                  { value: 'halal_only',     label: t('biodata', 'diet_halal_only') },
+                  { value: 'vegetarian',     label: t('biodata', 'diet_vegetarian') },
+                  { value: 'no_restriction', label: t('biodata', 'diet_no_restriction') },
                 ]} />
                 <Sel name="smoking" label={t('biodata', 'smoking')} options={[
-                  { value: 'never',        label: 'Never' },
-                  { value: 'occasionally', label: 'Occasionally' },
-                  { value: 'regularly',    label: 'Regularly' },
+                  { value: 'never',        label: t('biodata', 'smoking_never') },
+                  { value: 'occasionally', label: t('biodata', 'smoking_occasionally') },
+                  { value: 'regularly',    label: t('biodata', 'smoking_regularly') },
                 ]} />
                 <Textarea
                   name="hobbies"
@@ -600,23 +600,23 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   { value: 'never_married', label: t('biodata', 'never_married') },
                   { value: 'divorced',      label: t('biodata', 'divorced') },
                   { value: 'widowed',       label: t('biodata', 'widowed') },
-                  { value: 'any',           label: 'Any' },
+                  { value: 'any',           label: t('biodata', 'any') },
                 ]} />
                 <Sel name="partner_education" label={t('biodata', 'partner_education')} options={[
                   { value: 'ssc',             label: t('biodata', 'qual_ssc') },
                   { value: 'hsc',             label: t('biodata', 'qual_hsc') },
                   { value: 'graduation',      label: t('biodata', 'qual_graduation') },
                   { value: 'post_graduation', label: t('biodata', 'qual_post_graduation') },
-                  { value: 'any',             label: 'No preference' },
+                  { value: 'any',             label: t('biodata', 'no_preference') },
                 ]} />
                 <Sel name="partner_division" label={t('biodata', 'partner_division')} options={[
-                  { value: 'any', label: 'Any Division' },
+                  { value: 'any', label: t('biodata', 'any_division') },
                   ...BD_DIVISIONS.map(d => ({ value: d, label: d })),
                 ]} />
                 <Sel name="partner_family_type" label={t('biodata', 'partner_family_type')} options={[
                   { value: 'joint',    label: t('biodata', 'family_joint') },
                   { value: 'nuclear',  label: t('biodata', 'family_nuclear') },
-                  { value: 'any',      label: 'No preference' },
+                  { value: 'any',      label: t('biodata', 'no_preference') },
                 ]} />
                 <Textarea
                   name="partner_expectations"
