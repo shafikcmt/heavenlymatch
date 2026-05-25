@@ -1,6 +1,7 @@
 /// <reference path="../types/ziggy.d.ts" />
+import { useState } from 'react'
 import { Link } from '@inertiajs/react'
-import { Crown, Heart } from 'lucide-react'
+import { Crown, Heart, Menu, X } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
@@ -11,6 +12,14 @@ interface Props {
 export default function MarketingLayout({ children }: Props) {
   const { t } = useTranslation()
   const year = new Date().getFullYear()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const navLinks = [
+    { href: route('how-it-works'), label: t('marketing', 'nav_how_it_works') },
+    { href: route('pricing'),      label: t('marketing', 'nav_pricing') },
+    { href: route('about'),        label: t('marketing', 'nav_about') },
+    { href: route('contact'),      label: t('marketing', 'nav_contact') },
+  ]
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -24,26 +33,20 @@ export default function MarketingLayout({ children }: Props) {
             <span className="font-bold text-slate-900 text-lg tracking-tight">HeavenlyMatch</span>
           </Link>
 
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <Link href={route('how-it-works')} className="hover:text-slate-900 transition-colors">
-              {t('marketing', 'nav_how_it_works')}
-            </Link>
-            <Link href={route('pricing')} className="hover:text-slate-900 transition-colors">
-              {t('marketing', 'nav_pricing')}
-            </Link>
-            <Link href={route('about')} className="hover:text-slate-900 transition-colors">
-              {t('marketing', 'nav_about')}
-            </Link>
-            <Link href={route('contact')} className="hover:text-slate-900 transition-colors">
-              {t('marketing', 'nav_contact')}
-            </Link>
+            {navLinks.map(({ href, label }) => (
+              <Link key={href} href={href} className="hover:text-slate-900 transition-colors">
+                {label}
+              </Link>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
             <LanguageSwitcher className="hidden sm:flex" />
             <Link
               href={route('login')}
-              className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              className="hidden sm:inline-flex text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
             >
               {t('marketing', 'nav_sign_in')}
             </Link>
@@ -53,8 +56,48 @@ export default function MarketingLayout({ children }: Props) {
             >
               {t('marketing', 'nav_join_free')}
             </Link>
+            {/* Hamburger — visible on < md */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(o => !o)}
+              className="md:hidden ml-1 p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              aria-label="Toggle menu"
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen
+                ? <X size={20} className="text-slate-700" />
+                : <Menu size={20} className="text-slate-700" />
+              }
+            </button>
           </div>
         </div>
+
+        {/* Mobile dropdown */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="flex items-center gap-3 px-3 pt-3 mt-1 border-t border-slate-100">
+              <Link
+                href={route('login')}
+                onClick={() => setMobileOpen(false)}
+                className="text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors"
+              >
+                {t('marketing', 'nav_sign_in')}
+              </Link>
+              <span className="text-slate-300">·</span>
+              <LanguageSwitcher />
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* ── Page content ── */}

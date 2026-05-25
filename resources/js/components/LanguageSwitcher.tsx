@@ -33,8 +33,8 @@ export default function LanguageSwitcher({ className = '' }: Props) {
           className={[
             'rounded px-2 py-0.5 text-sm font-medium transition-colors',
             locale === code
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+              ? 'bg-primary-600 text-white'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100',
           ].join(' ')}
         >
           {label}

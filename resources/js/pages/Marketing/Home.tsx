@@ -62,33 +62,13 @@ const STEPS = [
   { n: '4', icon: '💌', titleKey: 'home_step4_title', descKey: 'home_step4_desc' },
 ] as const
 
-const TESTIMONIALS = [
-  {
-    initials: 'F.K.',
-    location: 'Dhaka',
-    text: "Alhamdulillah — I found my husband within 3 months. The biodata system is very professional and my family felt comfortable throughout the entire process.",
-  },
-  {
-    initials: 'A.R.',
-    location: 'Chattogram',
-    text: "As a practicing Muslim, I was worried about finding a halal platform. HeavenlyMatch's Islamic mode was exactly what I needed. Very respectful process from start to finish.",
-  },
-  {
-    initials: 'S.B.',
-    location: 'Rajshahi',
-    text: "My parents were involved from the very beginning. The guardian notification feature gave everyone peace of mind. May Allah bless this platform.",
-  },
-  {
-    initials: 'M.H.',
-    location: 'Sylhet',
-    text: "Paying via bKash was very easy. The profiles are genuine and I could filter by district and education. Very well designed for Bangladeshi Muslims.",
-  },
-  {
-    initials: 'T.A.',
-    location: 'Cumilla',
-    text: "The photo privacy feature is outstanding. I only showed my photo to serious candidates. This is how Islamic matrimony should work — with dignity.",
-  },
-]
+const TESTIMONIAL_KEYS = [
+  { initials: 'F.K.', locationKey: 'testimonial_1_location', textKey: 'testimonial_1_text' },
+  { initials: 'A.R.', locationKey: 'testimonial_2_location', textKey: 'testimonial_2_text' },
+  { initials: 'S.B.', locationKey: 'testimonial_3_location', textKey: 'testimonial_3_text' },
+  { initials: 'M.H.', locationKey: 'testimonial_4_location', textKey: 'testimonial_4_text' },
+  { initials: 'T.A.', locationKey: 'testimonial_5_location', textKey: 'testimonial_5_text' },
+] as const
 
 const COMPARISON_ROWS = [
   { leftKey: 'comparison_row_1_left', rightKey: 'comparison_row_1_right' },
@@ -109,15 +89,15 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
   const [testimonialIdx, setTestimonialIdx] = useState(0)
   const sliderRef = useRef<HTMLDivElement>(null)
 
-  const prevTestimonial = () => setTestimonialIdx(i => (i === 0 ? TESTIMONIALS.length - 1 : i - 1))
-  const nextTestimonial = () => setTestimonialIdx(i => (i === TESTIMONIALS.length - 1 ? 0 : i + 1))
+  const prevTestimonial = () => setTestimonialIdx(i => (i === 0 ? TESTIMONIAL_KEYS.length - 1 : i - 1))
+  const nextTestimonial = () => setTestimonialIdx(i => (i === TESTIMONIAL_KEYS.length - 1 ? 0 : i + 1))
 
   const scrollSlider = (dir: 'left' | 'right') => {
     if (!sliderRef.current) return
     sliderRef.current.scrollBy({ left: dir === 'right' ? 220 : -220, behavior: 'smooth' })
   }
 
-  const current = TESTIMONIALS[testimonialIdx] ?? TESTIMONIALS[0]!
+  const current = TESTIMONIAL_KEYS[testimonialIdx] ?? TESTIMONIAL_KEYS[0]!
 
   return (
     <MarketingLayout>
@@ -229,7 +209,7 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
                     <div className="p-3">
                       <p className="font-semibold text-slate-900 text-sm truncate">{profile.first_name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {profile.age ? `${profile.age} yrs` : '—'}
+                        {profile.age ? `${profile.age} ${t('common', 'yrs')}` : '—'}
                         {profile.district ? ` · ${profile.district}` : ''}
                       </p>
                       {profile.occupation && (
@@ -333,12 +313,12 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
             </div>
 
             <blockquote className="text-slate-700 text-base leading-relaxed italic mb-6">
-              "{current.text}"
+              &ldquo;{t('marketing', current.textKey)}&rdquo;
             </blockquote>
 
             <div className="flex items-center justify-center gap-1.5 text-sm text-slate-500">
               <MapPin size={13} />
-              {current.location}
+              {t('marketing', current.locationKey)}
             </div>
 
             {/* Stars */}
@@ -361,7 +341,7 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
 
             {/* Dots */}
             <div className="flex gap-2">
-              {TESTIMONIALS.map((_, i) => (
+              {TESTIMONIAL_KEYS.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setTestimonialIdx(i)}

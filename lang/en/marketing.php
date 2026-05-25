@@ -248,6 +248,16 @@ return [
     'testimonials_title'    => 'Member Feedback',
     'testimonials_subtitle' => 'Sample stories illustrating the kind of experience our members share.',
     'member_story_label'    => 'Sample Story',
+    'testimonial_1_location' => 'Dhaka',
+    'testimonial_1_text'     => 'Alhamdulillah — I found my husband within 3 months. The biodata system is very professional and my family felt comfortable throughout the entire process.',
+    'testimonial_2_location' => 'Chattogram',
+    'testimonial_2_text'     => "As a practicing Muslim, I was worried about finding a halal platform. HeavenlyMatch's Islamic mode was exactly what I needed. Very respectful process from start to finish.",
+    'testimonial_3_location' => 'Rajshahi',
+    'testimonial_3_text'     => 'My parents were involved from the very beginning. The guardian notification feature gave everyone peace of mind. May Allah bless this platform.',
+    'testimonial_4_location' => 'Sylhet',
+    'testimonial_4_text'     => 'Paying via bKash was very easy. The profiles are genuine and I could filter by district and education. Very well designed for Bangladeshi Muslims.',
+    'testimonial_5_location' => 'Cumilla',
+    'testimonial_5_text'     => 'The photo privacy feature is outstanding. I only showed my photo to serious candidates. This is how Islamic matrimony should work — with dignity.',
 
     // ── Home — success section ────────────────────────────────────────────────
     'success_section_title' => 'Blessed Unions Every Month',
