@@ -142,16 +142,25 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
         {/* Photo area */}
         <Link href={route('profile.show', { registrationId: profile.registration_id })} className="block relative aspect-[3/4] bg-slate-100 overflow-hidden">
           {profile.has_photo && profile.photo_url ? (
-            <img
-              src={profile.photo_url}
-              alt={profile.name}
-              className={cn(
-                'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
-                profile.photo_visibility === 'blurred' && 'blur-lg',
+            <>
+              <img
+                src={profile.photo_url}
+                alt={profile.name}
+                className={cn(
+                  'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
+                  profile.blurred && 'blur-xl',
+                )}
+                draggable={false}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+              {profile.blurred && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="rounded-full bg-black/40 px-3 py-1 text-[10px] font-medium text-white/90 backdrop-blur-sm">
+                    {t('dashboard', 'photo_private')}
+                  </span>
+                </div>
               )}
-              draggable={false}
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
+            </>
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-slate-100">
               <img

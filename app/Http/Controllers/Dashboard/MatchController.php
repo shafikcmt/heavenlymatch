@@ -68,6 +68,7 @@ class MatchController extends Controller
                 'photo_visibility'      => $reg?->photo_visibility ?? 'members_only',
                 'has_photo'             => !empty($photos),
                 'photo_url'             => $photoUrl,
+                'blurred'               => $reg ? $this->photoPrivacy->shouldBlur($reg, $user) : true,
                 'completeness_score'    => $candidate->completeness_score ?? 0,
                 'last_active_at'        => $candidate->last_active_at?->toISOString(),
                 'match_score'           => $item['total_score'],

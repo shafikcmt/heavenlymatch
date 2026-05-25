@@ -46,6 +46,9 @@ return [
     'search_action'  => 'Search',
     'filter'         => 'Filter',
     'clear'          => 'Clear',
+    'any'            => 'Any',
+    'filter_min'     => 'Min',
+    'filter_max'     => 'Max',
     'reset'          => 'Reset',
     'refresh'        => 'Refresh',
 

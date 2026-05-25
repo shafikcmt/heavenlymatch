@@ -38,7 +38,8 @@ class SearchController extends Controller
         $query = Biodata::with('registration')
             ->where('status', 'approved')
             ->where('is_completed', true)
-            ->where('registration_id', '!=', $user->registration_id);
+            ->where('registration_id', '!=', $user->registration_id)
+            ->whereHas('registration', fn($q) => $q->where('account_status', 'active'));
 
         if ($genderFilter) {
             $query->whereHas('registration', fn($q) => $q->where('gender', $genderFilter));
@@ -131,11 +132,13 @@ class SearchController extends Controller
                 'height_cm'             => $biodata->height_cm,
                 'is_featured'           => (bool) $biodata->is_featured,
                 'is_verified'           => $reg?->identity_verification_status === 'verified',
+                'is_premium'            => $reg?->hasActiveMembership() ?? false,
                 'is_boosted'            => false,
                 'platform_mode'         => $reg?->platform_mode ?? 'general',
                 'photo_visibility'      => $reg?->photo_visibility ?? 'members_only',
                 'has_photo'             => !empty($photos),
                 'photo_url'             => $photoUrl,
+                'blurred'               => $reg ? $this->photoPrivacy->shouldBlur($reg, $user) : true,
                 'completeness_score'    => $biodata->completeness_score ?? 0,
                 'last_active_at'        => $biodata->last_active_at?->toISOString(),
                 'match_score'           => null,

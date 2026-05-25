@@ -116,6 +116,7 @@ return [
     'view_profile'        => 'প্রোফাইল দেখুন',
     'report_profile'      => 'রিপোর্ট করুন',
     'photo_request_sent'  => 'ছবির অনুরোধ পাঠানো হয়েছে',
+    'photo_private'               => 'ছবি প্রাইভেট',
     'photo_request_access'        => 'ছবির অ্যাক্সেস চাইুন',
     'photo_request_pending_label' => 'অনুরোধ অপেক্ষমান',
     'photo_request_granted_label' => 'ছবির অ্যাক্সেস মঞ্জুর হয়েছে',

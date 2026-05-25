@@ -30,6 +30,7 @@ function FilterSelect({ name, label, value, onChange, options }: {
   onChange: (v: string) => void
   options: { value: string; label: string }[]
 }) {
+  const { t } = useTranslation()
   return (
     <div>
       <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
@@ -38,7 +39,7 @@ function FilterSelect({ name, label, value, onChange, options }: {
         onChange={e => onChange(e.target.value)}
         className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
       >
-        <option value="">Any</option>
+        <option value="">{t('common', 'any')}</option>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
@@ -180,13 +181,13 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   <label className="block text-xs font-medium text-slate-600 mb-1">{t('dashboard', 'filter_age_range')}</label>
                   <div className="flex gap-2">
                     <input
-                      type="number" placeholder="Min" min={18} max={80}
+                      type="number" placeholder={t('common', 'filter_min')} min={18} max={80}
                       value={data.age_min ?? ''}
                       onChange={e => setData('age_min', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                     <input
-                      type="number" placeholder="Max" min={18} max={80}
+                      type="number" placeholder={t('common', 'filter_max')} min={18} max={80}
                       value={data.age_max ?? ''}
                       onChange={e => setData('age_max', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
@@ -199,13 +200,13 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   <label className="block text-xs font-medium text-slate-600 mb-1">{t('dashboard', 'height_range')}</label>
                   <div className="flex gap-2">
                     <input
-                      type="number" placeholder="Min cm" min={140} max={220}
+                      type="number" placeholder={t('common', 'filter_min')} min={140} max={220}
                       value={data.height_cm_min ?? ''}
                       onChange={e => setData('height_cm_min', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                     <input
-                      type="number" placeholder="Max cm" min={140} max={220}
+                      type="number" placeholder={t('common', 'filter_max')} min={140} max={220}
                       value={data.height_cm_max ?? ''}
                       onChange={e => setData('height_cm_max', e.target.value)}
                       className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
@@ -321,7 +322,7 @@ export default function Search({ results, filters, membershipTier, platformMode 
 
         {/* Results header */}
         <p className="text-sm text-slate-500 mb-4">
-          {results.total} {results.total !== 1 ? 'profiles' : 'profile'} found
+          {t('dashboard', 'profiles_found', { count: results.total })}
         </p>
 
         {results.data.length === 0 ? (

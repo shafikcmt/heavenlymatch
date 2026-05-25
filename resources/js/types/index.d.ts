@@ -66,6 +66,7 @@ export interface ProfileCard {
   photo_visibility: 'public' | 'members_only' | 'blurred'
   has_photo: boolean
   photo_url: string | null
+  blurred: boolean
   completeness_score: number
   last_active_at: string | null
   match_score: number | null
