@@ -268,24 +268,24 @@ Social login is **optional**. Buttons are hidden automatically when credentials 
 
 1. Go to [Google Cloud Console](https://console.developers.google.com/) → Create a project → Enable "Google+ API"
 2. Create OAuth 2.0 credentials (Web application)
-3. Add Authorized redirect URI: `https://yourdomain.com/auth/google/redirect`
+3. Add Authorized redirect URI: `https://yourdomain.com/auth/google/callback`
 4. Add to production `.env`:
 ```env
 GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=https://yourdomain.com/auth/google/redirect
+GOOGLE_REDIRECT_URI=https://yourdomain.com/auth/google/callback
 ```
 
 ### Facebook OAuth
 
 1. Go to [Facebook Developers](https://developers.facebook.com/apps/) → Create App → Consumer
 2. Add "Facebook Login" product → Settings
-3. Add Valid OAuth Redirect URI: `https://yourdomain.com/auth/facebook/redirect`
+3. Add Valid OAuth Redirect URI: `https://yourdomain.com/auth/facebook/callback`
 4. Add to production `.env`:
 ```env
 FACEBOOK_CLIENT_ID=your_app_id
 FACEBOOK_CLIENT_SECRET=your_app_secret
-FACEBOOK_REDIRECT_URI=https://yourdomain.com/auth/facebook/redirect
+FACEBOOK_REDIRECT_URI=https://yourdomain.com/auth/facebook/callback
 ```
 
 ### Admin enable/disable

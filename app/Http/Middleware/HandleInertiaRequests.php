@@ -95,12 +95,6 @@ class HandleInertiaRequests extends Middleware
         ]);
     }
 
-    /**
-     * Load all translation namespaces for the given locale.
-     * Falls back to English for any key missing in the active locale.
-     *
-     * @return array<string, array<string, mixed>>
-     */
     private function isSocialEnabled(string $provider): bool
     {
         if (! \App\Models\SystemSetting::bool("social.{$provider}_enabled", true)) {
@@ -118,6 +112,12 @@ class HandleInertiaRequests extends Middleware
         };
     }
 
+    /**
+     * Load all translation namespaces for the given locale.
+     * Falls back to English for any key missing in the active locale.
+     *
+     * @return array<string, array<string, mixed>>
+     */
     private function loadTranslations(string $locale): array
     {
         $translations = [];
