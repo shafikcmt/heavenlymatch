@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Schedule;
 // cPanel cron: * * * * * php /home/user/heavenlymatch/artisan schedule:run >> /dev/null 2>&1
 
 // Expire memberships daily at midnight BDT (18:00 UTC)
+// Note: no runInBackground() — proc_open may be restricted on shared hosts
 Schedule::command('memberships:expire')
     ->dailyAt('18:00')
     ->withoutOverlapping()
-    ->runInBackground()
     ->appendOutputTo(storage_path('logs/memberships-expire.log'));
 
 // Nightly match score computation at 02:00 BDT (20:00 UTC)
