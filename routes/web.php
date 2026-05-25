@@ -49,10 +49,8 @@ Route::post('/language/{locale}', [PublicPageController::class, 'switchLocale'])
 
 // ── Admin auth (outside user auth middleware) ─────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::middleware('guest')->group(function () {
-        Route::get('/login',  [AdminLoginController::class, 'show'])->name('login');
-        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.submit');
-    });
+    Route::get('/login',  [AdminLoginController::class, 'show'])->name('login');
+    Route::post('/login', [AdminLoginController::class, 'store'])->name('login.submit');
     Route::post('/logout', [AdminLoginController::class, 'destroy'])
         ->middleware('auth')
         ->name('logout');

@@ -52,10 +52,10 @@ class LoginController extends Controller
         /** @var Registration $user */
         $user = Auth::user();
 
-        if ($user->account_status === 'banned') {
+        if (in_array($user->account_status, ['banned', 'suspended'], true)) {
             Auth::logout();
             throw ValidationException::withMessages([
-                'email' => 'Your account has been suspended. Contact support.',
+                'email' => trans('auth.account_suspended'),
             ]);
         }
 

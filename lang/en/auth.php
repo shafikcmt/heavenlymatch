@@ -68,6 +68,9 @@ return [
     'mode_islamic_title'    => 'Islamic / Halal Mode',
     'mode_islamic_desc'     => 'Photos blurred by default. Guardian (Wali) involvement. Privacy-first approach.',
 
+    // ── Account status ────────────────────────────────────────────────────────
+    'account_suspended'  => 'Your account has been banned or suspended. Please contact support.',
+
     // ── Logout ────────────────────────────────────────────────────────────────
     'logout_success'     => 'You have been signed out.',
 

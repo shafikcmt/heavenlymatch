@@ -9,6 +9,7 @@ use App\Models\Registration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Response as InertiaResponse;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -16,8 +17,16 @@ use Inertia\Response;
 
 class AdminLoginController extends Controller
 {
-    public function show(): Response
+    public function show(): InertiaResponse|RedirectResponse
     {
+        if (Auth::check()) {
+            /** @var Registration $user */
+            $user = Auth::user();
+            return $user->isAdmin()
+                ? redirect()->route('admin.dashboard')
+                : redirect()->route('dashboard');
+        }
+
         return Inertia::render('Admin/Login', [
             'status' => session('status'),
         ]);
