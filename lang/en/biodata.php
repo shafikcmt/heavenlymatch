@@ -276,6 +276,9 @@ return [
     'photo_preview_label'       => 'Preview',
     'photo_confirm_upload'      => 'Upload This Photo',
     'photo_cancel_preview'      => 'Cancel',
+    'photo_not_found'           => 'Photo not found.',
+    'photo_access_granted'      => 'Photo access approved.',
+    'photo_access_denied'       => 'Photo access request declined.',
 
     // ── Completion score ─────────────────────────────────────────────────────
     'completion_score'     => 'Profile :percent% Complete',

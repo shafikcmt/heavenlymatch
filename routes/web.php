@@ -148,6 +148,7 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
             Route::put('/visibility',                [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'updateVisibility'])->name('visibility');
             Route::delete('/{index}',                [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'destroy'])->name('destroy')->whereNumber('index');
             Route::put('/{index}/primary',           [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'setPrimary'])->name('primary')->whereNumber('index');
+            Route::post('/requests/{requestId}/respond', [\App\Http\Controllers\Biodata\PhotoUploadController::class, 'respondRequest'])->name('requests.respond')->whereNumber('requestId');
         });
 
         // Settings

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Biodata;
 use App\Models\ConnectionRequest;
 use App\Models\Conversation;
+use App\Models\PhotoAccessRequest;
 use App\Models\ProfileView;
 use App\Models\Registration;
 use App\Services\PhotoPrivacyService;
@@ -108,6 +109,15 @@ class ProfileViewController extends Controller
             })
             ->all();
 
+        // ── Photo access request status (Islamic mode only) ─────────────────
+        $photoAccessStatus = null;
+        if ($viewerId && $viewerId !== $registrationId && $profile->platform_mode === 'islamic') {
+            $accessRequest = PhotoAccessRequest::where('requester_id', $viewerId)
+                ->where('profile_id', $registrationId)
+                ->first();
+            $photoAccessStatus = $accessRequest?->status;
+        }
+
         return Inertia::render('Profile/Show', [
             'profile' => [
                 'registration_id' => $profile->registration_id,
@@ -115,16 +125,17 @@ class ProfileViewController extends Controller
                 'gender'          => $profile->gender,
                 'platform_mode'   => $profile->platform_mode,
             ],
-            'biodata'           => $biodataData,
-            'photos'            => $photos,
-            'interestSent'      => $interestSent,
-            'interestReceived'  => $interestReceived,
-            'isConnected'       => $isConnected,
-            'conversationId'    => $conversationId,
-            'isShortlisted'     => $isShortlisted,
-            'isOwnProfile'      => $viewerId === $registrationId,
-            'isAlreadyReported' => $isAlreadyReported,
-            'profileTrust'      => [
+            'biodata'            => $biodataData,
+            'photos'             => $photos,
+            'interestSent'       => $interestSent,
+            'interestReceived'   => $interestReceived,
+            'isConnected'        => $isConnected,
+            'conversationId'     => $conversationId,
+            'isShortlisted'      => $isShortlisted,
+            'isOwnProfile'       => $viewerId === $registrationId,
+            'isAlreadyReported'  => $isAlreadyReported,
+            'photoAccessStatus'  => $photoAccessStatus,
+            'profileTrust'       => [
                 'isEmailVerified'    => $profile->is_email_verified,
                 'isIdentityVerified' => $profile->identity_verification_status === 'verified',
                 'biodataApproved'    => $biodata?->status === 'approved',
@@ -146,8 +157,14 @@ class ProfileViewController extends Controller
         }
 
         $photos = collect($biodata?->photos ?? [])
-            ->map(fn ($photo) => array_merge($photo, ['blurred' => false]))
             ->values()
+            ->map(function ($photo, int $index) use ($user) {
+                return [
+                    'url'        => $this->photoPrivacy->photoUrl($user->registration_id, $index, $user->registration_id),
+                    'is_primary' => (bool) ($photo['is_primary'] ?? ($index === 0)),
+                    'blurred'    => false,
+                ];
+            })
             ->all();
 
         return Inertia::render('Dashboard/Profile', [

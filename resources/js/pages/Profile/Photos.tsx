@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
-import { Star, Trash2, Upload, ImageOff, AlertCircle, Shield, CheckCircle, X } from 'lucide-react'
+import { Star, Trash2, Upload, ImageOff, AlertCircle, Shield, CheckCircle, X, UserCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PageProps } from '@/types'
 
@@ -14,15 +14,23 @@ interface Photo {
   uploaded_at: string
 }
 
+interface IncomingRequest {
+  id: number
+  requester_id: string
+  requester_name: string
+  created_at: string
+}
+
 interface Props {
   photos: Photo[]
   photoUrls: string[]
   photoVisibility: 'public' | 'members_only' | 'blurred'
   maxPhotos: number
   hasBiodata: boolean
+  incomingRequests: IncomingRequest[]
 }
 
-export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, hasBiodata }: Props) {
+export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, hasBiodata, incomingRequests }: Props) {
   const { t } = useTranslation()
   const { flash, auth } = usePage<PageProps>().props
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -273,6 +281,58 @@ export default function Photos({ photos, photoUrls, photoVisibility, maxPhotos, 
             </div>
           )}
         </section>
+
+        {/* Incoming photo access requests */}
+        {incomingRequests.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <UserCheck size={18} className="text-primary-600" />
+              <h2 className="text-sm font-semibold text-slate-900">
+                {t('dashboard', 'photo_access_requests_title')}
+              </h2>
+              <span className="ml-auto text-xs font-bold text-white bg-primary-500 rounded-full px-2 py-0.5">
+                {incomingRequests.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {incomingRequests.map(req => (
+                <div
+                  key={req.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">
+                      {t('dashboard', 'photo_access_requester', { name: req.requester_name })}
+                    </p>
+                    <p className="text-xs text-slate-400">{req.created_at}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => router.post(
+                        route('profile.photos.requests.respond', req.id),
+                        { action: 'granted' },
+                        { preserveScroll: true },
+                      )}
+                      className="rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 transition-colors"
+                    >
+                      {t('dashboard', 'photo_access_approve')}
+                    </button>
+                    <button
+                      onClick={() => router.post(
+                        route('profile.photos.requests.respond', req.id),
+                        { action: 'denied' },
+                        { preserveScroll: true },
+                      )}
+                      className="rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-3 py-1.5 transition-colors"
+                    >
+                      {t('dashboard', 'photo_access_deny')}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </AppLayout>
   )

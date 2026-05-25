@@ -270,6 +270,9 @@ return [
     'photo_preview_label'       => 'প্রিভিউ',
     'photo_confirm_upload'      => 'এই ছবি আপলোড করুন',
     'photo_cancel_preview'      => 'বাতিল',
+    'photo_not_found'           => 'ছবি পাওয়া যায়নি।',
+    'photo_access_granted'      => 'ছবির অ্যাক্সেস অনুমোদন করা হয়েছে।',
+    'photo_access_denied'       => 'ছবির অ্যাক্সেসের অনুরোধ প্রত্যাখ্যাত হয়েছে।',
 
     // ── Completion score ─────────────────────────────────────────────────────
     'completion_score'     => 'প্রোফাইল :percent% সম্পন্ন',

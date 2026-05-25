@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Biodata;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPhotoRequest;
+use App\Models\PhotoAccessRequest;
 use App\Models\Registration;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\RedirectResponse;
@@ -38,12 +39,27 @@ class PhotoUploadController extends Controller
             array_keys($photos)
         );
 
+        // Incoming photo access requests (pending only, with requester name)
+        $incomingRequests = PhotoAccessRequest::where('profile_id', $user->registration_id)
+            ->where('status', 'pending')
+            ->with('requester:registration_id,name')
+            ->latest()
+            ->get()
+            ->map(fn ($r) => [
+                'id'            => $r->id,
+                'requester_id'  => $r->requester_id,
+                'requester_name'=> $r->requester?->name ?? $r->requester_id,
+                'created_at'    => $r->created_at?->diffForHumans(),
+            ])
+            ->all();
+
         return Inertia::render('Profile/Photos', [
-            'photos'          => array_values($photos),
-            'photoUrls'       => array_values($photoUrls),
-            'photoVisibility' => $user->photo_visibility ?? 'members_only',
-            'maxPhotos'       => self::MAX_PHOTOS,
-            'hasBiodata'      => $biodata !== null,
+            'photos'           => array_values($photos),
+            'photoUrls'        => array_values($photoUrls),
+            'photoVisibility'  => $user->photo_visibility ?? 'members_only',
+            'maxPhotos'        => self::MAX_PHOTOS,
+            'hasBiodata'       => $biodata !== null,
+            'incomingRequests' => $incomingRequests,
         ]);
     }
 
@@ -110,7 +126,7 @@ class PhotoUploadController extends Controller
         $photos = $biodata?->photos ?? [];
 
         if (! isset($photos[$index])) {
-            return back()->with('error', 'Photo not found.');
+            return back()->with('error', __('biodata.photo_not_found'));
         }
 
         $wasPrimary  = (bool) ($photos[$index]['is_primary'] ?? false);
@@ -143,7 +159,7 @@ class PhotoUploadController extends Controller
         $photos = $biodata?->photos ?? [];
 
         if (! isset($photos[$index])) {
-            return back()->with('error', 'Photo not found.');
+            return back()->with('error', __('biodata.photo_not_found'));
         }
 
         foreach ($photos as $i => $photo) {
@@ -167,5 +183,32 @@ class PhotoUploadController extends Controller
         $user->update(['photo_visibility' => $request->photo_visibility]);
 
         return back()->with('success', __('biodata.photo_visibility_updated'));
+    }
+
+    // POST /profile/photos/requests/{requestId}/respond
+    public function respondRequest(Request $request, int $requestId): RedirectResponse
+    {
+        $request->validate([
+            'action' => ['required', 'in:granted,denied'],
+        ]);
+
+        /** @var Registration $user */
+        $user = Auth::user();
+
+        $accessRequest = PhotoAccessRequest::where('id', $requestId)
+            ->where('profile_id', $user->registration_id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $accessRequest->update([
+            'status'       => $request->action,
+            'responded_at' => now(),
+        ]);
+
+        $flashKey = $request->action === 'granted'
+            ? __('biodata.photo_access_granted')
+            : __('biodata.photo_access_denied');
+
+        return back()->with('success', $flashKey);
     }
 }

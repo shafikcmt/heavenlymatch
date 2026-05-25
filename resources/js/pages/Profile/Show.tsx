@@ -110,6 +110,7 @@ interface Props {
   isShortlisted: boolean
   isOwnProfile: boolean
   isAlreadyReported: boolean
+  photoAccessStatus?: 'pending' | 'granted' | 'denied' | null
   profileTrust: ProfileTrust
 }
 
@@ -131,7 +132,7 @@ const ROW = ({ label, value }: { label: string; value?: string | number | null }
 export default function ProfileShow({
   profile, biodata, photos,
   interestSent, interestReceived, isConnected, conversationId, isShortlisted, isOwnProfile,
-  isAlreadyReported, profileTrust,
+  isAlreadyReported, photoAccessStatus, profileTrust,
 }: Props) {
   const { completion } = usePage<PageProps>().props
   const { t } = useTranslation()
@@ -144,6 +145,15 @@ export default function ProfileShow({
   const [reportError, setReportError]     = useState<string | null>(null)
   const [showGuard, setShowGuard]         = useState(false)
   const [photoIdx, setPhotoIdx]           = useState(0)
+  const [accessStatus, setAccessStatus]   = useState<'pending' | 'granted' | 'denied' | null | undefined>(photoAccessStatus)
+
+  const requestPhotoAccess = () => {
+    router.post(
+      route('photo.request-access', { registrationId: profile.registration_id }),
+      {},
+      { preserveScroll: true, onSuccess: () => setAccessStatus('pending') },
+    )
+  }
 
   const age = biodata?.birth_date ? calcAge(biodata.birth_date) : null
 
@@ -222,11 +232,33 @@ export default function ProfileShow({
               <div className="aspect-[3/4] bg-slate-100 relative flex items-center justify-center">
                 {activePhoto ? (
                   activePhoto.blurred ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-200">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-200 px-4">
                       <EyeOff size={32} className="text-slate-400 mb-2" />
-                      <p className="text-xs text-slate-500 text-center px-4">
+                      <p className="text-xs text-slate-500 text-center mb-3">
                         {t('dashboard', 'photo_hidden_msg')}
                       </p>
+                      {!isOwnProfile && profile.platform_mode === 'islamic' && (
+                        accessStatus === 'pending' ? (
+                          <span className="text-xs text-amber-700 bg-amber-100 rounded-full px-3 py-1 font-medium">
+                            {t('dashboard', 'photo_request_pending_label')}
+                          </span>
+                        ) : accessStatus === 'granted' ? (
+                          <span className="text-xs text-emerald-700 bg-emerald-100 rounded-full px-3 py-1 font-medium">
+                            {t('dashboard', 'photo_request_granted_label')}
+                          </span>
+                        ) : accessStatus === 'denied' ? (
+                          <span className="text-xs text-red-700 bg-red-100 rounded-full px-3 py-1 font-medium">
+                            {t('dashboard', 'photo_request_denied_label')}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={requestPhotoAccess}
+                            className="text-xs font-medium text-primary-700 bg-primary-100 hover:bg-primary-200 rounded-full px-3 py-1 transition-colors"
+                          >
+                            {t('dashboard', 'photo_request_access')}
+                          </button>
+                        )
+                      )}
                     </div>
                   ) : (
                     <img src={activePhoto.url} alt={profile.name} className="w-full h-full object-cover" />
