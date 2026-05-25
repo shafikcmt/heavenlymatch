@@ -148,9 +148,10 @@ return [
     'via_method'          => 'মাধ্যমে',
     'sender_no_label'     => 'প্রেরকের নং',
     'view_screenshot'     => 'স্ক্রিনশট দেখুন',
-    'approve_confirm'     => 'এই পেমেন্ট অনুমোদন করুন এবং সদস্যপদ সক্রিয় করুন?',
-    'decision_approved'   => 'অনুমোদিত',
-    'decision_rejected'   => 'প্রত্যাখ্যাত',
+    'approve_confirm'          => 'এই পেমেন্ট অনুমোদন করুন এবং সদস্যপদ সক্রিয় করুন?',
+    'decision_approved'        => 'অনুমোদিত',
+    'decision_rejected'        => 'প্রত্যাখ্যাত',
+    'payment_already_reviewed' => 'এই পেমেন্ট ইতিমধ্যে পর্যালোচনা করা হয়েছে।',
 
     // ── Reports ───────────────────────────────────────────────────────────────
     'reports_title'        => 'রিপোর্ট ও মডারেশন',

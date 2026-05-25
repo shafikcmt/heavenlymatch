@@ -148,9 +148,10 @@ return [
     'via_method'         => 'Via',
     'sender_no_label'    => 'Sender No.',
     'view_screenshot'    => 'View payment screenshot',
-    'approve_confirm'    => 'Approve this payment and activate membership?',
-    'decision_approved'  => 'Approved',
-    'decision_rejected'  => 'Rejected',
+    'approve_confirm'          => 'Approve this payment and activate membership?',
+    'decision_approved'        => 'Approved',
+    'decision_rejected'        => 'Rejected',
+    'payment_already_reviewed' => 'This payment has already been reviewed.',
 
     // ── Reports ───────────────────────────────────────────────────────────────
     'reports_title'      => 'Reports & Moderation',

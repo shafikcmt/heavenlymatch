@@ -89,42 +89,51 @@ export default function ManualPayment({ transaction }: Props) {
         </div>
 
         {/* Payment instructions */}
-        {isManual && transaction.merchant_number && (
+        {isManual && (
           <div className="rounded-2xl bg-amber-50 border border-amber-200 p-5 mb-6">
             <h2 className="text-sm font-bold text-amber-900 mb-3">
               {t('pricing', 'payment_instructions')}
             </h2>
-            <p className="text-sm text-amber-800 mb-4">
-              {transaction.gateway_type === 'bkash'
-                ? t('pricing', 'bkash_instructions', {
-                    amount: transaction.amount.toLocaleString('en-BD'),
-                    number: transaction.merchant_number,
-                  })
-                : t('pricing', 'nagad_instructions', {
-                    amount: transaction.amount.toLocaleString('en-BD'),
-                    number: transaction.merchant_number,
-                  })}
-            </p>
 
-            {/* Merchant number with copy button */}
-            <div className="flex items-center gap-3 rounded-xl bg-white border border-amber-200 px-4 py-3">
-              <div>
-                <p className="text-xs text-slate-400 mb-0.5">
-                  {transaction.gateway_name} {t('pricing', 'number_label')}
+            {transaction.merchant_number ? (
+              <>
+                <p className="text-sm text-amber-800 mb-4">
+                  {transaction.gateway_type === 'bkash'
+                    ? t('pricing', 'bkash_instructions', {
+                        amount: transaction.amount.toLocaleString('en-BD'),
+                        number: transaction.merchant_number,
+                      })
+                    : t('pricing', 'nagad_instructions', {
+                        amount: transaction.amount.toLocaleString('en-BD'),
+                        number: transaction.merchant_number,
+                      })}
                 </p>
-                <p className="text-lg font-bold text-slate-900 tracking-wide">
-                  {transaction.merchant_number}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={copyNumber}
-                className="ml-auto flex items-center gap-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 px-3 py-1.5 text-xs font-medium text-amber-800 transition-colors"
-              >
-                {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
-                {copied ? t('pricing', 'copied') : t('pricing', 'copy')}
-              </button>
-            </div>
+
+                {/* Merchant number with copy button */}
+                <div className="flex items-center gap-3 rounded-xl bg-white border border-amber-200 px-4 py-3">
+                  <div>
+                    <p className="text-xs text-slate-400 mb-0.5">
+                      {transaction.gateway_name} {t('pricing', 'number_label')}
+                    </p>
+                    <p className="text-lg font-bold text-slate-900 tracking-wide">
+                      {transaction.merchant_number}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyNumber}
+                    className="ml-auto flex items-center gap-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 px-3 py-1.5 text-xs font-medium text-amber-800 transition-colors"
+                  >
+                    {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
+                    {copied ? t('pricing', 'copied') : t('pricing', 'copy')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-amber-800">
+                {t('pricing', 'manual_no_number_instructions')}
+              </p>
+            )}
           </div>
         )}
 

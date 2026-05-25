@@ -151,9 +151,9 @@ class PaymentController extends Controller
             'external_transaction_id' => ['required', 'string', 'min:8', 'max:50'],
             'screenshot'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
-            'sender_number.regex'              => 'Please enter a valid Bangladesh mobile number (01XXXXXXXXX).',
-            'external_transaction_id.required' => 'Transaction ID is required.',
-            'external_transaction_id.min'      => 'Transaction ID must be at least 8 characters.',
+            'sender_number.regex'              => __('pricing.error_mobile'),
+            'external_transaction_id.required' => __('pricing.error_txn_id_required'),
+            'external_transaction_id.min'      => __('pricing.error_txn_id_min'),
         ]);
 
         /** @var \App\Models\Registration $user */
@@ -171,7 +171,7 @@ class PaymentController extends Controller
 
         if ($duplicate) {
             return back()->withErrors([
-                'external_transaction_id' => 'This transaction ID has already been submitted.',
+                'external_transaction_id' => __('pricing.error_txn_duplicate'),
             ]);
         }
 

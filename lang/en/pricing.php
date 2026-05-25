@@ -120,5 +120,13 @@ return [
     // Plans page misc
     'plans_empty'              => 'No plans available at this time.',
     'select_plan_hint'         => 'Select a plan above to continue',
+    'select_duration'          => 'Select Duration',
+    'manual_no_number_instructions' => 'Send your payment via bKash, Nagad, or Bank Transfer, then enter your sender number and transaction ID below. Our team will verify and activate your membership within 24 hours.',
+
+    // Validation error messages (used in controller __())
+    'error_mobile'             => 'Please enter a valid Bangladesh mobile number (01XXXXXXXXX).',
+    'error_txn_id_required'    => 'Transaction ID is required.',
+    'error_txn_id_min'         => 'Transaction ID must be at least 8 characters.',
+    'error_txn_duplicate'      => 'This transaction ID has already been submitted. Please double-check your payment details.',
 
 ];
