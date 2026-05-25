@@ -105,6 +105,7 @@ class DashboardController extends Controller
             'daily_picks'         => $dailyPicks,
             'biodata_completeness'=> $completeness,
             'biodata_status'      => $user->biodata?->status,
+            'rejection_reason'    => $user->biodata?->status === 'rejected' ? $user->biodata?->admin_note : null,
             'recent_visitors'     => $recentVisitors,
             'is_verified'         => $user->identity_verification_status === 'verified',
         ]);

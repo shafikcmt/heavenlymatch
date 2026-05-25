@@ -179,6 +179,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{id}/activate', [\App\Http\Controllers\Admin\AdminUserController::class, 'activate'])->name('users.activate');
     Route::post('/users/{id}/verify',   [\App\Http\Controllers\Admin\AdminUserController::class, 'verify'])->name('users.verify');
     Route::get('/biodatas',              [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
+    Route::get('/biodatas/{id}',         [\App\Http\Controllers\Admin\AdminBiodataController::class, 'show'])->name('biodatas.show');
     Route::post('/biodatas/{id}/approve',[\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
     Route::post('/biodatas/{id}/reject', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
     Route::get('/payments',                    [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');

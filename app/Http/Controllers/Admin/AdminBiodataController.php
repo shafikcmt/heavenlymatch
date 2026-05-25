@@ -45,6 +45,17 @@ class AdminBiodataController extends Controller
         ]);
     }
 
+    public function show(int $id): Response
+    {
+        $biodata = Biodata::with([
+            'registration:id,registration_id,name,email,gender,platform_mode,photo_visibility,identity_verification_status,account_status,created_at',
+        ])->findOrFail($id);
+
+        return Inertia::render('Admin/Biodatas/Show', [
+            'biodata' => $biodata,
+        ]);
+    }
+
     public function approve(int $id): RedirectResponse
     {
         $biodata = Biodata::findOrFail($id);

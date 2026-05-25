@@ -280,6 +280,7 @@ return [
     'dash_go_inbox'             => 'ইনবক্স খুলুন',
     'dash_go_interests'         => 'আগ্রহ দেখুন',
     'dash_go_biodata'           => 'বায়োডাটা আপডেট করুন',
+    'dash_rejection_reason_label' => 'কারণ:',
 
 ];
 

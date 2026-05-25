@@ -28,11 +28,12 @@ interface Props {
   daily_picks: ProfileCardType[]
   biodata_completeness: number
   biodata_status?: string | null
+  rejection_reason?: string | null
   recent_visitors: ProfileCardType[]
   is_verified: boolean
 }
 
-export default function Dashboard({ stats, daily_picks, biodata_completeness, biodata_status, recent_visitors, is_verified }: Props) {
+export default function Dashboard({ stats, daily_picks, biodata_completeness, biodata_status, rejection_reason, recent_visitors, is_verified }: Props) {
   const { auth, completion } = usePage<PageProps>().props
   const user = auth.user!
   const { t } = useTranslation()
@@ -190,6 +191,11 @@ export default function Dashboard({ stats, daily_picks, biodata_completeness, bi
             <div className="flex-1">
               <p className="text-sm font-semibold text-red-900">{t('dashboard', 'dash_nudge_rejected_title')}</p>
               <p className="text-xs text-red-700 mt-0.5">{t('dashboard', 'dash_nudge_rejected_desc')}</p>
+              {rejection_reason && (
+                <p className="mt-1.5 text-xs font-medium text-red-800 bg-red-100 rounded-lg px-2.5 py-1.5">
+                  {t('dashboard', 'dash_rejection_reason_label')} {rejection_reason}
+                </p>
+              )}
             </div>
             <Link href={route('biodata.wizard')}>
               <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100 shrink-0">

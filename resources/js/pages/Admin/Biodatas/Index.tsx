@@ -1,10 +1,10 @@
 /// <reference path="../../../types/ziggy.d.ts" />
-import { Head, router, useForm } from '@inertiajs/react'
+import { Head, Link, router, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import AdminLayout from '@/layouts/AdminLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BiodataRegistration {
@@ -21,6 +21,9 @@ interface Biodata {
   status: string
   admin_note: string | null
   updated_at: string
+  completeness_score: number | null
+  district: string | null
+  division: string | null
   registration: BiodataRegistration | null
 }
 
@@ -182,38 +185,59 @@ export default function BiodatasIndex({ biodatas, counts, tab }: Props) {
                   </div>
                 </div>
 
+                {/* Meta row: completeness + location */}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+                  {b.completeness_score != null && (
+                    <p className="text-xs text-slate-500">
+                      {t('admin', 'biodata_completeness')}: <span className="font-semibold text-slate-800">{b.completeness_score}%</span>
+                    </p>
+                  )}
+                  {(b.district || b.division) && (
+                    <p className="text-xs text-slate-500">
+                      {[b.district, b.division].filter(Boolean).join(', ')}
+                    </p>
+                  )}
+                  <p className="text-xs text-slate-400">
+                    {t('admin', 'biodata_updated_label')} {new Date(b.updated_at).toLocaleDateString('en-BD')}
+                  </p>
+                </div>
+
                 {b.admin_note && (
-                  <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">
+                  <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3">
                     {t('admin', 'biodata_note_label')} {b.admin_note}
                   </p>
                 )}
 
-                <p className="text-xs text-slate-400 mb-3">
-                  {t('admin', 'biodata_updated_label')} {new Date(b.updated_at).toLocaleDateString('en-BD')}
-                </p>
-
-                {(b.status === 'pending' || b.status === 'rejected') && (
-                  <div className="flex gap-3">
+                <div className="flex gap-2 flex-wrap">
+                  <Link href={route('admin.biodatas.show', b.id)} className="flex-1 min-w-[80px]">
+                    <Button size="sm" variant="outline" className="w-full gap-1">
+                      <Eye size={13} />
+                      {t('admin', 'biodata_view')}
+                    </Button>
+                  </Link>
+                  {(b.status === 'pending' || b.status === 'rejected') && (
                     <Button
                       size="sm"
                       variant="default"
                       onClick={() => approve(b.id)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                      className="flex-1 min-w-[80px] bg-emerald-600 hover:bg-emerald-700"
                     >
-                      <CheckCircle size={14} />
+                      <CheckCircle size={13} />
                       {t('admin', 'biodata_approve')}
                     </Button>
+                  )}
+                  {(b.status === 'pending' || b.status === 'approved') && (
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={() => setRejectId(b.id)}
-                      className="flex-1"
+                      className="flex-1 min-w-[80px]"
                     >
-                      <XCircle size={14} />
+                      <XCircle size={13} />
                       {t('admin', 'biodata_reject')}
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>

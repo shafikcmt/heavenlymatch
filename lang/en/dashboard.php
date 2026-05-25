@@ -280,6 +280,7 @@ return [
     'dash_go_inbox'             => 'Open Inbox',
     'dash_go_interests'         => 'View Interests',
     'dash_go_biodata'           => 'Update Biodata',
+    'dash_rejection_reason_label' => 'Reason:',
 
 ];
 
