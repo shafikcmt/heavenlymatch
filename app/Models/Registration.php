@@ -20,6 +20,9 @@ class Registration extends Authenticatable implements MustVerifyEmail
         'profile_created_for',          // was missing — breaks registration create()
         'looking_for',                  // was missing — breaks registration create()
         'google_id',                    // added by 2026_05_21 migration
+        'provider_name',                // social provider (google / facebook)
+        'provider_id',                  // social provider's user ID
+        'avatar_url',                   // avatar URL from provider
 
         // ── Platform & language ───────────────────────────────────────────────
         'platform_mode',                // was missing — breaks registration create()

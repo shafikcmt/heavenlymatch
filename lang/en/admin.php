@@ -227,6 +227,12 @@ return [
     'identity_status_verified'       => 'Verified',
     'identity_status_rejected'       => 'Rejected',
 
+    // ── Social login ─────────────────────────────────────────────────────────
+    'settings_group_social'    => 'Social Login',
+    'settings_social_google'   => 'Google Login',
+    'settings_social_facebook' => 'Facebook Login',
+    'settings_social_desc'     => 'Enable or disable social login buttons. Credentials must also be set in .env to show buttons.',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'Homepage Images',
     'settings_hero_image'        => 'Hero Banner Image',

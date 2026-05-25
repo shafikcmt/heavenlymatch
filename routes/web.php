@@ -70,9 +70,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password',        [PasswordController::class, 'update'])->name('password.update');
 });
 
-// Google OAuth
-Route::get('/auth/google',          [SocialLoginController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [SocialLoginController::class, 'callback'])->name('auth.google.callback');
+// Social OAuth — Google and Facebook (provider validated by where constraint + controller)
+Route::get('/auth/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+    ->name('auth.social.redirect')
+    ->where('provider', 'google|facebook')
+    ->middleware('throttle:10,1');
+Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback'])
+    ->name('auth.social.callback')
+    ->where('provider', 'google|facebook')
+    ->middleware('throttle:10,1');
 
 // Email verification
 Route::get('/verify-email',                    [LoginController::class, 'verifyNotice'])->name('verification.notice')->middleware('auth');

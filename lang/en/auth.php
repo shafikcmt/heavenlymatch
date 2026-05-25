@@ -37,10 +37,18 @@ return [
     'remember_me'        => 'Remember me',
     'forgot_password'    => 'Forgot Password?',
 
-    // ── Google OAuth ──────────────────────────────────────────────────────────
+    // ── Social OAuth (Google / Facebook) ─────────────────────────────────────
+    'or_continue_with'            => 'or continue with',
+    'login_facebook'              => 'Continue with Facebook',
+    'register_google'             => 'Sign up with Google',
+    'register_facebook'           => 'Sign up with Facebook',
+    'social_login_disabled'       => 'This login option is currently unavailable. Please sign in with email and password.',
+    'social_login_failed'         => 'Social login failed. Please try again or sign in with your email and password.',
+    'social_email_missing'        => 'Could not retrieve your email from this provider. Please register with email and password.',
+    'social_welcome'              => 'Welcome! Please complete your profile to find your match.',
+    // Legacy key — kept for backward compatibility
     'google_login_not_configured' => 'Google login is not available at this time. Please sign in with your email and password.',
-    'social_login_failed'         => 'Google login failed. Please try again or sign in with your email and password.',
-    'google_welcome'        => 'Welcome! Please complete your profile to find your match.',
+    'google_welcome'              => 'Welcome! Please complete your profile to find your match.',
 
     // ── Password reset ────────────────────────────────────────────────────────
     'forgot_title'       => 'Reset Your Password',

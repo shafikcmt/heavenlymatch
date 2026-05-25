@@ -227,6 +227,12 @@ return [
     'identity_status_verified'       => 'যাচাইকৃত',
     'identity_status_rejected'       => 'প্রত্যাখ্যাত',
 
+    // ── Social login ─────────────────────────────────────────────────────────
+    'settings_group_social'    => 'সোশ্যাল লগইন',
+    'settings_social_google'   => 'গুগল লগইন',
+    'settings_social_facebook' => 'ফেসবুক লগইন',
+    'settings_social_desc'     => 'সোশ্যাল লগইন বাটন চালু বা বন্ধ করুন। বাটন দেখাতে .env ফাইলেও শংসাপত্র থাকতে হবে।',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'হোমপেজ ছবি',
     'settings_hero_image'        => 'হিরো ব্যানার ছবি',

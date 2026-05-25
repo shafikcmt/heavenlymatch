@@ -23,6 +23,8 @@ class AdminSettingsController extends Controller
         'general.support_email',
         'notification.mail_from_name',
         'notification.mail_from_address',
+        'social.google_enabled',
+        'social.facebook_enabled',
     ];
 
     public function index(): Response
@@ -59,6 +61,8 @@ class AdminSettingsController extends Controller
             'settings.general.support_email'    => 'nullable|email|max:150',
             'settings.notification.mail_from_name'    => 'nullable|string|max:100',
             'settings.notification.mail_from_address' => 'nullable|email|max:150',
+            'settings.social.google_enabled'          => 'nullable|string|in:0,1',
+            'settings.social.facebook_enabled'        => 'nullable|string|in:0,1',
             'gateways'                          => 'array',
             'gateways.*.id'                     => 'required|integer|exists:payment_gateways,id',
             'gateways.*.merchant_id'            => 'nullable|string|max:100',

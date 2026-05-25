@@ -90,9 +90,8 @@ class HandleInertiaRequests extends Middleware
                 : 0,
             'locale'        => $locale,
             'translations'  => fn () => $this->loadTranslations($locale),
-            'googleEnabled' => filled(config('services.google.client_id'))
-                && filled(config('services.google.client_secret'))
-                && filled(config('services.google.redirect')),
+            'googleEnabled'   => $this->isSocialEnabled('google'),
+            'facebookEnabled' => $this->isSocialEnabled('facebook'),
         ]);
     }
 
@@ -102,6 +101,23 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, array<string, mixed>>
      */
+    private function isSocialEnabled(string $provider): bool
+    {
+        if (! \App\Models\SystemSetting::bool("social.{$provider}_enabled", true)) {
+            return false;
+        }
+
+        return match ($provider) {
+            'google'   => filled(config('services.google.client_id'))
+                       && filled(config('services.google.client_secret'))
+                       && filled(config('services.google.redirect')),
+            'facebook' => filled(config('services.facebook.client_id'))
+                       && filled(config('services.facebook.client_secret'))
+                       && filled(config('services.facebook.redirect')),
+            default    => false,
+        };
+    }
+
     private function loadTranslations(string $locale): array
     {
         $translations = [];

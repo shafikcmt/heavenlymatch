@@ -260,7 +260,55 @@ Then add a second cron entry to process jobs every minute:
 
 ---
 
-## 12. SMTP Mail Setup
+## 12. Social Login Setup (Google & Facebook)
+
+Social login is **optional**. Buttons are hidden automatically when credentials are missing or when disabled by admin.
+
+### Google OAuth
+
+1. Go to [Google Cloud Console](https://console.developers.google.com/) → Create a project → Enable "Google+ API"
+2. Create OAuth 2.0 credentials (Web application)
+3. Add Authorized redirect URI: `https://yourdomain.com/auth/google/redirect`
+4. Add to production `.env`:
+```env
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REDIRECT_URI=https://yourdomain.com/auth/google/redirect
+```
+
+### Facebook OAuth
+
+1. Go to [Facebook Developers](https://developers.facebook.com/apps/) → Create App → Consumer
+2. Add "Facebook Login" product → Settings
+3. Add Valid OAuth Redirect URI: `https://yourdomain.com/auth/facebook/redirect`
+4. Add to production `.env`:
+```env
+FACEBOOK_CLIENT_ID=your_app_id
+FACEBOOK_CLIENT_SECRET=your_app_secret
+FACEBOOK_REDIRECT_URI=https://yourdomain.com/auth/facebook/redirect
+```
+
+### Admin enable/disable
+
+Go to **Admin Panel → Settings → Social Login** section to toggle Google and Facebook login on/off without touching `.env`.
+
+A provider is shown only when:
+- `.env` credentials are all present AND
+- Admin has not disabled it in settings
+
+### Common callback errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `redirect_uri_mismatch` | OAuth app's allowed URIs don't match your domain | Add exact URL to allowed redirect URIs in Google/Facebook console |
+| `invalid_client` | Wrong client_id / client_secret | Re-copy credentials from console |
+| Blank page after callback | `APP_DEBUG=false` hiding error | Check `storage/logs/laravel.log` |
+| Social login button missing | Credentials not set in `.env` | Set all three env keys (id, secret, redirect) |
+| Button hidden after enable | Admin toggled it off | Admin Panel → Settings → Social Login |
+
+---
+
+## 13. SMTP Mail Setup
 
 ### Using cPanel email account:
 
@@ -291,7 +339,7 @@ Then add a second cron entry to process jobs every minute:
 
 ---
 
-## 13. PHP Version
+## 14. PHP Version
 
 Verify PHP 8.2+ is selected for the domain in **cPanel → MultiPHP Manager**.
 
@@ -300,7 +348,7 @@ Required PHP extensions (usually enabled by default on quality shared hosts):
 
 ---
 
-## 14. Security Checklist
+## 15. Security Checklist
 
 - [ ] `APP_DEBUG=false` in production `.env`
 - [ ] `APP_KEY` is set (32-char base64 string)
@@ -315,7 +363,7 @@ Required PHP extensions (usually enabled by default on quality shared hosts):
 
 ---
 
-## 15. Post-Deployment Verification
+## 16. Post-Deployment Verification
 
 ```bash
 # Check for any config errors
@@ -336,7 +384,7 @@ Visit:
 
 ---
 
-## 16. Common Errors & Fixes
+## 17. Common Errors & Fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
@@ -353,7 +401,7 @@ Visit:
 
 ---
 
-## 17. Re-Deployment (Updates)
+## 18. Re-Deployment (Updates)
 
 After pushing new code:
 
