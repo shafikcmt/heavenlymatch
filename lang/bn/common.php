@@ -11,6 +11,7 @@ return [
     'biodata'       => 'বায়োডাটা',
     'matches'       => 'ম্যাচ',
     'search'        => 'অনুসন্ধান',
+    'interests'     => 'আগ্রহ',
     'inbox'         => 'বার্তা',
     'shortlist'     => 'শর্টলিস্ট',
     'notifications' => 'বিজ্ঞপ্তি',

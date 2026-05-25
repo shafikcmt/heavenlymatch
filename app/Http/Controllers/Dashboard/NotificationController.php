@@ -53,6 +53,6 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return back()->with('success', 'All notifications marked as read.');
+        return back()->with('success', __('dashboard.mark_all_read_success'));
     }
 }

@@ -11,15 +11,6 @@ import { cn } from '@/lib/utils'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
 
-const NAV_ITEMS = [
-  { label: 'Dashboard',    href: '/dashboard',    icon: Home },
-  { label: 'Matches',      href: '/matches',       icon: Sparkles },
-  { label: 'Search',       href: '/search',        icon: Search },
-  { label: 'Interests',    href: '/interests/received', icon: Heart },
-  { label: 'Messages',     href: '/inbox',         icon: MessageCircle },
-  { label: 'Shortlist',    href: '/shortlist',     icon: Star },
-  { label: 'Notifications',href: '/notifications', icon: Bell },
-]
 
 function MembershipBadge({ tier }: { tier: string | null }) {
   if (!tier || tier === 'free') return null
@@ -42,6 +33,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentPath = (typeof window !== 'undefined') ? window.location.pathname : ''
+
+  const navItems = [
+    { label: t('common', 'dashboard'),     href: '/dashboard',          icon: Home },
+    { label: t('common', 'matches'),       href: '/matches',            icon: Sparkles },
+    { label: t('common', 'search'),        href: '/search',             icon: Search },
+    { label: t('common', 'interests'),     href: '/interests/received', icon: Heart },
+    { label: t('common', 'inbox'),         href: '/inbox',              icon: MessageCircle },
+    { label: t('common', 'shortlist'),     href: '/shortlist',          icon: Star },
+    { label: t('common', 'notifications'), href: '/notifications',      icon: Bell },
+  ]
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -77,7 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Nav items */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          {navItems.map(({ label, href, icon: Icon }) => {
             const active = currentPath === href || currentPath.startsWith(href + '/')
             const isBell = href === '/notifications'
             const badge = isBell && unread_notifications > 0 ? unread_notifications : 0
@@ -111,7 +112,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {user.platform_mode === 'islamic' && (
             <div className="mb-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 flex items-center gap-2">
               <Shield size={13} />
-              Islamic / Halal Mode
+              {t('common', 'mode_islamic')}
             </div>
           )}
           <div className="flex items-center gap-3 rounded-xl px-3 py-2">
@@ -150,9 +151,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
                   <TrendingUp size={11} />
-                  Profile {completion.percentage}%
+                  {t('dashboard', 'profile_pct', { n: completion.percentage })}
                 </span>
-                <span className="text-xs text-amber-600">Complete →</span>
+                <span className="text-xs text-amber-600">{t('dashboard', 'profile_complete_cta')}</span>
               </div>
               <div className="h-1.5 rounded-full bg-amber-200 overflow-hidden">
                 <div

@@ -9,6 +9,8 @@ return [
     'daily_picks_title'     => 'আজকের পরামর্শ',
     'daily_picks_subtitle'  => 'আপনার জন্য বাছাই করা ম্যাচ',
     'complete_profile_cta'  => 'আরো ম্যাচ দেখতে আপনার প্রোফাইল সম্পন্ন করুন',
+    'profile_pct'           => 'প্রোফাইল :n%',
+    'profile_complete_cta'  => 'সম্পন্ন করুন →',
     'upgrade_cta'           => 'আরো সুবিধা পেতে আপগ্রেড করুন',
     'profile_views'         => ':count জন আপনার প্রোফাইল দেখেছেন',
     'match_score'           => ':score% মিল',
@@ -105,10 +107,11 @@ return [
     'confirm_password'    => 'নতুন পাসওয়ার্ড নিশ্চিত করুন',
 
     // ── Notifications ─────────────────────────────────────────────────────────
-    'notifications_title' => 'বিজ্ঞপ্তি',
-    'mark_all_read'       => 'সব পঠিত হিসেবে চিহ্নিত করুন',
-    'no_notifications'    => 'এখনো কোনো বিজ্ঞপ্তি নেই।',
-    'mark_read'           => 'পঠিত হিসেবে চিহ্নিত করুন',
+    'notifications_title'  => 'বিজ্ঞপ্তি',
+    'mark_all_read'        => 'সব পঠিত হিসেবে চিহ্নিত করুন',
+    'mark_all_read_success'=> 'সকল বিজ্ঞপ্তি পঠিত হিসেবে চিহ্নিত হয়েছে।',
+    'no_notifications'     => 'এখনো কোনো বিজ্ঞপ্তি নেই।',
+    'mark_read'            => 'পঠিত হিসেবে চিহ্নিত করুন',
 
     // ── Profile card ─────────────────────────────────────────────────────────
     'years_old'           => ':age বছর বয়স',

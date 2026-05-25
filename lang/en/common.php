@@ -15,6 +15,7 @@ return [
     'biodata'       => 'Biodata',
     'matches'       => 'Matches',
     'search'        => 'Search',
+    'interests'     => 'Interests',
     'inbox'         => 'Inbox',
     'shortlist'     => 'Shortlist',
     'notifications' => 'Notifications',

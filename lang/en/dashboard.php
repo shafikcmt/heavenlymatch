@@ -9,6 +9,8 @@ return [
     'daily_picks_title'     => "Today's Suggestions",
     'daily_picks_subtitle'  => 'Hand-picked matches for you',
     'complete_profile_cta'  => 'Complete your profile to see more matches',
+    'profile_pct'           => 'Profile :n%',
+    'profile_complete_cta'  => 'Complete →',
     'upgrade_cta'           => 'Upgrade to unlock more features',
     'profile_views'         => ':count people viewed your profile',
     'match_score'           => ':score% Match',
@@ -105,10 +107,11 @@ return [
     'confirm_password'    => 'Confirm New Password',
 
     // ── Notifications ─────────────────────────────────────────────────────────
-    'notifications_title' => 'Notifications',
-    'mark_all_read'       => 'Mark All as Read',
-    'no_notifications'    => 'No notifications yet.',
-    'mark_read'           => 'Mark as read',
+    'notifications_title'  => 'Notifications',
+    'mark_all_read'        => 'Mark All as Read',
+    'mark_all_read_success'=> 'All notifications marked as read.',
+    'no_notifications'     => 'No notifications yet.',
+    'mark_read'            => 'Mark as read',
 
     // ── Profile card ─────────────────────────────────────────────────────────
     'years_old'           => ':age years old',

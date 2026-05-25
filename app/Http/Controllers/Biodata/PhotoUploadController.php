@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPhotoRequest;
 use App\Models\PhotoAccessRequest;
 use App\Models\Registration;
+use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -204,6 +206,40 @@ class PhotoUploadController extends Controller
             'status'       => $request->action,
             'responded_at' => now(),
         ]);
+
+        $requester = Registration::where('registration_id', $accessRequest->requester_id)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($requester) {
+            $lang = $requester->preferred_language ?? 'bn';
+
+            if ($request->action === 'granted') {
+                UserNotification::send(
+                    $requester->registration_id,
+                    'photo_access',
+                    trans('notifications.photo_granted_title', ['name' => $user->name], $lang),
+                    trans('notifications.photo_granted_body', ['name' => $user->name], $lang),
+                );
+
+                $requester->notify(new HeavenlyMatchNotification(
+                    subject: trans('notifications.email_subject_photo_granted', [], $lang),
+                    greeting: trans('notifications.email_greeting', ['name' => $requester->name], $lang),
+                    introLines: [
+                        trans('notifications.photo_granted_body', ['name' => $user->name], $lang),
+                    ],
+                    actionUrl: url('/profile/' . $user->registration_id),
+                    actionText: trans('notifications.email_action_view_profile', [], $lang),
+                ));
+            } else {
+                UserNotification::send(
+                    $requester->registration_id,
+                    'photo_access',
+                    trans('notifications.photo_denied_title', [], $lang),
+                    trans('notifications.photo_denied_body', ['name' => $user->name], $lang),
+                );
+            }
+        }
 
         $flashKey = $request->action === 'granted'
             ? __('biodata.photo_access_granted')

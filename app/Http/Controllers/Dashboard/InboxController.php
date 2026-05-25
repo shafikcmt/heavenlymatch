@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Registration;
+use App\Models\UserNotification;
+use App\Notifications\HeavenlyMatchNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -109,6 +111,22 @@ class InboxController extends Controller
         ]);
 
         $conversation->touch();
+
+        // Notify the recipient (one DB write per message; acceptable for MVP)
+        $otherId   = $conversation->user_a_id === $myId ? $conversation->user_b_id : $conversation->user_a_id;
+        $recipient = Registration::where('registration_id', $otherId)
+            ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
+            ->first();
+
+        if ($recipient) {
+            $lang = $recipient->preferred_language ?? 'bn';
+            UserNotification::send(
+                $recipient->registration_id,
+                'message',
+                trans('notifications.message_received_title', ['name' => $user->name], $lang),
+                trans('notifications.message_received_body', ['name' => $user->name], $lang),
+            );
+        }
 
         return response()->json([
             'id'         => $message->id,
