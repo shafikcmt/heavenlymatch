@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -70,4 +70,7 @@ return [
     // ── Privacy assurance ─────────────────────────────────────────────────────
     'privacy_protected' => 'Your privacy is protected.',
 
+    // Validation errors
+    'error_current_password' => 'The current password you entered is incorrect.',
+    'error_delete_password'  => 'Incorrect password. Your account was not deleted.',
 ];

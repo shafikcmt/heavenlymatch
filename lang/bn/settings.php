@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -70,4 +70,7 @@ return [
     // ── Privacy assurance ─────────────────────────────────────────────────────
     'privacy_protected' => 'আপনার গোপনীয়তা সুরক্ষিত।',
 
+    // Validation errors
+    'error_current_password' => 'আপনার দেওয়া বর্তমান পাসওয়ার্ডটি সঠিক নয়।',
+    'error_delete_password'  => 'ভুল পাসওয়ার্ড। আপনার অ্যাকাউন্ট মুছে ফেলা হয়নি।',
 ];

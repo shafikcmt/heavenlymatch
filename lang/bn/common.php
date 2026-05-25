@@ -15,6 +15,7 @@ return [
     'shortlist'     => 'শর্টলিস্ট',
     'notifications' => 'বিজ্ঞপ্তি',
     'settings'      => 'সেটিংস',
+    'logout'        => 'লগআউট',
     'pricing'       => 'মূল্য তালিকা',
     'blog'          => 'ব্লগ',
     'about'         => 'আমাদের সম্পর্কে',

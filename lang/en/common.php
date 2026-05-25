@@ -19,6 +19,7 @@ return [
     'shortlist'     => 'Shortlist',
     'notifications' => 'Notifications',
     'settings'      => 'Settings',
+    'logout'        => 'Logout',
     'pricing'       => 'Pricing',
     'blog'          => 'Blog',
     'about'         => 'About',

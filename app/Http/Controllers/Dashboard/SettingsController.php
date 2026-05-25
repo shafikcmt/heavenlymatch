@@ -70,7 +70,7 @@ class SettingsController extends Controller
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            return back()->withErrors(['current_password' => __('settings.error_current_password')]);
         }
 
         $user->update(['password' => Hash::make($validated['password'])]);
@@ -88,12 +88,12 @@ class SettingsController extends Controller
         ]);
 
         if (!Hash::check($request->password, $user->password)) {
-            return back()->withErrors(['password' => 'Incorrect password.']);
+            return back()->withErrors(['password' => __('settings.error_delete_password')]);
         }
 
         Auth::logout();
 
-        $user->update(['account_status' => 'deleted']);
+        $user->forceFill(['account_status' => 'deleted'])->save();
         $user->delete();
 
         $request->session()->invalidate();

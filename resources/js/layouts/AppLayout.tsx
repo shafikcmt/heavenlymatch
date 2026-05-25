@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { useTranslation } from '@/lib/i18n'
 
 const NAV_ITEMS = [
   { label: 'Dashboard',    href: '/dashboard',    icon: Home },
@@ -37,6 +38,7 @@ function MembershipBadge({ tier }: { tier: string | null }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { auth, flash, completion, unread_notifications } = usePage<PageProps>().props
+  const { t } = useTranslation()
   const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentPath = (typeof window !== 'undefined') ? window.location.pathname : ''
@@ -126,20 +128,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="mt-1 grid grid-cols-2 gap-1">
             <Link
-              href="/settings"
+              href={route('settings.index')}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
             >
               <Settings size={14} />
-              Settings
+              {t('common', 'settings')}
             </Link>
             <Link
-              href="/logout"
+              href={route('logout')}
               method="post"
               as="button"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-red-500 hover:bg-red-50"
             >
               <LogOut size={14} />
-              Logout
+              {t('common', 'logout')}
             </Link>
           </div>
           {/* Profile completion mini-bar */}
