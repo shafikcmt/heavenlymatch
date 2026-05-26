@@ -64,11 +64,11 @@ const MARITAL_STATUSES = ['never_married', 'divorced', 'widowed']
 
 function AvatarPlaceholder({ gender }: { gender: 'male' | 'female' }) {
   return (
-    <div className={`h-full w-full flex items-center justify-center ${gender === 'female' ? 'bg-rose-50' : 'bg-blue-50'}`}>
+    <div className={`h-full w-full flex items-center justify-center ${gender === 'female' ? 'bg-gradient-to-br from-rose-50 to-pink-100' : 'bg-gradient-to-br from-blue-50 to-sky-100'}`}>
       <img
         src={`/images/marketing/profile-placeholder-${gender}.svg`}
         alt=""
-        className="h-20 w-20 object-contain opacity-60"
+        className="h-14 w-14 object-contain opacity-50"
         aria-hidden="true"
         onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
@@ -315,79 +315,73 @@ export default function Profiles({ results, filters }: Props) {
             {/* Results grid */}
             {results.data.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                   {results.data.map(profile => (
                     <div
                       key={profile.id}
-                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                      className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
                     >
                       {/* Avatar */}
-                      <div className="relative h-36">
+                      <div className="relative h-32 overflow-hidden">
                         <AvatarPlaceholder gender={profile.gender} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                         {profile.is_verified && (
-                          <div className="absolute top-2 right-2">
-                            <CheckCircle2 size={18} className="text-emerald-400 drop-shadow" />
+                          <div className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm rounded-full p-0.5">
+                            <CheckCircle2 size={14} className="text-emerald-500" />
                           </div>
                         )}
-                        <div className="absolute bottom-2 left-3">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${profile.gender === 'female' ? 'bg-rose-500/90 text-white' : 'bg-blue-500/90 text-white'}`}>
+                        <div className="absolute bottom-2 left-3 flex items-center gap-1.5">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${profile.gender === 'female' ? 'bg-rose-500/90 text-white' : 'bg-blue-500/90 text-white'}`}>
                             {profile.gender === 'female' ? t('common', 'female') : t('common', 'male')}
                           </span>
+                          {profile.sect && (
+                            <span className="text-[10px] font-medium bg-white/80 text-slate-700 px-2 py-0.5 rounded-full">{profile.sect}</span>
+                          )}
                         </div>
                       </div>
 
                       {/* Info */}
-                      <div className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <p className="font-semibold text-slate-900 text-sm">
-                              {profile.age ? t('marketing', 'public_age_years', { n: profile.age }) : '—'}
-                              {profile.height_cm ? `, ${Math.floor(profile.height_cm / 30.48)}′${Math.round((profile.height_cm / 30.48 % 1) * 12)}″` : ''}
+                      <div className="p-3.5">
+                        {/* Age + height */}
+                        <div className="mb-1.5">
+                          <p className="font-semibold text-slate-900 text-sm leading-tight">
+                            {profile.age ? t('marketing', 'public_age_years', { n: profile.age }) : '—'}
+                            {profile.height_cm ? `, ${Math.floor(profile.height_cm / 30.48)}′${Math.round((profile.height_cm / 30.48 % 1) * 12)}″` : ''}
+                          </p>
+                          {profile.marital_status && (
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              {t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}
                             </p>
-                            {profile.marital_status && (
-                              <p className="text-xs text-slate-500 capitalize">
-                                {t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}
-                              </p>
-                            )}
-                          </div>
-                          {profile.sect && (
-                            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">{profile.sect}</span>
                           )}
                         </div>
 
-                        <div className="space-y-1 mb-3">
+                        {/* Details */}
+                        <div className="space-y-0.5 mb-3">
                           {(profile.district || profile.division) && (
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                              <MapPin size={11} className="text-slate-400 flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                              <MapPin size={10} className="text-slate-300 flex-shrink-0" />
                               <span className="truncate">{[profile.district, profile.division].filter(Boolean).join(', ')}</span>
                             </div>
                           )}
                           {profile.highest_qualification && (
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                              <GraduationCap size={11} className="text-slate-400 flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                              <GraduationCap size={10} className="text-slate-300 flex-shrink-0" />
                               <span className="truncate">{profile.highest_qualification}</span>
                             </div>
                           )}
                           {profile.occupation && (
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                              <Briefcase size={11} className="text-slate-400 flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                              <Briefcase size={10} className="text-slate-300 flex-shrink-0" />
                               <span className="truncate">{profile.occupation}</span>
                             </div>
                           )}
                         </div>
 
-                        {profile.about_me && (
-                          <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed italic">
-                            &ldquo;{profile.about_me}&rdquo;
-                          </p>
-                        )}
-
                         <Link
                           href={route('profiles.show', { registrationId: profile.id })}
-                          className="block text-center text-xs font-semibold text-primary-600 border border-primary-200 rounded-xl py-2 hover:bg-primary-50 transition-colors"
+                          className="block text-center text-xs font-semibold text-primary-600 border border-primary-200 rounded-xl py-2 hover:bg-primary-50 hover:border-primary-400 transition-colors"
                         >
-                          {t('marketing', 'public_view_biodata')}
+                          {t('marketing', 'public_view_biodata')} →
                         </Link>
                       </div>
                     </div>

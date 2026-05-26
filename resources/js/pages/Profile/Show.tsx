@@ -115,17 +115,21 @@ interface Props {
 }
 
 const SECTION = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="rounded-2xl border border-slate-200 bg-white p-6">
-    <h3 className="text-base font-semibold text-slate-900 mb-4 border-b border-slate-100 pb-2">{title}</h3>
-    {children}
+  <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+    <div className="px-5 py-3 bg-slate-50/70 border-b border-slate-100">
+      <h3 className="text-sm font-semibold text-slate-800 tracking-tight">{title}</h3>
+    </div>
+    <div className="px-5 py-4">
+      {children}
+    </div>
   </div>
 )
 
 const ROW = ({ label, value }: { label: string; value?: string | number | null }) =>
   value != null ? (
-    <div className="flex justify-between py-1.5 text-sm border-b border-slate-50 last:border-0">
-      <span className="text-slate-500 w-40 flex-shrink-0">{label}</span>
-      <span className="text-slate-900 font-medium text-right">{value}</span>
+    <div className="flex items-baseline gap-3 py-2 border-b border-slate-50 last:border-0">
+      <span className="text-[11px] text-slate-400 font-medium w-32 flex-shrink-0 uppercase tracking-wide">{label}</span>
+      <span className="text-sm text-slate-800 font-medium flex-1">{value}</span>
     </div>
   ) : null
 
@@ -228,8 +232,8 @@ export default function ProfileShow({
           <div className="space-y-4">
 
             {/* Photo card */}
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-              <div className="aspect-[3/4] bg-slate-100 relative flex items-center justify-center">
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+              <div className="h-56 bg-slate-100 relative flex items-center justify-center">
                 {activePhoto ? (
                   activePhoto.blurred ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-200 px-4">
@@ -264,7 +268,9 @@ export default function ProfileShow({
                     <img src={activePhoto.url} alt={profile.name} className="w-full h-full object-cover" />
                   )
                 ) : (
-                  <span className="text-8xl">{profile.gender === 'male' ? '👨' : '👩'}</span>
+                  <div className={`h-full w-full flex items-center justify-center ${profile.gender === 'male' ? 'bg-gradient-to-br from-blue-50 to-sky-100' : 'bg-gradient-to-br from-rose-50 to-pink-100'}`}>
+                    <span className="text-6xl opacity-70">{profile.gender === 'male' ? '👨' : '👩'}</span>
+                  </div>
                 )}
 
                 {/* Gallery nav */}
@@ -309,57 +315,59 @@ export default function ProfileShow({
                 )}
               </div>
 
-              <div className="p-4 text-center">
-                <h1 className="text-xl font-bold text-slate-900">{profile.name}</h1>
-                {biodata?.profile_headline && (
-                  <p className="text-sm text-slate-500 mt-1 italic">"{biodata.profile_headline}"</p>
-                )}
-                <p className="text-sm text-slate-400 mt-1">
-                  {[age ? `${age} yrs` : null, biodata?.district, biodata?.residing_country]
-                    .filter(Boolean).join(' · ')}
-                </p>
+              <div className="p-4">
+                <div className="text-center mb-3">
+                  <h1 className="text-lg font-bold text-slate-900 leading-tight">{profile.name}</h1>
+                  {biodata?.profile_headline && (
+                    <p className="text-xs text-slate-500 mt-1 italic leading-snug">&ldquo;{biodata.profile_headline}&rdquo;</p>
+                  )}
+                  <p className="text-xs text-slate-400 mt-1.5">
+                    {[age ? `${age} ${t('common', 'yrs')}` : null, biodata?.district, biodata?.residing_country]
+                      .filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+
+                {/* Trust badges */}
+                <div className="flex flex-wrap justify-center gap-1 mb-3">
+                  {profileTrust.isEmailVerified && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 border border-emerald-200 font-medium">
+                      <Mail size={9} />
+                      {t('dashboard', 'trust_email_verified')}
+                    </span>
+                  )}
+                  {profileTrust.isIdentityVerified && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] px-2 py-0.5 border border-blue-200 font-medium">
+                      <ShieldCheck size={9} />
+                      {t('dashboard', 'trust_id_verified')}
+                    </span>
+                  )}
+                  {profileTrust.biodataApproved && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-50 text-violet-700 text-[10px] px-2 py-0.5 border border-violet-200 font-medium">
+                      <CheckCircle2 size={9} />
+                      {t('dashboard', 'trust_profile_approved')}
+                    </span>
+                  )}
+                  {profileTrust.isPremium && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] px-2 py-0.5 border border-amber-200 font-medium">
+                      <Star size={9} />
+                      {t('dashboard', 'trust_premium')}
+                    </span>
+                  )}
+                </div>
 
                 {biodata?.completeness_score != null && (
-                  <div className="mt-3">
+                  <div className="px-1">
                     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className={cn('h-full rounded-full transition-all', scoreColor(biodata.completeness_score).replace('text-', 'bg-'))}
                         style={{ width: `${biodata.completeness_score}%` }}
                       />
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-[10px] text-slate-400 mt-1 text-center">
                       {t('dashboard', 'profile_completion_pct', { percent: biodata.completeness_score })}
                     </p>
                   </div>
                 )}
-
-                {/* Trust badges */}
-                <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-                  {profileTrust.isEmailVerified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 border border-emerald-200 font-medium">
-                      <Mail size={10} />
-                      {t('dashboard', 'trust_email_verified')}
-                    </span>
-                  )}
-                  {profileTrust.isIdentityVerified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 text-xs px-2 py-0.5 border border-blue-200 font-medium">
-                      <ShieldCheck size={10} />
-                      {t('dashboard', 'trust_id_verified')}
-                    </span>
-                  )}
-                  {profileTrust.biodataApproved && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 text-violet-700 text-xs px-2 py-0.5 border border-violet-200 font-medium">
-                      <CheckCircle2 size={10} />
-                      {t('dashboard', 'trust_profile_approved')}
-                    </span>
-                  )}
-                  {profileTrust.isPremium && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 text-xs px-2 py-0.5 border border-amber-200 font-medium">
-                      <Star size={10} />
-                      {t('dashboard', 'trust_premium')}
-                    </span>
-                  )}
-                </div>
               </div>
             </div>
 

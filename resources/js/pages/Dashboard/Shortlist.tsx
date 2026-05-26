@@ -55,7 +55,7 @@ export default function Shortlist({ shortlisted }: Props) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {shortlisted.data.map(profile => {
                 const age     = profile.birth_date ? calcAge(profile.birth_date) : null
                 const blurred = profile.photo_visibility === 'blurred'
@@ -63,16 +63,16 @@ export default function Shortlist({ shortlisted }: Props) {
                 return (
                   <div
                     key={profile.registration_id}
-                    className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                    className="group rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
                   >
                     <Link href={route('profile.show', { registrationId: profile.registration_id })}>
                       {/* Photo area */}
-                      <div className="aspect-[3/4] bg-slate-100 relative flex items-center justify-center overflow-hidden">
+                      <div className="h-40 bg-slate-100 relative flex items-center justify-center overflow-hidden">
                         {profile.has_photo && profile.photo_url && !blurred ? (
                           <img
                             src={profile.photo_url}
                             alt={profile.name}
-                            className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                           />
                         ) : blurred ? (
@@ -83,9 +83,9 @@ export default function Shortlist({ shortlisted }: Props) {
                             </p>
                           </div>
                         ) : (
-                          <span className="text-6xl">
-                            {profile.gender === 'male' ? '👨' : '👩'}
-                          </span>
+                          <div className={`h-full w-full flex items-center justify-center ${profile.gender === 'male' ? 'bg-gradient-to-br from-blue-50 to-sky-100' : 'bg-gradient-to-br from-rose-50 to-pink-100'}`}>
+                            <span className="text-5xl opacity-70">{profile.gender === 'male' ? '👨' : '👩'}</span>
+                          </div>
                         )}
 
                         {profile.platform_mode === 'islamic' && (

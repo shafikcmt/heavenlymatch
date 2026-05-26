@@ -65,8 +65,8 @@ function cmToFeet(cm: number | null) {
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null
   return (
-    <div className="flex gap-3 py-2.5 border-b border-slate-100 last:border-0">
-      <span className="text-xs text-slate-500 w-36 flex-shrink-0 pt-0.5">{label}</span>
+    <div className="flex items-baseline gap-3 py-2 border-b border-slate-50 last:border-0">
+      <span className="text-[11px] text-slate-400 font-medium w-32 flex-shrink-0 uppercase tracking-wide">{label}</span>
       <span className="text-sm text-slate-800 font-medium flex-1">{value}</span>
     </div>
   )
@@ -74,9 +74,13 @@ function Row({ label, value }: { label: string; value: string | null | undefined
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4">
-      <h2 className="font-semibold text-slate-900 text-sm mb-3 pb-2 border-b border-slate-100">{title}</h2>
-      {children}
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-4 shadow-sm">
+      <div className="px-5 py-3 bg-slate-50/70 border-b border-slate-100">
+        <h2 className="text-sm font-semibold text-slate-800 tracking-tight">{title}</h2>
+      </div>
+      <div className="px-5 py-4">
+        {children}
+      </div>
     </div>
   )
 }
@@ -115,68 +119,73 @@ export default function ProfileShow({ profile }: Props) {
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* ── Profile hero card ── */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 flex flex-col sm:flex-row gap-5 items-start">
-          {/* Avatar */}
-          <div className={`h-24 w-24 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden ${profile.gender === 'female' ? 'bg-rose-50' : 'bg-blue-50'}`}>
-            <img
-              src={`/images/marketing/profile-placeholder-${profile.gender}.svg`}
-              alt=""
-              className="h-20 w-20 object-contain opacity-70"
-              aria-hidden="true"
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${profile.gender === 'female' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}`}>
-                {profile.gender === 'female' ? t('common', 'female') : t('common', 'male')}
-              </span>
-              {profile.is_verified && (
-                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-                  <CheckCircle2 size={12} /> {t('common', 'verified')}
-                </span>
-              )}
-              {profile.platform_mode === 'islamic' && (
-                <span className="text-xs font-semibold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
-                  {t('marketing', 'public_islamic_mode')}
-                </span>
-              )}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
+          <div className="flex flex-col sm:flex-row gap-0">
+            {/* Avatar strip */}
+            <div className={`sm:w-36 h-32 sm:h-auto flex-shrink-0 flex items-center justify-center ${profile.gender === 'female' ? 'bg-gradient-to-br from-rose-50 to-pink-100' : 'bg-gradient-to-br from-blue-50 to-sky-100'}`}>
+              <img
+                src={`/images/marketing/profile-placeholder-${profile.gender}.svg`}
+                alt=""
+                className="h-20 w-20 object-contain opacity-60"
+                aria-hidden="true"
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
             </div>
 
-            {profile.profile_headline && (
-              <p className="text-slate-700 font-medium text-sm mb-2 italic">&ldquo;{profile.profile_headline}&rdquo;</p>
-            )}
+            {/* Info */}
+            <div className="flex-1 min-w-0 p-5">
+              {/* Badges row */}
+              <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${profile.gender === 'female' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}`}>
+                  {profile.gender === 'female' ? t('common', 'female') : t('common', 'male')}
+                </span>
+                {profile.is_verified && (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <CheckCircle2 size={10} /> {t('common', 'verified')}
+                  </span>
+                )}
+                {profile.platform_mode === 'islamic' && (
+                  <span className="text-[10px] font-semibold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">
+                    {t('marketing', 'public_islamic_mode')}
+                  </span>
+                )}
+              </div>
 
-            <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-              {profile.age && <span>{t('marketing', 'public_age_years', { n: profile.age })}</span>}
-              {heightFt && <span>{heightFt}</span>}
-              {profile.marital_status && (
-                <span className="capitalize">
-                  {t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}
-                </span>
+              {profile.profile_headline && (
+                <p className="text-slate-600 text-sm mb-2 italic leading-snug">&ldquo;{profile.profile_headline}&rdquo;</p>
               )}
-              {locationParts.length > 0 && (
-                <span className="flex items-center gap-1">
-                  <MapPin size={11} /> {locationParts.join(', ')}
-                </span>
-              )}
-              {profile.occupation && (
-                <span className="flex items-center gap-1">
-                  <Briefcase size={11} /> {profile.occupation}
-                </span>
-              )}
-              {profile.highest_qualification && (
-                <span className="flex items-center gap-1">
-                  <GraduationCap size={11} /> {profile.highest_qualification}
-                </span>
+
+              {/* Key stats */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mb-2">
+                {profile.age && <span className="font-medium text-slate-700">{t('marketing', 'public_age_years', { n: profile.age })}</span>}
+                {heightFt && <span>{heightFt}</span>}
+                {profile.marital_status && (
+                  <span>{t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}</span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
+                {locationParts.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <MapPin size={10} /> {locationParts.join(', ')}
+                  </span>
+                )}
+                {profile.occupation && (
+                  <span className="flex items-center gap-1">
+                    <Briefcase size={10} /> {profile.occupation}
+                  </span>
+                )}
+                {profile.highest_qualification && (
+                  <span className="flex items-center gap-1">
+                    <GraduationCap size={10} /> {profile.highest_qualification}
+                  </span>
+                )}
+              </div>
+
+              {profile.about_me && (
+                <p className="mt-2.5 text-sm text-slate-600 leading-relaxed line-clamp-2 border-t border-slate-100 pt-2.5">{profile.about_me}</p>
               )}
             </div>
-
-            {profile.about_me && (
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed line-clamp-3">{profile.about_me}</p>
-            )}
           </div>
         </div>
 

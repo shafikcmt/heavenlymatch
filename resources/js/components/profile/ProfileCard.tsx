@@ -134,13 +134,13 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
 
       <article
         className={cn(
-          'group relative flex flex-col rounded-2xl border border-slate-200 bg-white overflow-hidden transition-shadow hover:shadow-lg',
+          'group relative flex flex-col rounded-2xl border border-slate-200 bg-white overflow-hidden transition-all duration-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5',
           profile.is_boosted && 'ring-2 ring-orange-400',
           className,
         )}
       >
         {/* Photo area */}
-        <Link href={route('profile.show', { registrationId: profile.registration_id })} className="block relative aspect-[3/4] bg-slate-100 overflow-hidden">
+        <Link href={route('profile.show', { registrationId: profile.registration_id })} className="block relative h-44 bg-slate-100 overflow-hidden">
           {profile.has_photo && profile.photo_url ? (
             <>
               <img
@@ -162,11 +162,11 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
               )}
             </>
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-slate-100">
+            <div className={`h-full w-full flex items-center justify-center ${profile.gender === 'female' ? 'bg-gradient-to-br from-rose-50 to-pink-100' : 'bg-gradient-to-br from-blue-50 to-sky-100'}`}>
               <img
                 src={`/images/avatar-${profile.gender}.svg`}
                 alt={profile.name}
-                className="h-28 w-28 opacity-50"
+                className="h-16 w-16 opacity-40"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
             </div>
@@ -206,9 +206,9 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
         </Link>
 
         {/* Card body */}
-        <div className="flex flex-col flex-1 p-4 gap-2">
+        <div className="flex flex-col flex-1 p-3.5 gap-1.5">
           {/* Name + verified */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 min-w-0">
             <Link
               href={route('profile.show', { registrationId: profile.registration_id })}
               className="font-semibold text-slate-900 hover:text-primary-600 transition-colors text-sm truncate"
@@ -216,64 +216,65 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
               {profile.name}
             </Link>
             {profile.is_verified && (
-              <CheckCircle2 size={14} className="text-blue-500 shrink-0" />
+              <CheckCircle2 size={13} className="text-blue-500 shrink-0" />
             )}
             {profile.is_premium && (
-              <Star size={13} className="text-amber-500 fill-amber-400 shrink-0" />
+              <Star size={12} className="text-amber-500 fill-amber-400 shrink-0" />
             )}
           </div>
 
-          {/* Age, marital status */}
-          <p className="text-xs text-slate-500">
+          {/* Age · marital status */}
+          <p className="text-xs text-slate-500 leading-tight">
             {profile.age ? `${profile.age} ${t('common', 'yrs')}` : '—'}
             {profile.marital_status ? ` · ${t('biodata', profile.marital_status)}` : ''}
           </p>
 
           {/* Location */}
           {(profile.district || profile.division || profile.residing_country) && (
-            <p className="flex items-center gap-1 text-xs text-slate-500">
-              <MapPin size={11} className="shrink-0" />
-              {[profile.district, profile.division, profile.residing_country !== 'Bangladesh' ? profile.residing_country : null]
-                .filter(Boolean).join(', ')}
+            <p className="flex items-center gap-1 text-xs text-slate-400">
+              <MapPin size={10} className="shrink-0 text-slate-300" />
+              <span className="truncate">
+                {[profile.district, profile.division, profile.residing_country !== 'Bangladesh' ? profile.residing_country : null]
+                  .filter(Boolean).join(', ')}
+              </span>
             </p>
           )}
 
           {/* Chips */}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 mt-0.5">
             {profile.highest_qualification && (
-              <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              <span className="flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
                 <GraduationCap size={9} />
                 {t('biodata', `qual_${profile.highest_qualification}`)}
               </span>
             )}
             {profile.occupation && (
-              <span className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              <span className="flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
                 <Briefcase size={9} />
-                {profile.occupation}
+                <span className="truncate max-w-[80px]">{profile.occupation}</span>
               </span>
             )}
             {profile.height_cm && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
                 {cmToFeetInches(profile.height_cm)}
               </span>
             )}
           </div>
 
           {/* Action buttons */}
-          <div className="mt-auto pt-2 flex gap-2">
+          <div className="mt-auto pt-2.5 flex gap-2 border-t border-slate-100">
             <button
               onClick={toggleShortlist}
               disabled={shortlistBusy}
               aria-label={shortlisted ? t('dashboard', 'shortlist_remove') : t('dashboard', 'shortlist_add')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-medium transition-colors disabled:opacity-60',
+                'flex items-center justify-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-60',
                 shortlisted
                   ? 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100'
-                  : 'border-slate-200 text-slate-600 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600',
+                  : 'border-slate-200 text-slate-500 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600',
               )}
             >
-              <Star size={13} className={shortlisted ? 'fill-amber-500' : ''} />
-              {t('dashboard', 'save_profile')}
+              <Star size={12} className={shortlisted ? 'fill-amber-500' : ''} />
             </button>
 
             <button
@@ -281,15 +282,22 @@ export function ProfileCard({ profile, isShortlisted = false, interestSent = fal
               disabled={interested || interestBusy}
               aria-label={t('dashboard', 'interest_btn')}
               className={cn(
-                'flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors disabled:opacity-70',
+                'flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-colors disabled:opacity-70',
                 interested
                   ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                   : 'bg-primary-600 text-white hover:bg-primary-700',
               )}
             >
-              <Heart size={13} className={interested ? 'fill-emerald-500' : ''} />
+              <Heart size={12} className={interested ? 'fill-emerald-500' : ''} />
               {interested ? t('dashboard', 'interest_sent_label') : t('dashboard', 'interest_btn')}
             </button>
+
+            <Link
+              href={route('profile.show', { registrationId: profile.registration_id })}
+              className="flex items-center justify-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-50 transition-colors"
+            >
+              →
+            </Link>
           </div>
         </div>
       </article>
