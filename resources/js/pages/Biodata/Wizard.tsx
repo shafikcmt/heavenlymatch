@@ -8,7 +8,7 @@ import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
 import { CheckCircle, Save } from 'lucide-react'
-import { BD_DIVISIONS, BD_DISTRICTS } from '@/data/bangladesh'
+import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 
 interface BiodataData {
   // Step 1: General
@@ -219,12 +219,6 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
   const currentLabel = t('biodata', `step_labels.${step}`)
   const currentHelper = t('biodata', `step_helper.${step}`)
 
-  // ── Cascading location (BD) ───────────────────────────────────────────────
-  const divisionOptions = BD_DIVISIONS.map(d => ({ value: d, label: d }))
-  const districtOptions = (data.division && BD_DISTRICTS[data.division as string])
-    ? BD_DISTRICTS[data.division as string]!.map(d => ({ value: d, label: d }))
-    : []
-
   return (
     <AppLayout>
       <Head title={t('biodata', 'wizard_title')} />
@@ -348,17 +342,24 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
               <>
                 <Field name="residing_country" label={t('biodata', 'residing_country')} placeholder="Bangladesh" />
                 <Field name="residing_city" label={t('biodata', 'residing_city')} placeholder="Dhaka" />
-                <Sel name="division" label={t('biodata', 'division')} options={divisionOptions} />
-                <SearchableSelect
-                  label={t('biodata', 'district')}
-                  value={(data.district as string) ?? ''}
-                  onChange={v => setData('district', v)}
-                  options={districtOptions}
-                  placeholder={data.division ? '— Select district —' : '— Select division first —'}
-                  disabled={!data.division}
-                  error={errors.district as string | undefined}
+                <BangladeshAddressPicker
+                  value={{
+                    division: (data.division as string) ?? undefined,
+                    district: (data.district as string) ?? undefined,
+                    upazila:  (data.upazila  as string) ?? undefined,
+                  }}
+                  onChange={val => setData({
+                    ...data,
+                    division: val.division ?? '',
+                    district: val.district ?? '',
+                    upazila:  val.upazila  ?? '',
+                  })}
+                  errors={{
+                    division: errors.division as string | undefined,
+                    district: errors.district as string | undefined,
+                    upazila:  errors.upazila  as string | undefined,
+                  }}
                 />
-                <Field name="upazila" label={t('biodata', 'upazila')} placeholder="e.g. Mirpur" />
                 <Toggle name="is_nrb" label={t('biodata', 'is_nrb')} />
                 <Sel name="visa_status" label={t('biodata', 'visa_status')} options={[
                   { value: 'citizen',            label: t('biodata', 'visa_citizen') },
@@ -609,10 +610,18 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
                   { value: 'post_graduation', label: t('biodata', 'qual_post_graduation') },
                   { value: 'any',             label: t('biodata', 'no_preference') },
                 ]} />
-                <Sel name="partner_division" label={t('biodata', 'partner_division')} options={[
-                  { value: 'any', label: t('biodata', 'any_division') },
-                  ...BD_DIVISIONS.map(d => ({ value: d, label: d })),
-                ]} />
+                <BangladeshAddressPicker
+                  value={{
+                    division: (data.partner_division as string) ?? undefined,
+                    district: (data.partner_district as string) ?? undefined,
+                  }}
+                  onChange={val => setData({
+                    ...data,
+                    partner_division: val.division ?? '',
+                    partner_district: val.district ?? '',
+                  })}
+                  showUpazila={false}
+                />
                 <Sel name="partner_family_type" label={t('biodata', 'partner_family_type')} options={[
                   { value: 'joint',    label: t('biodata', 'family_joint') },
                   { value: 'nuclear',  label: t('biodata', 'family_nuclear') },

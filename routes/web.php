@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminLoginController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\VerificationController;
 
 // ── Public marketing pages ────────────────────────────────────────────────────
@@ -32,6 +33,10 @@ Route::get('/blog',         [PublicPageController::class, 'blog'])->name('blog.i
 Route::get('/blog/{slug}',  [PublicPageController::class, 'blogShow'])->name('blog.show');
 Route::get('/terms',        [PublicPageController::class, 'terms'])->name('terms');
 Route::get('/privacy',      [PublicPageController::class, 'privacy'])->name('privacy');
+
+// ── Public biodata search (accessible to guests) ─────────────────────────────
+Route::get('/profiles',                  [PublicProfileController::class, 'index'])->name('profiles.index');
+Route::get('/profiles/{registrationId}', [PublicProfileController::class, 'show'])->name('profiles.show');
 
 // ── SEO / crawlers ────────────────────────────────────────────────────────────
 Route::get('/robots.txt',   [PublicPageController::class, 'robots'])->name('robots');

@@ -9,6 +9,7 @@ import {
 import MarketingLayout from '@/layouts/MarketingLayout'
 import { useTranslation } from '@/lib/i18n'
 import { SeoHead } from '@/components/SeoHead'
+import { BangladeshAddressPicker, type AddressValue } from '@/components/forms/BangladeshAddressPicker'
 import type { PageProps } from '@/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -39,11 +40,6 @@ const STATS = [
   { key: 'home_stat_marriages', value: '3,200+' },
   { key: 'home_stat_daily',     value: '200+' },
   { key: 'home_stat_rating',    value: '94%' },
-] as const
-
-const DIVISIONS = [
-  'Dhaka', 'Chattogram', 'Rajshahi', 'Khulna',
-  'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh',
 ] as const
 
 const SECTS = ['Sunni', 'Hanafi', "Shafi'i", 'Maliki', 'Hanbali'] as const
@@ -130,7 +126,18 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
 
   // Hero search form
   const [lookingFor, setLookingFor] = useState<'bride' | 'groom'>('bride')
-  const [heroSearch, setHeroSearch] = useState({ age_min: '', age_max: '', division: '', sect: '' })
+  const [heroSearch, setHeroSearch] = useState({ age_min: '', age_max: '', division: '', district: '', upazila: '', sect: '' })
+  const heroAddress: AddressValue = {
+    division: heroSearch.division || undefined,
+    district: heroSearch.district || undefined,
+    upazila:  heroSearch.upazila  || undefined,
+  }
+  const handleHeroAddress = (val: AddressValue) => setHeroSearch(s => ({
+    ...s,
+    division: val.division ?? '',
+    district: val.district ?? '',
+    upazila:  val.upazila  ?? '',
+  }))
 
   // Quick registration form
   const [quickReg, setQuickReg] = useState({ name: '', mobile: '', profile_for: 'self' })
@@ -149,17 +156,28 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    // Validate age range: age_max must be >= age_min
+    const ageMin = heroSearch.age_min ? parseInt(heroSearch.age_min, 10) : null
+    const ageMax = heroSearch.age_max ? parseInt(heroSearch.age_max, 10) : null
+    if (ageMin !== null && ageMax !== null && ageMax < ageMin) {
+      setHeroSearch(s => ({ ...s, age_max: heroSearch.age_min }))
+      return
+    }
+
     const params = new URLSearchParams()
-    if (heroSearch.age_min) params.set('age_min', heroSearch.age_min)
-    if (heroSearch.age_max) params.set('age_max', heroSearch.age_max)
+    params.set('looking_for', lookingFor)
+    if (heroSearch.age_min)  params.set('age_min',  heroSearch.age_min)
+    if (heroSearch.age_max)  params.set('age_max',  heroSearch.age_max)
     if (heroSearch.division) params.set('division', heroSearch.division)
+    if (heroSearch.district) params.set('district', heroSearch.district)
+    if (heroSearch.upazila)  params.set('upazila',  heroSearch.upazila)
     if (heroSearch.sect) params.set('sect', heroSearch.sect)
     const qs = params.toString()
 
     if (isLoggedIn) {
       router.visit(route('search.index') + (qs ? `?${qs}` : ''))
     } else {
-      window.location.href = route('register')
+      router.visit(route('profiles.index') + (qs ? `?${qs}` : ''))
     }
   }
 
@@ -270,21 +288,20 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
                     onChange={v => setHeroSearch(s => ({ ...s, age_max: v }))}
                   >
                     <option value="">Any</option>
-                    {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
-                      <option key={age} value={age}>{age}</option>
-                    ))}
+                    {Array.from({ length: 43 }, (_, i) => i + 18)
+                      .filter(age => !heroSearch.age_min || age >= parseInt(heroSearch.age_min, 10))
+                      .map(age => (
+                        <option key={age} value={age}>{age}</option>
+                      ))}
                   </SelectField>
                 </div>
 
-                {/* Division */}
-                <SelectField
-                  label={t('marketing', 'hero_division')}
-                  value={heroSearch.division}
-                  onChange={v => setHeroSearch(s => ({ ...s, division: v }))}
-                >
-                  <option value="">{t('marketing', 'hero_division_any')}</option>
-                  {DIVISIONS.map(d => <option key={d} value={d}>{d}</option>)}
-                </SelectField>
+                {/* Division → District → Upazila (cascading) */}
+                <BangladeshAddressPicker
+                  value={heroAddress}
+                  onChange={handleHeroAddress}
+                  mode="filter"
+                />
 
                 {/* Sect */}
                 <SelectField
@@ -317,69 +334,81 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
       </section>
 
       {/* ── Quick Registration CTA ────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-r from-primary-700 via-primary-600 to-violet-600 py-12 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          {/* Left: Text */}
-          <div className="text-white">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+      <section className="bg-gradient-to-r from-primary-700 via-primary-600 to-violet-600 py-10 px-4">
+        <div className="w-full max-w-6xl mx-auto">
+          {/* Heading */}
+          <div className="text-center text-white mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
               {t('marketing', 'quick_reg_title')}
             </h2>
-            <p className="text-primary-100 text-sm leading-relaxed mb-4">
-              {t('marketing', 'quick_reg_subtitle')}
-            </p>
-            <p className="text-primary-200 text-xs font-medium">{t('marketing', 'quick_reg_note')}</p>
+            <p className="text-primary-100 text-sm">{t('marketing', 'quick_reg_subtitle')}</p>
           </div>
 
-          {/* Right: Quick form */}
-          <div className="bg-white rounded-2xl p-6 shadow-2xl">
-            <form onSubmit={handleQuickReg} className="space-y-3">
-              <SelectField
-                label={t('marketing', 'quick_reg_for_label')}
-                value={quickReg.profile_for}
-                onChange={v => setQuickReg(s => ({ ...s, profile_for: v }))}
-              >
-                <option value="self">{t('marketing', 'quick_reg_for_self')}</option>
-                <option value="son">{t('marketing', 'quick_reg_for_son')}</option>
-                <option value="daughter">{t('marketing', 'quick_reg_for_daughter')}</option>
-                <option value="brother">{t('marketing', 'quick_reg_for_brother')}</option>
-                <option value="sister">{t('marketing', 'quick_reg_for_sister')}</option>
-                <option value="relative">{t('marketing', 'quick_reg_for_relative')}</option>
-              </SelectField>
+          {/* Full-width form card — matches hero card width */}
+          <div className="bg-white rounded-2xl p-5 shadow-2xl">
+            <form onSubmit={handleQuickReg}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {/* Profile for */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                    {t('marketing', 'quick_reg_for_label')}
+                  </label>
+                  <select
+                    value={quickReg.profile_for}
+                    onChange={e => setQuickReg(s => ({ ...s, profile_for: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
+                  >
+                    <option value="self">{t('marketing', 'quick_reg_for_self')}</option>
+                    <option value="son">{t('marketing', 'quick_reg_for_son')}</option>
+                    <option value="daughter">{t('marketing', 'quick_reg_for_daughter')}</option>
+                    <option value="brother">{t('marketing', 'quick_reg_for_brother')}</option>
+                    <option value="sister">{t('marketing', 'quick_reg_for_sister')}</option>
+                    <option value="relative">{t('marketing', 'quick_reg_for_relative')}</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                  {t('marketing', 'quick_reg_name')}
-                </label>
-                <input
-                  type="text"
-                  value={quickReg.name}
-                  onChange={e => setQuickReg(s => ({ ...s, name: e.target.value }))}
-                  placeholder="Your full name"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
-                />
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                    {t('marketing', 'quick_reg_name')}
+                  </label>
+                  <input
+                    type="text"
+                    value={quickReg.name}
+                    onChange={e => setQuickReg(s => ({ ...s, name: e.target.value }))}
+                    placeholder="Your full name"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
+                  />
+                </div>
+
+                {/* Mobile */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                    {t('marketing', 'quick_reg_mobile')}
+                  </label>
+                  <input
+                    type="tel"
+                    value={quickReg.mobile}
+                    onChange={e => setQuickReg(s => ({ ...s, mobile: e.target.value }))}
+                    placeholder="+880 1XXX-XXXXXX"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
+                  />
+                </div>
+
+                {/* Register button aligned to input height */}
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    className="w-full h-[42px] rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 active:scale-[0.98] transition-all shadow-md"
+                  >
+                    {t('marketing', 'quick_reg_btn')}
+                  </button>
+                </div>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                  {t('marketing', 'quick_reg_mobile')}
-                </label>
-                <input
-                  type="tel"
-                  value={quickReg.mobile}
-                  onChange={e => setQuickReg(s => ({ ...s, mobile: e.target.value }))}
-                  placeholder="+880 1XXX-XXXXXX"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-200 transition-colors"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full h-11 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 active:scale-[0.98] transition-all shadow-md"
-              >
-                {t('marketing', 'quick_reg_btn')}
-              </button>
             </form>
           </div>
+
+          <p className="text-center text-primary-200 text-xs mt-3">{t('marketing', 'quick_reg_note')}</p>
         </div>
       </section>
 
@@ -453,7 +482,7 @@ export default function Home({ heroImageUrl, successImageUrl, featuredProfiles =
                         <p className="text-xs text-slate-400 mt-0.5 truncate">{profile.occupation}</p>
                       )}
                       <Link
-                        href={isLoggedIn ? route('profile.show', { registrationId: profile.id }) : route('register')}
+                        href={isLoggedIn ? route('profile.show', { registrationId: profile.id }) : route('profiles.show', { registrationId: profile.id })}
                         className="mt-3 block text-center text-xs font-semibold text-primary-600 hover:text-primary-700 border border-primary-200 rounded-lg py-1.5 hover:bg-primary-50 transition-colors"
                       >
                         {t('marketing', 'view_profile_btn')}

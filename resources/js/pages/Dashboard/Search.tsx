@@ -7,6 +7,7 @@ import { type PaginatedResponse, type ProfileCard as ProfileCardType } from '@/t
 import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from '@/lib/i18n'
+import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 
 interface Filters {
   age_min?: string; age_max?: string
@@ -272,18 +273,18 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   ]}
                 />
 
-                <FilterInput
-                  label={t('dashboard', 'filter_division')}
-                  value={data.division ?? ''}
-                  onChange={v => setData('division', v)}
-                  placeholder="e.g. Dhaka"
-                />
-
-                <FilterInput
-                  label={t('dashboard', 'filter_district')}
-                  value={data.district ?? ''}
-                  onChange={v => setData('district', v)}
-                  placeholder="e.g. Mirpur"
+                <BangladeshAddressPicker
+                  value={{
+                    division: data.division ?? undefined,
+                    district: data.district ?? undefined,
+                  }}
+                  onChange={val => setData(prev => ({
+                    ...prev,
+                    division: val.division ?? '',
+                    district: val.district ?? '',
+                  }))}
+                  mode="filter"
+                  showUpazila={false}
                 />
 
                 <FilterSelect
