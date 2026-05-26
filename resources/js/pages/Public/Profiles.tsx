@@ -62,7 +62,7 @@ interface Props {
 const SECTS = ['Sunni', 'Hanafi', "Shafi'i", 'Maliki', 'Hanbali']
 const MARITAL_STATUSES = ['never_married', 'divorced', 'widowed']
 
-function AvatarPlaceholder({ gender, num }: { gender: 'male' | 'female'; num: number }) {
+function AvatarPlaceholder({ gender }: { gender: 'male' | 'female' }) {
   return (
     <div className={`h-full w-full flex items-center justify-center ${gender === 'female' ? 'bg-rose-50' : 'bg-blue-50'}`}>
       <img
@@ -83,14 +83,14 @@ export default function Profiles({ results, filters }: Props) {
   const [showFilters, setShowFilters] = useState(false)
 
   const [localFilters, setLocalFilters] = useState<Filters>({
-    looking_for: filters.looking_for ?? 'bride',
-    age_min:     filters.age_min ?? '',
-    age_max:     filters.age_max ?? '',
-    division:    filters.division ?? '',
-    district:    filters.district ?? '',
-    upazila:     filters.upazila ?? '',
+    looking_for:    filters.looking_for    ?? 'bride',
+    age_min:        filters.age_min        ?? '',
+    age_max:        filters.age_max        ?? '',
+    division:       filters.division       ?? '',
+    district:       filters.district       ?? '',
+    upazila:        filters.upazila        ?? '',
     marital_status: filters.marital_status ?? '',
-    sect:        filters.sect ?? '',
+    sect:           filters.sect           ?? '',
   })
 
   const address: AddressValue = {
@@ -155,14 +155,20 @@ export default function Profiles({ results, filters }: Props) {
 
       {/* Age */}
       <div>
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Age</label>
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+          {t('common', 'age')}
+        </label>
         <div className="grid grid-cols-2 gap-2">
           <select
             value={localFilters.age_min}
-            onChange={e => setLocalFilters(s => ({ ...s, age_min: e.target.value, age_max: s.age_max && parseInt(s.age_max) < parseInt(e.target.value || '0') ? e.target.value : s.age_max }))}
+            onChange={e => setLocalFilters(s => ({
+              ...s,
+              age_min: e.target.value,
+              age_max: s.age_max && parseInt(s.age_max) < parseInt(e.target.value || '0') ? e.target.value : s.age_max,
+            }))}
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
           >
-            <option value="">From</option>
+            <option value="">{t('marketing', 'hero_age_from')}</option>
             {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
               <option key={age} value={age}>{age}</option>
             ))}
@@ -172,7 +178,7 @@ export default function Profiles({ results, filters }: Props) {
             onChange={e => setLocalFilters(s => ({ ...s, age_max: e.target.value }))}
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
           >
-            <option value="">To</option>
+            <option value="">{t('marketing', 'hero_age_to')}</option>
             {Array.from({ length: 43 }, (_, i) => i + 18)
               .filter(age => !ageMinNum || age >= ageMinNum)
               .map(age => (
@@ -202,15 +208,17 @@ export default function Profiles({ results, filters }: Props) {
 
       {/* Marital status */}
       <div>
-        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Marital Status</label>
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+          {t('biodata', 'marital_status')}
+        </label>
         <select
           value={localFilters.marital_status}
           onChange={e => setLocalFilters(s => ({ ...s, marital_status: e.target.value }))}
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
         >
-          <option value="">Any</option>
+          <option value="">{t('common', 'any')}</option>
           {MARITAL_STATUSES.map(s => (
-            <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+            <option key={s} value={s}>{t('biodata', s) || s.replace('_', ' ')}</option>
           ))}
         </select>
       </div>
@@ -219,7 +227,7 @@ export default function Profiles({ results, filters }: Props) {
         type="submit"
         className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors"
       >
-        <Search size={15} /> Search
+        <Search size={15} /> {t('common', 'search_action')}
       </button>
 
       <button
@@ -227,7 +235,7 @@ export default function Profiles({ results, filters }: Props) {
         onClick={clearFilters}
         className="w-full flex items-center justify-center gap-1.5 h-9 rounded-xl border border-slate-200 text-slate-500 text-xs hover:bg-slate-50 transition-colors"
       >
-        <X size={13} /> Clear filters
+        <X size={13} /> {t('common', 'clear')}
       </button>
     </form>
   )
@@ -239,9 +247,11 @@ export default function Profiles({ results, filters }: Props) {
       {/* ── Header ── */}
       <div className="bg-slate-900 text-white py-10 px-4">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Browse Biodata Profiles</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">{t('marketing', 'public_profiles_heading')}</h1>
           <p className="text-slate-400 text-sm">
-            {results.total > 0 ? `${results.total} approved profiles available` : 'No profiles found for your search'}
+            {results.total > 0
+              ? t('marketing', 'public_profiles_count', { n: results.total })
+              : t('common', 'no_results')}
           </p>
         </div>
       </div>
@@ -252,7 +262,7 @@ export default function Profiles({ results, filters }: Props) {
           {/* ── Sidebar filters (desktop) ── */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sticky top-20">
-              <h2 className="font-semibold text-slate-900 text-sm mb-4">Filters</h2>
+              <h2 className="font-semibold text-slate-900 text-sm mb-4">{t('common', 'filter')}</h2>
               <FilterForm />
             </div>
           </aside>
@@ -262,13 +272,13 @@ export default function Profiles({ results, filters }: Props) {
 
             {/* Mobile filter toggle */}
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <p className="text-sm text-slate-500">{results.total} profiles</p>
+              <p className="text-sm text-slate-500">{results.total} {t('common', 'search')}</p>
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
                 <SlidersHorizontal size={15} />
-                Filters
+                {t('common', 'filter')}
               </button>
             </div>
 
@@ -283,21 +293,21 @@ export default function Profiles({ results, filters }: Props) {
             <div className="mb-6 flex items-center gap-3 rounded-2xl bg-primary-50 border border-primary-200 px-5 py-4">
               <LogIn size={18} className="text-primary-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-primary-900">Login to view contact details & send interest</p>
-                <p className="text-xs text-primary-700 mt-0.5">Register free to connect with profiles</p>
+                <p className="text-sm font-semibold text-primary-900">{t('marketing', 'public_login_cta_title')}</p>
+                <p className="text-xs text-primary-700 mt-0.5">{t('marketing', 'public_login_cta_sub')}</p>
               </div>
               <div className="flex gap-2 flex-shrink-0">
                 <Link
                   href={route('login')}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 border border-primary-300 rounded-lg px-3 py-1.5 hover:bg-primary-100 transition-colors"
                 >
-                  Login
+                  {t('marketing', 'nav_sign_in')}
                 </Link>
                 <Link
                   href={route('register')}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-primary-600 rounded-lg px-3 py-1.5 hover:bg-primary-700 transition-colors"
                 >
-                  Register Free
+                  {t('marketing', 'nav_join_free')}
                 </Link>
               </div>
             </div>
@@ -313,7 +323,7 @@ export default function Profiles({ results, filters }: Props) {
                     >
                       {/* Avatar */}
                       <div className="relative h-36">
-                        <AvatarPlaceholder gender={profile.gender} num={profile.avatar_num} />
+                        <AvatarPlaceholder gender={profile.gender} />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
                         {profile.is_verified && (
                           <div className="absolute top-2 right-2">
@@ -322,7 +332,7 @@ export default function Profiles({ results, filters }: Props) {
                         )}
                         <div className="absolute bottom-2 left-3">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${profile.gender === 'female' ? 'bg-rose-500/90 text-white' : 'bg-blue-500/90 text-white'}`}>
-                            {profile.gender === 'female' ? 'Female' : 'Male'}
+                            {profile.gender === 'female' ? t('common', 'female') : t('common', 'male')}
                           </span>
                         </div>
                       </div>
@@ -332,11 +342,13 @@ export default function Profiles({ results, filters }: Props) {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <p className="font-semibold text-slate-900 text-sm">
-                              {profile.age ? `${profile.age} yrs` : '—'}
+                              {profile.age ? t('marketing', 'public_age_years', { n: profile.age }) : '—'}
                               {profile.height_cm ? `, ${Math.floor(profile.height_cm / 30.48)}′${Math.round((profile.height_cm / 30.48 % 1) * 12)}″` : ''}
                             </p>
                             {profile.marital_status && (
-                              <p className="text-xs text-slate-500 capitalize">{profile.marital_status.replace('_', ' ')}</p>
+                              <p className="text-xs text-slate-500 capitalize">
+                                {t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}
+                              </p>
                             )}
                           </div>
                           {profile.sect && (
@@ -375,7 +387,7 @@ export default function Profiles({ results, filters }: Props) {
                           href={route('profiles.show', { registrationId: profile.id })}
                           className="block text-center text-xs font-semibold text-primary-600 border border-primary-200 rounded-xl py-2 hover:bg-primary-50 transition-colors"
                         >
-                          View Biodata
+                          {t('marketing', 'public_view_biodata')}
                         </Link>
                       </div>
                     </div>
@@ -390,18 +402,18 @@ export default function Profiles({ results, filters }: Props) {
                         href={results.links.find(l => l.label === '&laquo; Previous')?.url ?? '#'}
                         className="flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                       >
-                        <ChevronLeft size={15} /> Prev
+                        <ChevronLeft size={15} /> {t('common', 'previous')}
                       </Link>
                     )}
                     <span className="text-sm text-slate-500">
-                      Page {results.current_page} of {results.last_page}
+                      {t('common', 'page', { current: results.current_page, total: results.last_page })}
                     </span>
                     {results.current_page < results.last_page && (
                       <Link
                         href={results.links.find(l => l.label === 'Next &raquo;')?.url ?? '#'}
                         className="flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
                       >
-                        Next <ChevronRight size={15} />
+                        {t('common', 'next')} <ChevronRight size={15} />
                       </Link>
                     )}
                   </div>
@@ -410,13 +422,13 @@ export default function Profiles({ results, filters }: Props) {
             ) : (
               <div className="text-center py-20 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50">
                 <Search size={32} className="text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500 font-medium mb-1">No profiles found</p>
-                <p className="text-sm text-slate-400 mb-4">Try adjusting your filters</p>
+                <p className="text-slate-500 font-medium mb-1">{t('common', 'no_results')}</p>
+                <p className="text-sm text-slate-400 mb-4">{t('marketing', 'public_no_results_sub')}</p>
                 <button
                   onClick={clearFilters}
                   className="text-sm font-semibold text-primary-600 hover:underline"
                 >
-                  Clear all filters
+                  {t('common', 'clear')}
                 </button>
               </div>
             )}

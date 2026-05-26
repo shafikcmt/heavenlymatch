@@ -327,4 +327,26 @@ return [
     'home_trust_report_title' => 'Report & Block Support',
     'home_trust_report_desc'  => 'Report fake profiles or inappropriate content. Our team acts within 24 hours.',
 
+    // ── Public guest profile search & detail pages ────────────────────────────
+    'public_profiles_heading'    => 'Browse Biodata Profiles',
+    'public_profiles_count'      => ':n approved profiles available',
+    'public_no_results_sub'      => 'Try adjusting your filters',
+    'public_view_biodata'        => 'View Biodata',
+    'public_login_cta_title'     => 'Login to view contact details & send interest',
+    'public_login_cta_sub'       => 'Register free to connect with profiles',
+    'public_back_search'         => 'Back to search',
+    'public_contact_locked'      => 'Contact details are hidden',
+    'public_contact_locked_desc' => 'Login or register to view phone number, email, guardian contact, and send interest.',
+    'public_create_profile'      => 'Create Your Profile Free',
+    'public_register_connect'    => 'Interested in this profile? Register to connect.',
+    'public_label_height'        => 'Height',
+    'public_label_weight'        => 'Weight',
+    'public_section_personal'    => 'Personal Information',
+    'public_section_career'      => 'Education & Career',
+    'public_islamic_mode'        => 'Islamic Mode',
+    'public_age_range'           => 'Age Range',
+    'public_age_both'            => ':min – :max years',
+    'public_age_min_only'        => ':min+ years',
+    'public_age_years'           => ':n years',
+
 ];

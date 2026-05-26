@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/react'
 import { ArrowLeft, CheckCircle2, MapPin, GraduationCap, Briefcase, Heart, LogIn, Lock } from 'lucide-react'
 import MarketingLayout from '@/layouts/MarketingLayout'
+import { useTranslation } from '@/lib/i18n'
 import { SeoHead } from '@/components/SeoHead'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -59,6 +60,8 @@ function cmToFeet(cm: number | null) {
   return `${Math.floor(totalIn / 12)}′${Math.round(totalIn % 12)}″`
 }
 
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null
   return (
@@ -81,10 +84,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ProfileShow({ profile }: Props) {
+  const { t } = useTranslation()
   const heightFt = cmToFeet(profile.height_cm)
 
   const locationParts = [profile.upazila, profile.district, profile.division, profile.residing_country]
     .filter(Boolean)
+
+  const partnerAgeText = profile.partner_age_min && profile.partner_age_max
+    ? t('marketing', 'public_age_both', { min: profile.partner_age_min, max: profile.partner_age_max })
+    : profile.partner_age_min
+      ? t('marketing', 'public_age_min_only', { min: profile.partner_age_min })
+      : null
 
   return (
     <MarketingLayout>
@@ -97,7 +107,7 @@ export default function ProfileShow({ profile }: Props) {
             href={route('profiles.index')}
             className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
           >
-            <ArrowLeft size={16} /> Back to search
+            <ArrowLeft size={16} /> {t('marketing', 'public_back_search')}
           </Link>
         </div>
       </div>
@@ -121,15 +131,17 @@ export default function ProfileShow({ profile }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${profile.gender === 'female' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}`}>
-                {profile.gender === 'female' ? 'Female' : 'Male'}
+                {profile.gender === 'female' ? t('common', 'female') : t('common', 'male')}
               </span>
               {profile.is_verified && (
                 <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-                  <CheckCircle2 size={12} /> Verified
+                  <CheckCircle2 size={12} /> {t('common', 'verified')}
                 </span>
               )}
               {profile.platform_mode === 'islamic' && (
-                <span className="text-xs font-semibold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">Islamic Mode</span>
+                <span className="text-xs font-semibold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
+                  {t('marketing', 'public_islamic_mode')}
+                </span>
               )}
             </div>
 
@@ -138,9 +150,13 @@ export default function ProfileShow({ profile }: Props) {
             )}
 
             <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-              {profile.age && <span>{profile.age} years</span>}
+              {profile.age && <span>{t('marketing', 'public_age_years', { n: profile.age })}</span>}
               {heightFt && <span>{heightFt}</span>}
-              {profile.marital_status && <span className="capitalize">{profile.marital_status.replace('_', ' ')}</span>}
+              {profile.marital_status && (
+                <span className="capitalize">
+                  {t('biodata', profile.marital_status) || profile.marital_status.replace('_', ' ')}
+                </span>
+              )}
               {locationParts.length > 0 && (
                 <span className="flex items-center gap-1">
                   <MapPin size={11} /> {locationParts.join(', ')}
@@ -167,22 +183,20 @@ export default function ProfileShow({ profile }: Props) {
         {/* ── Locked contact CTA ── */}
         <div className="bg-primary-50 border border-primary-200 rounded-2xl p-6 mb-6 text-center">
           <Lock size={28} className="text-primary-400 mx-auto mb-3" />
-          <h3 className="font-semibold text-primary-900 mb-1">Contact details are hidden</h3>
-          <p className="text-sm text-primary-700 mb-4">
-            Login or register to view phone number, email, guardian contact, and send interest.
-          </p>
+          <h3 className="font-semibold text-primary-900 mb-1">{t('marketing', 'public_contact_locked')}</h3>
+          <p className="text-sm text-primary-700 mb-4">{t('marketing', 'public_contact_locked_desc')}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href={route('login')}
               className="inline-flex items-center justify-center gap-2 h-10 px-6 rounded-xl bg-white border border-primary-300 text-primary-700 font-semibold text-sm hover:bg-primary-100 transition-colors"
             >
-              <LogIn size={15} /> Login
+              <LogIn size={15} /> {t('marketing', 'nav_sign_in')}
             </Link>
             <Link
               href={route('register')}
               className="inline-flex items-center justify-center gap-2 h-10 px-6 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors shadow-md"
             >
-              <Heart size={15} /> Register Free
+              <Heart size={15} /> {t('marketing', 'nav_join_free')}
             </Link>
           </div>
         </div>
@@ -190,80 +204,76 @@ export default function ProfileShow({ profile }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* ── Personal info ── */}
-          <Section title="Personal Information">
-            <Row label="Age" value={profile.age ? `${profile.age} years` : null} />
-            <Row label="Height" value={profile.height_cm ? `${profile.height_cm} cm (${heightFt})` : null} />
-            <Row label="Weight" value={profile.weight_kg ? `${profile.weight_kg} kg` : null} />
-            <Row label="Complexion" value={profile.complexion} />
-            <Row label="Blood Group" value={profile.blood_group} />
-            <Row label="Mother Tongue" value={profile.mother_tongue} />
-            <Row label="Marital Status" value={profile.marital_status?.replace('_', ' ')} />
-            <Row label="Residing Country" value={profile.residing_country} />
+          <Section title={t('marketing', 'public_section_personal')}>
+            <Row label={t('common', 'age')}               value={profile.age ? t('marketing', 'public_age_years', { n: profile.age }) : null} />
+            <Row label={t('marketing', 'public_label_height')} value={profile.height_cm ? `${profile.height_cm} cm (${heightFt})` : null} />
+            <Row label={t('marketing', 'public_label_weight')} value={profile.weight_kg ? `${profile.weight_kg} kg` : null} />
+            <Row label={t('biodata', 'complexion')}        value={profile.complexion} />
+            <Row label={t('biodata', 'blood_group')}       value={profile.blood_group} />
+            <Row label={t('biodata', 'mother_tongue')}     value={profile.mother_tongue} />
+            <Row label={t('biodata', 'marital_status')}    value={profile.marital_status ? (t('biodata', profile.marital_status) || profile.marital_status) : null} />
+            <Row label={t('biodata', 'residing_country')}  value={profile.residing_country} />
           </Section>
 
           {/* ── Location ── */}
-          <Section title="Location">
-            <Row label="Division" value={profile.division} />
-            <Row label="District" value={profile.district} />
-            <Row label="Upazila" value={profile.upazila} />
-            <Row label="Country" value={profile.residing_country} />
+          <Section title={t('biodata', 'section_location')}>
+            <Row label={t('biodata', 'division')}  value={profile.division} />
+            <Row label={t('biodata', 'district')}  value={profile.district} />
+            <Row label={t('biodata', 'upazila')}   value={profile.upazila} />
+            <Row label={t('biodata', 'residing_country')} value={profile.residing_country} />
           </Section>
 
           {/* ── Religion ── */}
-          <Section title="Religious Information">
-            <Row label="Religion" value={profile.religion} />
-            <Row label="Sect" value={profile.sect} />
-            <Row label="Practicing" value={profile.is_practicing != null ? (profile.is_practicing ? 'Yes' : 'No') : null} />
-            <Row label="Prayers" value={profile.prayers_info} />
-            {profile.gender === 'female' && <Row label="Hijab" value={profile.hijab_info} />}
-            {profile.gender === 'male' && <Row label="Beard" value={profile.beard_info} />}
+          <Section title={t('biodata', 'section_religion')}>
+            <Row label={t('biodata', 'religion')}         value={profile.religion} />
+            <Row label={t('biodata', 'sect')}             value={profile.sect} />
+            <Row label={t('biodata', 'is_practicing')}    value={profile.is_practicing != null ? (profile.is_practicing ? t('common', 'yes') : t('common', 'no')) : null} />
+            <Row label={t('biodata', 'prayers_info')}     value={profile.prayers_info} />
+            {profile.gender === 'female' && <Row label={t('biodata', 'hijab_info')} value={profile.hijab_info} />}
+            {profile.gender === 'male'   && <Row label={t('biodata', 'beard_info')} value={profile.beard_info} />}
           </Section>
 
           {/* ── Education & Career ── */}
-          <Section title="Education & Career">
-            <Row label="Education" value={profile.highest_qualification} />
-            <Row label="Occupation" value={profile.occupation} />
-            <Row label="Occupation Type" value={profile.occupation_category} />
+          <Section title={t('marketing', 'public_section_career')}>
+            <Row label={t('biodata', 'highest_qualification')} value={profile.highest_qualification} />
+            <Row label={t('biodata', 'occupation')}            value={profile.occupation} />
+            <Row label={t('biodata', 'occupation_category')}   value={profile.occupation_category} />
           </Section>
 
           {/* ── Family ── */}
-          <Section title="Family Information">
-            <Row label="Family Type" value={profile.family_type} />
-            <Row label="Financial Status" value={profile.family_financial_status} />
-            <Row label="Home Ownership" value={profile.home_ownership} />
+          <Section title={t('biodata', 'section_family')}>
+            <Row label={t('biodata', 'family_type')}             value={profile.family_type} />
+            <Row label={t('biodata', 'family_financial_status')} value={profile.family_financial_status} />
+            <Row label={t('biodata', 'home_ownership')}          value={profile.home_ownership} />
           </Section>
 
           {/* ── Lifestyle ── */}
-          <Section title="Lifestyle">
-            <Row label="Health Status" value={profile.health_status} />
-            <Row label="Diet" value={profile.diet} />
+          <Section title={t('biodata', 'section_lifestyle')}>
+            <Row label={t('biodata', 'health_status')} value={profile.health_status} />
+            <Row label={t('biodata', 'diet')}          value={profile.diet} />
           </Section>
 
         </div>
 
         {/* ── Partner preferences ── */}
-        {(profile.partner_age_min || profile.partner_age_max || profile.partner_division || profile.partner_marital_status || profile.partner_education || profile.partner_expectations) && (
-          <Section title="Partner Preferences">
-            <Row label="Age Range" value={
-              profile.partner_age_min && profile.partner_age_max
-                ? `${profile.partner_age_min} – ${profile.partner_age_max} years`
-                : profile.partner_age_min ? `${profile.partner_age_min}+ years` : null
-            } />
-            <Row label="Division" value={profile.partner_division} />
-            <Row label="Marital Status" value={profile.partner_marital_status} />
-            <Row label="Education" value={profile.partner_education} />
-            <Row label="Expectations" value={profile.partner_expectations} />
+        {(partnerAgeText || profile.partner_division || profile.partner_marital_status || profile.partner_education || profile.partner_expectations) && (
+          <Section title={t('biodata', 'section_partner')}>
+            <Row label={t('marketing', 'public_age_range')}      value={partnerAgeText} />
+            <Row label={t('biodata', 'partner_division')}        value={profile.partner_division} />
+            <Row label={t('biodata', 'partner_marital_status')}  value={profile.partner_marital_status} />
+            <Row label={t('biodata', 'partner_education')}       value={profile.partner_education} />
+            <Row label={t('biodata', 'partner_expectations')}    value={profile.partner_expectations} />
           </Section>
         )}
 
         {/* ── Bottom CTA ── */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-slate-500 mb-4">Interested in this profile? Register to connect.</p>
+          <p className="text-sm text-slate-500 mb-4">{t('marketing', 'public_register_connect')}</p>
           <Link
             href={route('register')}
             className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors shadow-md"
           >
-            <Heart size={16} /> Create Your Profile Free
+            <Heart size={16} /> {t('marketing', 'public_create_profile')}
           </Link>
         </div>
       </div>

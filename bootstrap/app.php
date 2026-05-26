@@ -15,13 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Locale must be set before Inertia shares page data
-        $middleware->web(prepend: [
-            \App\Http\Middleware\SetLocale::class,
-        ]);
-
-        // Inertia request handling injected into the web stack
+        // SetLocale must run after StartSession + EncryptCookies (both in the core web group)
+        // so it can read the session and decrypted cookie set by switchLocale.
+        // It must also run before HandleInertiaRequests so App::getLocale() is correct
+        // when Inertia shares the locale + translations props.
         $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 

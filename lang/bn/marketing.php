@@ -327,4 +327,26 @@ return [
     'home_trust_report_title' => 'রিপোর্ট ও ব্লক সমর্থন',
     'home_trust_report_desc'  => 'ভুয়া প্রোফাইল বা অনুপযুক্ত কন্টেন্ট রিপোর্ট করুন। আমাদের দল ২৪ ঘণ্টার মধ্যে ব্যবস্থা নেয়।',
 
+    // ── পাবলিক গেস্ট প্রোফাইল সার্চ ও ডিটেইল পেজ ───────────────────────────
+    'public_profiles_heading'    => 'বায়োডাটা প্রোফাইল দেখুন',
+    'public_profiles_count'      => ':n টি অনুমোদিত প্রোফাইল পাওয়া গেছে',
+    'public_no_results_sub'      => 'ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন',
+    'public_view_biodata'        => 'বায়োডাটা দেখুন',
+    'public_login_cta_title'     => 'যোগাযোগ তথ্য দেখতে ও আগ্রহ পাঠাতে লগইন করুন',
+    'public_login_cta_sub'       => 'প্রোফাইলের সাথে সংযুক্ত হতে বিনামূল্যে নিবন্ধন করুন',
+    'public_back_search'         => 'অনুসন্ধানে ফিরুন',
+    'public_contact_locked'      => 'যোগাযোগের তথ্য লুকানো রয়েছে',
+    'public_contact_locked_desc' => 'ফোন নম্বর, ইমেইল ও অভিভাবকের তথ্য দেখতে এবং আগ্রহ পাঠাতে লগইন বা নিবন্ধন করুন।',
+    'public_create_profile'      => 'বিনামূল্যে প্রোফাইল তৈরি করুন',
+    'public_register_connect'    => 'এই প্রোফাইলে আগ্রহী? সংযুক্ত হতে নিবন্ধন করুন।',
+    'public_label_height'        => 'উচ্চতা',
+    'public_label_weight'        => 'ওজন',
+    'public_section_personal'    => 'ব্যক্তিগত তথ্য',
+    'public_section_career'      => 'শিক্ষা ও পেশা',
+    'public_islamic_mode'        => 'ইসলামিক মোড',
+    'public_age_range'           => 'বয়সের পরিসর',
+    'public_age_both'            => ':min – :max বছর',
+    'public_age_min_only'        => ':min+ বছর',
+    'public_age_years'           => ':n বছর',
+
 ];
