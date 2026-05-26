@@ -20,22 +20,29 @@ class PublicPageController extends Controller
         $heroPath    = SystemSetting::get('marketing.hero_image', '');
         $successPath = SystemSetting::get('marketing.success_image', '');
 
-        $featuredProfiles = Biodata::where('status', 'approved')
-            ->with('registration:registration_id,name,gender')
-            ->whereHas('registration')
-            ->orderByDesc('completeness_score')
-            ->limit(8)
-            ->get()
-            ->map(fn ($bio) => [
-                'id'         => $bio->registration_id,
-                'first_name' => explode(' ', $bio->registration->name ?? '')[0] ?? '—',
-                'gender'     => $bio->registration->gender ?? 'male',
-                'age'        => $bio->birth_date ? (int) now()->diffInYears($bio->birth_date) : null,
-                'district'   => $bio->district,
-                'occupation' => $bio->occupation,
-                'avatar_num' => abs(crc32((string) $bio->registration_id)) % 4 + 1,
-            ])
-            ->values();
+        $featuredProfiles = collect();
+        try {
+            $featuredProfiles = Biodata::where('status', 'approved')
+                ->where('is_completed', true)
+                ->with('registration:registration_id,name,gender,identity_verification_status,account_status')
+                ->whereHas('registration', fn ($q) => $q->where('account_status', 'active'))
+                ->orderByDesc('completeness_score')
+                ->limit(10)
+                ->get()
+                ->map(fn ($bio) => [
+                    'id'          => $bio->registration_id,
+                    'first_name'  => explode(' ', $bio->registration->name ?? '')[0] ?? '—',
+                    'gender'      => $bio->registration->gender ?? 'male',
+                    'age'         => $bio->birth_date ? (int) now()->diffInYears($bio->birth_date) : null,
+                    'district'    => $bio->district,
+                    'occupation'  => $bio->occupation,
+                    'avatar_num'  => abs(crc32((string) $bio->registration_id)) % 4 + 1,
+                    'is_verified' => ($bio->registration->identity_verification_status ?? '') === 'verified',
+                ])
+                ->values();
+        } catch (\Throwable) {
+            // Table may not exist on fresh installs — degrade gracefully
+        }
 
         return Inertia::render('Marketing/Home', [
             'heroImageUrl'     => $heroPath ? Storage::disk('public')->url($heroPath) : null,

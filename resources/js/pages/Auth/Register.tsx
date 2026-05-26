@@ -3,7 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import GuestLayout from '@/layouts/GuestLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckCircle, CheckCircle2, Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
@@ -23,9 +23,23 @@ export default function Register() {
     password_confirmation: '',
     gender: '' as 'male' | 'female',
     profile_created_for: 'self',
+    mobile_number: '',
     platform_mode: 'general' as 'general' | 'islamic',
     terms_accepted: false,
   })
+
+  // Prefill from URL query params (set by homepage quick registration form)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const prefillName = params.get('name')
+    const prefillFor = params.get('profile_created_for')
+    const prefillMobile = params.get('mobile_number')
+    const validFor = ['self', 'son', 'daughter', 'brother', 'sister', 'relative']
+    if (prefillName) setData('name', prefillName)
+    if (prefillFor && validFor.includes(prefillFor)) setData('profile_created_for', prefillFor)
+    if (prefillMobile) setData('mobile_number', prefillMobile)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const next = () => setStep(s => Math.min(3, s + 1) as Step)
   const back = () => setStep(s => Math.max(1, s - 1) as Step)
@@ -224,6 +238,15 @@ export default function Register() {
                   <option value="relative">{t('auth', 'for_relative')}</option>
                 </select>
               </div>
+
+              <Input
+                label="Mobile Number (Optional)"
+                type="tel"
+                value={data.mobile_number}
+                onChange={e => setData('mobile_number', e.target.value)}
+                error={errors.mobile_number}
+                placeholder="+880 1XXX-XXXXXX"
+              />
 
               <div className="flex gap-3">
                 <Button type="button" variant="outline" className="flex-1" onClick={back}>

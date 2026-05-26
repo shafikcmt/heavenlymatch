@@ -283,4 +283,48 @@ return [
     'comparison_row_5_left'  => 'সাধারণ ম্যাচিং অ্যালগরিদম',
     'comparison_row_5_right' => 'ইসলামিক মূল্যবোধ-ভিত্তিক AI সামঞ্জস্য স্কোরিং',
 
+    // ── Home — hero search form ───────────────────────────────────────────────
+    'hero_search_title'      => 'আপনার আদর্শ জীবনসঙ্গী খোঁজা শুরু করুন',
+    'hero_search_subtitle'   => 'হাজার হাজার যাচাইকৃত প্রোফাইল থেকে বয়স, অবস্থান ও পছন্দ অনুযায়ী খুঁজুন।',
+    'hero_looking_for'       => 'আমি খুঁজছি একজন',
+    'hero_bride_label'       => 'কনে',
+    'hero_groom_label'       => 'বর',
+    'hero_age_from'          => 'বয়স থেকে',
+    'hero_age_to'            => 'বয়স পর্যন্ত',
+    'hero_division'          => 'বিভাগ',
+    'hero_sect'              => 'মাজহাব / সম্প্রদায়',
+    'hero_division_any'      => 'যেকোনো বিভাগ',
+    'hero_sect_any'          => 'যেকোনো মাজহাব',
+    'hero_search_btn'        => 'প্রোফাইল খুঁজুন',
+    'hero_guest_search_note' => 'সম্পূর্ণ প্রোফাইল দেখতে বিনামূল্যে যোগ দিন',
+
+    // ── Home — quick registration CTA ─────────────────────────────────────────
+    'quick_reg_title'        => 'আপনার আদর্শ জীবনসঙ্গী খুঁজুন',
+    'quick_reg_subtitle'     => 'আপনার প্রোফাইল তৈরি করুন এবং যাচাইকৃত মুসলিম পরিবারের সাথে সংযুক্ত হন।',
+    'quick_reg_for_label'    => 'বৈবাহিক প্রোফাইল কার জন্য',
+    'quick_reg_name'         => 'আপনার নাম',
+    'quick_reg_mobile'       => 'মোবাইল নম্বর',
+    'quick_reg_btn'          => 'বিনামূল্যে শুরু করুন →',
+    'quick_reg_note'         => 'যোগ দিতে বিনামূল্যে · ক্রেডিট কার্ড লাগবে না · যাচাইকৃত প্রোফাইল',
+    'quick_reg_for_self'     => 'নিজের জন্য',
+    'quick_reg_for_son'      => 'ছেলের জন্য',
+    'quick_reg_for_daughter' => 'মেয়ের জন্য',
+    'quick_reg_for_brother'  => 'ভাইয়ের জন্য',
+    'quick_reg_for_sister'   => 'বোনের জন্য',
+    'quick_reg_for_relative' => 'আত্মীয়ের জন্য',
+
+    // ── Home — how it works 5th step ─────────────────────────────────────────
+    'home_step5_title'  => 'কথোপকথন শুরু করুন',
+    'home_step5_desc'   => 'উভয় পক্ষ আগ্রহ গ্রহণ করলে সুরক্ষিত চ্যাট খুলে যায়। পরিবারকে অন্তর্ভুক্ত করতে পারবেন।',
+
+    // ── Home — success stories section ───────────────────────────────────────
+    'success_stories_title'    => 'সুখী দম্পতি, বরকতময় মিলন',
+    'success_stories_subtitle' => 'আমাদের সম্প্রদায়ের গল্প — গোপনীয়তার জন্য বেনামী রাখা হয়েছে।',
+
+    // ── Home — trust section (new cards) ─────────────────────────────────────
+    'home_trust_secure_title' => 'নিরাপদ যোগাযোগ',
+    'home_trust_secure_desc'  => 'এন্ড-টু-এন্ড নিরাপদ মেসেজিং। পারস্পরিক গ্রহণের পরেই কেবল যোগাযোগ তথ্য শেয়ার।',
+    'home_trust_report_title' => 'রিপোর্ট ও ব্লক সমর্থন',
+    'home_trust_report_desc'  => 'ভুয়া প্রোফাইল বা অনুপযুক্ত কন্টেন্ট রিপোর্ট করুন। আমাদের দল ২৪ ঘণ্টার মধ্যে ব্যবস্থা নেয়।',
+
 ];

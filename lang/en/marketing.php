@@ -283,4 +283,48 @@ return [
     'comparison_row_5_left'  => 'Generic matching algorithm',
     'comparison_row_5_right' => 'Islamic values-based AI compatibility scoring',
 
+    // ── Home — hero search form ───────────────────────────────────────────────
+    'hero_search_title'      => 'Begin Your Search for an Ideal Match',
+    'hero_search_subtitle'   => 'Search thousands of verified profiles — filter by age, location and more.',
+    'hero_looking_for'       => "I'm looking for a",
+    'hero_bride_label'       => 'Bride',
+    'hero_groom_label'       => 'Groom',
+    'hero_age_from'          => 'Age From',
+    'hero_age_to'            => 'Age To',
+    'hero_division'          => 'Division',
+    'hero_sect'              => 'Sect / Madhhab',
+    'hero_division_any'      => 'Any Division',
+    'hero_sect_any'          => 'Any Sect',
+    'hero_search_btn'        => 'Search Profiles',
+    'hero_guest_search_note' => 'Sign up free to view full profiles',
+
+    // ── Home — quick registration CTA ─────────────────────────────────────────
+    'quick_reg_title'        => 'Find Your Perfect Match',
+    'quick_reg_subtitle'     => 'Create your profile and connect with verified Muslim families.',
+    'quick_reg_for_label'    => 'Matrimony Profile For',
+    'quick_reg_name'         => 'Your Name',
+    'quick_reg_mobile'       => 'Mobile Number',
+    'quick_reg_btn'          => 'Get Started Free →',
+    'quick_reg_note'         => 'Free to join · No credit card required · Verified profiles',
+    'quick_reg_for_self'     => 'Myself',
+    'quick_reg_for_son'      => 'Son',
+    'quick_reg_for_daughter' => 'Daughter',
+    'quick_reg_for_brother'  => 'Brother',
+    'quick_reg_for_sister'   => 'Sister',
+    'quick_reg_for_relative' => 'A Relative',
+
+    // ── Home — how it works 5th step ─────────────────────────────────────────
+    'home_step5_title'  => 'Start Conversation',
+    'home_step5_desc'   => 'Once both parties accept, chat opens securely. Family members can be included.',
+
+    // ── Home — success stories section ───────────────────────────────────────
+    'success_stories_title'    => 'Happy Couples, Blessed Unions',
+    'success_stories_subtitle' => 'Stories from our community — anonymised for privacy.',
+
+    // ── Home — trust section (new cards) ─────────────────────────────────────
+    'home_trust_secure_title' => 'Secure Communication',
+    'home_trust_secure_desc'  => 'End-to-end secure messaging. Contact details shared only after mutual acceptance.',
+    'home_trust_report_title' => 'Report & Block Support',
+    'home_trust_report_desc'  => 'Report fake profiles or inappropriate content. Our team acts within 24 hours.',
+
 ];

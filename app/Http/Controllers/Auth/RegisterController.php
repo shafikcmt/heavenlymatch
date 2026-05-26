@@ -28,6 +28,7 @@ class RegisterController extends Controller
             'password'            => 'required|confirmed|min:8',
             'gender'              => 'required|in:male,female',
             'profile_created_for' => 'required|in:self,son,daughter,brother,sister,relative',
+            'mobile_number'       => 'nullable|string|max:20',
             'platform_mode'       => 'required|in:general,islamic',
             'terms_accepted'      => 'accepted',
         ]);
@@ -39,6 +40,7 @@ class RegisterController extends Controller
             'gender'              => $validated['gender'],
             'looking_for'         => $validated['gender'] === 'male' ? 'bride' : 'groom',
             'profile_created_for' => $validated['profile_created_for'],
+            'mobile_number'       => $validated['mobile_number'] ?? null,
             'platform_mode'       => $validated['platform_mode'],
             'photo_visibility'    => $validated['platform_mode'] === 'islamic' ? 'blurred' : 'members_only',
             'terms_accepted_at'   => now(),
