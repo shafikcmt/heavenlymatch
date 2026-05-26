@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { auth, flash } = usePage<PageProps>().props
@@ -70,6 +71,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="border-t border-slate-800 p-3">
           <p className="text-xs text-slate-400 px-2 mb-2 truncate">{user.name}</p>
+          <div className="mb-2 px-1">
+            <LanguageSwitcher className="w-full justify-center" dark />
+          </div>
           <div className="flex gap-1">
             <Link
               href="/"
@@ -99,6 +103,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Menu size={20} />
           </button>
           <span className="font-bold text-slate-900 text-sm">HM Admin</span>
+          <div className="ml-auto">
+            <LanguageSwitcher />
+          </div>
         </header>
 
         {/* Flash */}
