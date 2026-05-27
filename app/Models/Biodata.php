@@ -74,6 +74,8 @@ class Biodata extends Model
         'mother_profession',
         'brothers',
         'sisters',
+        'brothers_details',
+        'sisters_details',
         'family_type',
         'family_financial_status',
         'home_ownership',
@@ -105,6 +107,9 @@ class Biodata extends Model
         'post_marriage_plan',
         'polygamy_open',
         'children_count',
+        'has_children',
+        'children_live_with',
+        'children_notes',
 
         // Partner Preferences
         'partner_age_min',
@@ -163,10 +168,13 @@ class Biodata extends Model
         'wife_study_allowed'      => 'boolean',
         'wife_job_allowed'        => 'boolean',
         'polygamy_open'           => 'boolean',
+        'has_children'            => 'boolean',
 
         // Arrays/JSON
         'photos'            => 'array',
         'education_details' => 'array',
+        'brothers_details'  => 'array',
+        'sisters_details'   => 'array',
 
         // Integers
         'completeness_score'    => 'integer',
