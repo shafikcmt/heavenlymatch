@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Biodata;
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Registration;
+use App\Services\PhotoPrivacyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,8 @@ use Inertia\Response;
 
 class BiodataWizardController extends Controller
 {
+    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+
     private const STEPS = [
         1 => 'general',
         2 => 'location',
@@ -40,6 +43,20 @@ class BiodataWizardController extends Controller
         $biodataData['birth_date'] = $biodata->birth_date?->format('Y-m-d');
         $biodataData['completeness_score'] = $biodata->completeness_score ?? 0;
 
+        $photoData = [];
+        if ($step === 9) {
+            $photos    = $biodata->photos ?? [];
+            $photoUrls = array_map(
+                fn (int $i) => $this->photoPrivacy->photoUrl($user->registration_id, $i, $user->registration_id),
+                array_keys($photos),
+            );
+            $photoData = [
+                'photos'    => array_values($photos),
+                'photoUrls' => array_values($photoUrls),
+                'maxPhotos' => 6,
+            ];
+        }
+
         return Inertia::render('Biodata/Wizard', [
             'step'    => $step,
             'steps'   => self::STEPS,
@@ -49,6 +66,7 @@ class BiodataWizardController extends Controller
                 'gender' => $user->gender,
                 'mode'   => $user->platform_mode,
             ],
+            ...$photoData,
         ]);
     }
 

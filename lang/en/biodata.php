@@ -363,9 +363,10 @@ return [
     'any_division'            => 'Any Division',
 
     // ── Wizard step 9 content ─────────────────────────────────────────────────
-    'step9_title'       => 'Upload Your Profile Photo',
-    'step9_desc'        => 'Profiles with a photo get 3× more match requests. Your privacy settings control who can see it.',
-    'step9_note'        => 'You can upload photos from your Profile page after completing this step.',
-    'step9_submit_hint' => 'Click "Complete & Submit" below to finish — then visit your profile to upload photos.',
+    'step9_title'          => 'Upload Your Profile Photo',
+    'step9_desc'           => 'Profiles with a photo get 3× more match requests. Your privacy settings control who can see it.',
+    'step9_optional_badge' => 'Optional — but strongly recommended',
+    'step9_note'           => 'Photo is optional. You can also manage all photos from your Profile page anytime.',
+    'step9_submit_hint'    => 'Click "Complete & Submit" below to finalize your biodata.',
 
 ];

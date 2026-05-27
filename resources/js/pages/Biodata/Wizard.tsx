@@ -1,6 +1,6 @@
 /// <reference path="../../types/ziggy.d.ts" />
 import { Head, router, useForm } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -10,7 +10,7 @@ import { WeightSelect } from '@/components/ui/WeightSelect'
 import { DateOfBirthSelect } from '@/components/ui/DateOfBirthSelect'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
-import { CheckCircle, Save, Plus, Trash2 } from 'lucide-react'
+import { CheckCircle, Save, Plus, Trash2, Camera, Upload, X, Star } from 'lucide-react'
 import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 
 // ─── Sub-types ────────────────────────────────────────────────────────────────
@@ -121,11 +121,20 @@ interface BiodataData {
   partner_expectations?: string
 }
 
+interface PhotoItem {
+  path: string
+  is_primary: boolean
+  uploaded_at: string
+}
+
 interface Props {
   step: number
   steps: Record<number, string>
   biodata: BiodataData & { completeness_score?: number }
   user: { name: string; gender: string; mode: string }
+  photos?: PhotoItem[]
+  photoUrls?: string[]
+  maxPhotos?: number
 }
 
 // ─── Module-level helpers to normalise server data ────────────────────────────
@@ -499,10 +508,65 @@ const COUNT_OPTIONS = Array.from({ length: 21 }, (_, i) => ({ value: String(i), 
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function BiodataWizard({ step, steps, biodata, user }: Props) {
+export default function BiodataWizard({ step, steps, biodata, user, photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
   const totalSteps = Object.keys(steps).length
   const { t } = useTranslation()
   const completenessScore = biodata.completeness_score ?? 0
+
+  // ── Photo upload state (Step 9) ──────────────────────────────────────────────
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [deletingPhotoIdx, setDeletingPhotoIdx] = useState<number | null>(null)
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoError(null)
+    if (file.size > 4 * 1024 * 1024) {
+      setPhotoError(t('biodata', 'photo_too_large'))
+      if (photoInputRef.current) photoInputRef.current.value = ''
+      return
+    }
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  function clearPhotoPreview() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhotoPreview(null)
+    setPhotoFile(null)
+    setPhotoError(null)
+    if (photoInputRef.current) photoInputRef.current.value = ''
+  }
+
+  function handlePhotoUpload() {
+    if (!photoFile) return
+    const fd = new FormData()
+    fd.append('photo', photoFile)
+    setPhotoUploading(true)
+    router.post(route('profile.photos.store'), fd as never, {
+      forceFormData: true,
+      onFinish: () => {
+        setPhotoUploading(false)
+        clearPhotoPreview()
+      },
+    })
+  }
+
+  function handlePhotoDelete(index: number) {
+    if (!confirm(t('biodata', 'photo_delete_confirm'))) return
+    setDeletingPhotoIdx(index)
+    router.delete(route('profile.photos.destroy', index), {
+      onFinish: () => setDeletingPhotoIdx(null),
+    })
+  }
+
+  function handleSetPrimary(index: number) {
+    router.put(route('profile.photos.primary', index), {}, { preserveScroll: true })
+  }
 
   const { data, setData, post, processing, errors } = useForm<BiodataData>({
     ...biodata,
@@ -1598,16 +1662,112 @@ export default function BiodataWizard({ step, steps, biodata, user }: Props) {
 
             {/* ── Step 9: Photos ── */}
             {step === 9 && (
-              <div className="text-center py-10">
-                <div className="mx-auto w-24 h-24 rounded-full bg-amber-50 border-2 border-amber-100 flex items-center justify-center text-5xl mb-5">
-                  📷
+              <div className="space-y-5">
+                {/* Header */}
+                <div className="text-center pb-1">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-primary-50 border border-primary-100 flex items-center justify-center mb-3">
+                    <Camera size={26} className="text-primary-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">{t('biodata', 'step9_title')}</h3>
+                  <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                    {t('biodata', 'step9_desc')}
+                  </p>
+                  <span className="inline-block mt-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                    {t('biodata', 'step9_optional_badge')}
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{t('biodata', 'step9_title')}</h3>
-                <p className="text-sm text-slate-500 mb-2 max-w-sm mx-auto leading-relaxed">
-                  {t('biodata', 'step9_desc')}
+
+                {/* Existing photos grid */}
+                {photos.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                      {t('biodata', 'photo_count', { count: String(photos.length), max: String(maxPhotos) })}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {photos.map((photo, idx) => (
+                        <div key={idx} className={cn(
+                          'relative rounded-xl overflow-hidden border-2 aspect-square bg-slate-100 group',
+                          photo.is_primary ? 'border-primary-500 shadow-md' : 'border-transparent',
+                        )}>
+                          <img src={photoUrls[idx] ?? ''} alt="" className="w-full h-full object-cover" loading="lazy" />
+                          {photo.is_primary && (
+                            <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-primary-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow">
+                              <Star size={8} fill="currentColor" />
+                              {t('biodata', 'photo_primary_badge')}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex flex-col items-center justify-end gap-1 p-2 opacity-0 group-hover:opacity-100 bg-black/0 group-hover:bg-black/40 transition-all">
+                            {!photo.is_primary && (
+                              <button type="button" onClick={() => handleSetPrimary(idx)}
+                                className="w-full rounded-lg bg-white/90 py-1 text-[10px] font-semibold text-slate-800 hover:bg-white transition-colors">
+                                {t('biodata', 'photo_set_primary')}
+                              </button>
+                            )}
+                            <button type="button" onClick={() => handlePhotoDelete(idx)}
+                              disabled={deletingPhotoIdx === idx}
+                              className="w-full rounded-lg bg-red-500/90 py-1 text-[10px] font-semibold text-white hover:bg-red-600 transition-colors flex items-center justify-center gap-1 disabled:opacity-60">
+                              <Trash2 size={10} />
+                              {deletingPhotoIdx === idx ? '…' : t('biodata', 'photo_delete')}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview panel — shown after a file is selected */}
+                {photoPreview && (
+                  <div className="rounded-2xl border-2 border-primary-300 bg-primary-50 p-4 space-y-3">
+                    <p className="text-sm font-semibold text-slate-700">{t('biodata', 'photo_preview_label')}</p>
+                    <img src={photoPreview} alt="preview"
+                      className="w-36 h-36 object-cover rounded-2xl border border-slate-200 mx-auto shadow" />
+                    {photoError && <p className="text-xs text-red-600 text-center">{photoError}</p>}
+                    <div className="flex gap-2">
+                      <button type="button" onClick={clearPhotoPreview} disabled={photoUploading}
+                        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50">
+                        <X size={14} />
+                        {t('biodata', 'photo_cancel_preview')}
+                      </button>
+                      <button type="button" onClick={handlePhotoUpload} disabled={photoUploading}
+                        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-primary-600 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors disabled:opacity-60">
+                        <Upload size={14} />
+                        {photoUploading ? t('biodata', 'photo_uploading') : t('biodata', 'photo_confirm_upload')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Drop zone — hidden when preview is showing or limit reached */}
+                {!photoPreview && photos.length < maxPhotos && (
+                  <div
+                    onClick={() => photoInputRef.current?.click()}
+                    className="rounded-2xl border-2 border-dashed border-slate-200 hover:border-primary-400 p-7 text-center cursor-pointer transition-colors group"
+                  >
+                    <input ref={photoInputRef} type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden" onChange={handlePhotoSelect} />
+                    <Upload size={22} className="mx-auto mb-2 text-slate-400 group-hover:text-primary-500 transition-colors" />
+                    <p className="text-sm font-semibold text-slate-700 mb-0.5">
+                      {t('biodata', 'photo_upload_btn')}
+                    </p>
+                    <p className="text-xs text-slate-400">{t('biodata', 'photo_file_hint')}</p>
+                    {photoError && <p className="mt-2 text-xs text-red-600">{photoError}</p>}
+                  </div>
+                )}
+
+                {/* Limit reached notice */}
+                {!photoPreview && photos.length >= maxPhotos && (
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-center">
+                    <p className="text-sm text-slate-500">
+                      {t('biodata', 'photo_limit_reached', { max: String(maxPhotos) })}
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-xs text-slate-400 text-center leading-relaxed">
+                  {t('biodata', 'step9_note')}
                 </p>
-                <p className="text-xs text-amber-600 font-medium mb-6">{t('biodata', 'step9_note')}</p>
-                <p className="text-xs text-slate-400">{t('biodata', 'step9_submit_hint')}</p>
               </div>
             )}
 

@@ -307,14 +307,21 @@ export default function MyProfile({ biodata, photos, user, trust }: Props) {
                 {biodata && <CompletionBar score={score} />}
 
                 <div className="space-y-2 pt-1">
-                  <Link href={route('biodata.wizard', { step: 1 })} className="block">
-                    <Button variant="outline" size="sm" className="w-full">
-                      {t('dashboard', 'edit_biodata')}
+                  <Link href={route('profile.photos.index')} className="block">
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      variant={photos.length === 0 ? 'default' : 'outline'}
+                    >
+                      <Camera size={14} />
+                      {photos.length === 0
+                        ? t('biodata', 'photo_upload_btn')
+                        : t('dashboard', 'manage_photos')}
                     </Button>
                   </Link>
-                  <Link href={route('profile.photos.index')} className="block">
+                  <Link href={route('biodata.wizard', { step: 1 })} className="block">
                     <Button variant="ghost" size="sm" className="w-full">
-                      {t('dashboard', 'manage_photos')}
+                      {t('dashboard', 'edit_biodata')}
                     </Button>
                   </Link>
                 </div>
