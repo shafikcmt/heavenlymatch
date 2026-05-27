@@ -13,6 +13,9 @@ deployment:
 
     - chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache || true
 
+    - cd $APPPATH && npm install
+    - cd $APPPATH && npm run build
+
     - cd $APPPATH && php artisan optimize:clear
 
     - cd $APPPATH && php artisan config:cache
