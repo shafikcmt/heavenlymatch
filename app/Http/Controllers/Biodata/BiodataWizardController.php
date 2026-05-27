@@ -92,7 +92,7 @@ class BiodataWizardController extends Controller
                 'marital_status'   => ['nullable', 'in:never_married,married,divorced,widowed'],
                 'birth_date'       => ['nullable', 'date', 'before:-18 years'],
                 'height_cm'        => ['nullable', 'integer', 'min:100', 'max:250'],
-                'weight_kg'        => ['nullable', 'integer', 'min:30', 'max:200'],
+                'weight_kg'        => ['nullable', 'integer', 'min:20', 'max:200'],
                 'complexion'       => ['nullable', 'in:very_fair,fair,wheatish,medium,dark'],
                 'blood_group'      => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
                 'about_me'         => ['nullable', 'string', 'max:1000'],
