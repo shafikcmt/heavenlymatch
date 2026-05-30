@@ -16,13 +16,46 @@
   }
 
   .diamond-glow {
-    box-shadow: 0 0 0 2px #2563eb, 0 0 16px 2px #3b82f640;
+    box-shadow: 0 0 0 2px #006847, 0 0 16px 2px #00684740;
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #006847 0%, #2dc98e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* iOS safe area for bottom nav */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Mobile touch feedback */
+  @media (hover: none) {
+    .active\:scale-95:active {
+      transform: scale(0.95);
+    }
+    .active\:scale-\[0\.99\]:active {
+      transform: scale(0.99);
+    }
+    .active\:bg-slate-50:active {
+      background-color: #f8fafc;
+    }
+  }
+
+  /* Smooth scroll for tabs */
+  .tabs-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 }

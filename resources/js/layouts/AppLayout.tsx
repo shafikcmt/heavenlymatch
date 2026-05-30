@@ -5,12 +5,36 @@ import type { PageProps } from '@/types'
 import {
   Home, Search, Heart, MessageCircle, Star, Bell,
   User, Settings, LogOut, Menu, X,
-  Shield, Sparkles, Crown, TrendingUp,
+  Shield, Sparkles, Crown, TrendingUp, Headphones,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
+import { MobileBottomNav } from '@/components/mobile/MobileBottomNav'
+import { MobileTabs, type MobileTab } from '@/components/mobile/MobileTabs'
 
+// Determine which tab key is active from the current path
+function getActiveTab(path: string): string {
+  if (path.startsWith('/matches'))             return 'matches'
+  if (path.startsWith('/search'))              return 'search'
+  if (path.startsWith('/shortlist'))           return 'shortlist'
+  if (path.startsWith('/interests/received'))  return 'mutual'
+  if (path.startsWith('/profile/who-viewed'))  return 'viewed'
+  if (path.startsWith('/dashboard'))           return 'dashboard'
+  return 'dashboard'
+}
+
+const MATCH_TABS: MobileTab[] = [
+  { key: 'dashboard', label: 'Dashboard',       href: '/dashboard' },
+  { key: 'search',    label: 'Just Joined',     href: '/search?sort=newest' },
+  { key: 'matches',   label: 'Matches',         href: '/matches' },
+  { key: 'shortlist', label: 'Shortlisted',     href: '/shortlist' },
+  { key: 'mutual',    label: 'Mutual',          href: '/interests/received' },
+  { key: 'viewed',    label: 'Viewed My Profile', href: '/profile/who-viewed' },
+]
+
+// Pages that show the match tabs row
+const TAB_PATHS = ['/dashboard', '/matches', '/search', '/shortlist', '/interests/received', '/profile/who-viewed']
 
 function MembershipBadge({ tier }: { tier: string | null }) {
   if (!tier || tier === 'free') return null
@@ -32,7 +56,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation()
   const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const currentPath = (typeof window !== 'undefined') ? window.location.pathname : ''
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+  const showTabs = TAB_PATHS.some(p => currentPath.startsWith(p))
+  const activeTab = getActiveTab(currentPath)
 
   const navItems = [
     { label: t('common', 'dashboard'),     href: '/dashboard',          icon: Home },
@@ -54,7 +80,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar (desktop + mobile drawer) ── */}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out',
@@ -64,7 +90,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-100">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary-600 to-violet-600 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-xl bg-primary-700 flex items-center justify-center">
             <Crown size={16} className="text-white" />
           </div>
           <span className="font-bold text-slate-900 tracking-tight">HeavenlyMatch</span>
@@ -94,7 +120,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <span className="relative">
-                  <Icon size={18} className={active ? 'text-primary-600' : 'text-slate-400'} />
+                  <Icon size={18} className={active ? 'text-primary-700' : 'text-slate-400'} />
                   {badge > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
                       {badge > 9 ? '9+' : badge}
@@ -163,7 +189,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
           )}
-
           <div className="mt-2 px-1">
             <LanguageSwitcher className="w-full justify-center" />
           </div>
@@ -172,26 +197,53 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar (mobile) */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-slate-500 hover:text-slate-700"
-          >
-            <Menu size={20} />
-          </button>
-          <span className="font-bold text-slate-900">HeavenlyMatch</span>
-          <div className="ml-auto flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link href="/notifications" className="relative text-slate-500 hover:text-slate-700">
-              <Bell size={20} />
-              {unread_notifications > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
-                  {unread_notifications > 9 ? '9+' : unread_notifications}
-                </span>
-              )}
-            </Link>
+
+        {/* ── Mobile header (green brand) ── */}
+        <header className="sticky top-0 z-30 lg:hidden">
+          {/* Top bar */}
+          <div className="flex h-14 items-center gap-3 bg-primary-700 px-4">
+            {/* Hamburger for sidebar (mobile) */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              className="text-white/80 hover:text-white mr-1"
+            >
+              <Menu size={22} />
+            </button>
+
+            <span className="font-bold text-white text-[17px] tracking-widest uppercase flex-1">
+              HOME
+            </span>
+
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher inverted />
+
+              <Link
+                href="/notifications"
+                aria-label={t('common', 'notifications')}
+                className="relative text-white/80 hover:text-white"
+              >
+                <Bell size={22} />
+                {unread_notifications > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                    {unread_notifications > 9 ? '9+' : unread_notifications}
+                  </span>
+                )}
+              </Link>
+
+              <button
+                aria-label="Support"
+                className="text-white/80 hover:text-white"
+              >
+                <Headphones size={22} />
+              </button>
+            </div>
           </div>
+
+          {/* Scrollable tabs — only on match-list pages */}
+          {showTabs && (
+            <MobileTabs tabs={MATCH_TABS} activeKey={activeTab} />
+          )}
         </header>
 
         {/* Flash messages */}
@@ -215,9 +267,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <main className="flex-1 p-4 lg:p-6">
+        {/* Page content — extra bottom padding on mobile for bottom nav */}
+        <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-6">
           {children}
         </main>
+
+        {/* Mobile bottom navigation */}
+        <MobileBottomNav />
       </div>
     </div>
   )

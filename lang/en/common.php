@@ -8,6 +8,13 @@ declare(strict_types=1);
  */
 return [
 
+    // ── Mobile bottom nav labels ─────────────────────────────────────────────
+    'nav_home'    => 'Home',
+    'nav_search'  => 'Search',
+    'nav_mailbox' => 'Mailbox',
+    'nav_upgrade' => 'Upgrade',
+    'nav_profile' => 'Profile',
+
     // ── Navigation ───────────────────────────────────────────────────────────
     'home'          => 'Home',
     'dashboard'     => 'Dashboard',

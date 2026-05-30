@@ -2,6 +2,8 @@
 import { Head, router, useForm } from '@inertiajs/react'
 import AppLayout from '@/layouts/AppLayout'
 import { ProfileCard } from '@/components/profile/ProfileCard'
+import { MobileProfileCard } from '@/components/mobile/MobileProfileCard'
+import { EmptyState } from '@/components/mobile/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { type PaginatedResponse, type ProfileCard as ProfileCardType } from '@/types'
 import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
@@ -43,24 +45,6 @@ function FilterSelect({ name, label, value, onChange, options }: {
         <option value="">{t('common', 'any')}</option>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
-    </div>
-  )
-}
-
-function FilterInput({ label, value, onChange, placeholder, type = 'text' }: {
-  label: string; value: string; onChange: (v: string) => void
-  placeholder?: string; type?: string
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-      />
     </div>
   )
 }
@@ -114,12 +98,13 @@ export default function Search({ results, filters, membershipTier, platformMode 
     <AppLayout>
       <Head title={t('dashboard', 'search_title')} />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">{t('dashboard', 'search_title')}</h1>
+      <div className="max-w-6xl mx-auto">
+        {/* Page title (desktop only) */}
+        <h1 className="hidden lg:block text-2xl font-bold text-slate-900 mb-6">{t('dashboard', 'search_title')}</h1>
 
         <form onSubmit={search}>
-          {/* Top bar: keyword + sort + filters toggle */}
-          <div className="flex gap-3 mb-4 flex-wrap sm:flex-nowrap">
+          {/* Search bar + controls */}
+          <div className="flex gap-2 mb-3 flex-wrap sm:flex-nowrap">
             <div className="relative flex-1 min-w-0">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
               <input
@@ -131,7 +116,6 @@ export default function Search({ results, filters, membershipTier, platformMode 
               />
             </div>
 
-            {/* Sort */}
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs font-medium text-slate-500 hidden sm:block">{t('dashboard', 'sort_label')}</span>
               <select
@@ -150,67 +134,57 @@ export default function Search({ results, filters, membershipTier, platformMode 
               className="gap-2 shrink-0"
             >
               <SlidersHorizontal size={16} />
-              {t('common', 'filter')}
+              <span className="hidden sm:inline">{t('common', 'filter')}</span>
               {hasActiveFilters && <span className="h-2 w-2 rounded-full bg-primary-500" />}
             </Button>
 
             <Button type="submit" isLoading={processing} className="shrink-0">
-              {t('common', 'search_action')}
+              <SearchIcon size={16} className="sm:hidden" />
+              <span className="hidden sm:inline">{t('common', 'search_action')}</span>
             </Button>
           </div>
 
           {/* Advanced filters panel */}
           {showFilters && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 mb-6">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 mb-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold text-slate-700">{t('common', 'filter')}</h2>
                 {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 font-medium"
-                  >
-                    <X size={12} />
-                    {t('dashboard', 'clear_filters')}
+                  <button type="button" onClick={clearFilters} className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 font-medium">
+                    <X size={12} />{t('dashboard', 'clear_filters')}
                   </button>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {/* Age range */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">{t('dashboard', 'filter_age_range')}</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <input
                       type="number" placeholder={t('common', 'filter_min')} min={18} max={80}
-                      value={data.age_min ?? ''}
-                      onChange={e => setData('age_min', e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      value={data.age_min ?? ''} onChange={e => setData('age_min', e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                     <input
                       type="number" placeholder={t('common', 'filter_max')} min={18} max={80}
-                      value={data.age_max ?? ''}
-                      onChange={e => setData('age_max', e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      value={data.age_max ?? ''} onChange={e => setData('age_max', e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                   </div>
                 </div>
 
-                {/* Height range */}
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">{t('dashboard', 'height_range')}</label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <input
                       type="number" placeholder={t('common', 'filter_min')} min={140} max={220}
-                      value={data.height_cm_min ?? ''}
-                      onChange={e => setData('height_cm_min', e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      value={data.height_cm_min ?? ''} onChange={e => setData('height_cm_min', e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                     <input
                       type="number" placeholder={t('common', 'filter_max')} min={140} max={220}
-                      value={data.height_cm_max ?? ''}
-                      onChange={e => setData('height_cm_max', e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                      value={data.height_cm_max ?? ''} onChange={e => setData('height_cm_max', e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-sm focus:border-primary-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -254,9 +228,9 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   name="religion" label={t('dashboard', 'filter_religion')}
                   value={data.religion ?? ''} onChange={v => setData('religion', v)}
                   options={[
-                    { value: 'Islam',   label: 'Islam' },
-                    { value: 'Hindu',   label: 'Hindu' },
-                    { value: 'Other',   label: 'Other' },
+                    { value: 'Islam',  label: 'Islam' },
+                    { value: 'Hindu',  label: 'Hindu' },
+                    { value: 'Other',  label: 'Other' },
                   ]}
                 />
 
@@ -266,7 +240,7 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   options={[
                     { value: 'sunni',      label: 'Sunni' },
                     { value: 'hanafi',     label: 'Hanafi' },
-                    { value: 'shafi',      label: 'Shafi\'i' },
+                    { value: 'shafi',      label: "Shafi'i" },
                     { value: 'maliki',     label: 'Maliki' },
                     { value: 'hanbali',    label: 'Hanbali' },
                     { value: 'ahle_hadis', label: 'Ahle Hadis' },
@@ -274,15 +248,8 @@ export default function Search({ results, filters, membershipTier, platformMode 
                 />
 
                 <BangladeshAddressPicker
-                  value={{
-                    division: data.division ?? undefined,
-                    district: data.district ?? undefined,
-                  }}
-                  onChange={val => setData(prev => ({
-                    ...prev,
-                    division: val.division ?? '',
-                    district: val.district ?? '',
-                  }))}
+                  value={{ division: data.division ?? undefined, district: data.district ?? undefined }}
+                  onChange={val => setData(prev => ({ ...prev, division: val.division ?? '', district: val.district ?? '' }))}
                   mode="filter"
                   showUpazila={false}
                 />
@@ -291,54 +258,61 @@ export default function Search({ results, filters, membershipTier, platformMode 
                   name="residing_country" label={t('dashboard', 'filter_country')}
                   value={data.residing_country ?? ''} onChange={v => setData('residing_country', v)}
                   options={[
-                    { value: 'Bangladesh',    label: 'Bangladesh' },
-                    { value: 'UK',            label: 'UK' },
-                    { value: 'USA',           label: 'USA' },
-                    { value: 'Canada',        label: 'Canada' },
-                    { value: 'Australia',     label: 'Australia' },
-                    { value: 'UAE',           label: 'UAE' },
-                    { value: 'Qatar',         label: 'Qatar' },
-                    { value: 'Saudi Arabia',  label: 'Saudi Arabia' },
+                    { value: 'Bangladesh',   label: 'Bangladesh' },
+                    { value: 'UK',           label: 'UK' },
+                    { value: 'USA',          label: 'USA' },
+                    { value: 'Canada',       label: 'Canada' },
+                    { value: 'Australia',    label: 'Australia' },
+                    { value: 'UAE',          label: 'UAE' },
+                    { value: 'Qatar',        label: 'Qatar' },
+                    { value: 'Saudi Arabia', label: 'Saudi Arabia' },
                   ]}
                 />
               </div>
 
               <div className="flex justify-end mt-4 gap-3">
                 {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="text-sm text-slate-500 hover:text-slate-700"
-                  >
+                  <button type="button" onClick={clearFilters} className="text-sm text-slate-500 hover:text-slate-700">
                     {t('dashboard', 'filter_clear_all')}
                   </button>
                 )}
-                <Button type="submit" size="sm" isLoading={processing}>
-                  {t('common', 'search_action')}
-                </Button>
+                <Button type="submit" size="sm" isLoading={processing}>{t('common', 'search_action')}</Button>
               </div>
             </div>
           )}
         </form>
 
-        {/* Results header */}
-        <p className="text-sm text-slate-500 mb-4">
+        {/* Results count */}
+        <p className="text-xs text-slate-500 mb-3">
           {t('dashboard', 'profiles_found', { count: results.total })}
         </p>
 
         {results.data.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🔍</div>
-            <p className="text-slate-500 mb-4">{t('dashboard', 'no_profiles_found')}</p>
-            {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-sm text-primary-600 hover:underline font-medium">
-                {t('dashboard', 'clear_filters')}
-              </button>
-            )}
-          </div>
+          <EmptyState
+            icon={SearchIcon}
+            title={t('dashboard', 'no_profiles_found')}
+            description={hasActiveFilters ? t('dashboard', 'try_different_filters') || 'Try adjusting your filters to find more profiles.' : undefined}
+            ctaLabel={hasActiveFilters ? t('dashboard', 'clear_filters') : t('dashboard', 'browse_profiles')}
+            ctaHref={hasActiveFilters ? route('search.index') : route('matches.index')}
+          />
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {/* Mobile list */}
+            <div className="lg:hidden space-y-3">
+              {results.data.map((profile, i) => (
+                <MobileProfileCard
+                  key={profile.registration_id}
+                  profile={profile}
+                  index={i + 1}
+                  pageFrom={results.from ?? 1}
+                  interestSent={profile.interest_sent ?? false}
+                  isShortlisted={profile.is_shortlisted ?? false}
+                />
+              ))}
+            </div>
+
+            {/* Desktop grid */}
+            <div className="hidden lg:grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {results.data.map(profile => (
                 <ProfileCard
                   key={profile.registration_id}
@@ -351,34 +325,23 @@ export default function Search({ results, filters, membershipTier, platformMode 
 
             {/* Pagination */}
             {results.last_page > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-10">
+              <div className="flex items-center justify-center gap-2 mt-8">
                 {results.current_page > 1 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.get(results.prev_page_url ?? '', {}, { preserveState: true })}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => router.get(results.prev_page_url ?? '', {}, { preserveState: true })}>
                     ← {t('common', 'previous')}
                   </Button>
                 )}
-                <span className="text-sm text-slate-500">
-                  {results.current_page} / {results.last_page}
-                </span>
+                <span className="text-sm text-slate-500">{results.current_page} / {results.last_page}</span>
                 {results.current_page < results.last_page && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.get(results.next_page_url ?? '', {}, { preserveState: true })}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => router.get(results.next_page_url ?? '', {}, { preserveState: true })}>
                     {t('common', 'next')} →
                   </Button>
                 )}
               </div>
             )}
 
-            {/* Free tier limit message */}
             {membershipTier !== 'premium' && results.total > results.per_page && (
-              <div className="mt-8 rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 p-6 text-center">
+              <div className="mt-6 rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 p-6 text-center">
                 <p className="text-sm font-semibold text-amber-900 mb-1">{t('dashboard', 'search_limited')}</p>
                 <a href={route('upgrade.plans')} className="text-sm text-amber-700 hover:underline">
                   {t('dashboard', 'upgrade_now')} →

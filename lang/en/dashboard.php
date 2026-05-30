@@ -209,6 +209,14 @@ return [
     'matches_free_limit'         => 'You\'re seeing your top 10 matches. Upgrade to Premium to see all.',
     'ranked_by_compatibility'    => 'Ranked by compatibility score',
 
+    // ── Mobile UI additions ───────────────────────────────────────────────────
+    'members_match_pref'      => 'Members match your preferences',
+    'members_you_shortlisted' => 'Members you have shortlisted',
+    'chat_now'                => 'Chat Now',
+    'browse_matches'          => 'Browse Matches',
+    'no_shortlist_desc'       => 'Start adding profiles you like to your shortlist for quick access.',
+    'try_different_filters'   => 'Try adjusting your filters to find more profiles.',
+
     // ── Upgrade ───────────────────────────────────────────────────────────────
     'upgrade_title'    => 'Upgrade Your Account',
     'upgrade_subtitle' => 'Unlock all features and find your perfect match',

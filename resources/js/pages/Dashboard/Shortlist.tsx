@@ -2,10 +2,12 @@
 import { Head, Link, router } from '@inertiajs/react'
 import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/mobile/EmptyState'
 import { calcAge, cmToFeetInches } from '@/lib/utils'
 import { type PaginatedResponse } from '@/types'
-import { Heart, EyeOff } from 'lucide-react'
+import { Heart, EyeOff, Star, Search, X } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 interface ShortlistedProfile {
   registration_id: string
@@ -37,25 +39,104 @@ export default function Shortlist({ shortlisted }: Props) {
     <AppLayout>
       <Head title={t('dashboard', 'shortlist_title')} />
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">
-          {t('dashboard', 'shortlist_title')}
-          <span className="ml-2 text-base font-normal text-slate-400">
-            ({shortlisted.total})
-          </span>
-        </h1>
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="hidden lg:flex items-center gap-2 mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">{t('dashboard', 'shortlist_title')}</h1>
+          <span className="text-base font-normal text-slate-400">({shortlisted.total})</span>
+        </div>
+
+        {/* Mobile count */}
+        <p className="lg:hidden text-[13px] font-bold text-slate-800 mb-3 px-1">
+          {shortlisted.total} {t('dashboard', 'members_you_shortlisted') || 'Members you have shortlisted'}
+        </p>
 
         {shortlisted.data.length === 0 ? (
-          <div className="text-center py-20">
-            <Heart size={40} className="mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-500 mb-4">{t('dashboard', 'no_shortlist')}</p>
-            <Link href={route('search.index')}>
-              <Button>{t('dashboard', 'browse_profiles')}</Button>
-            </Link>
-          </div>
+          <EmptyState
+            icon={Star}
+            title={t('dashboard', 'no_shortlist')}
+            description={t('dashboard', 'no_shortlist_desc') || 'Start adding profiles you like to your shortlist.'}
+            ctaLabel={t('dashboard', 'browse_profiles')}
+            ctaHref={route('search.index')}
+            secondaryLabel={t('dashboard', 'browse_matches') || 'Browse Matches'}
+            secondaryHref={route('matches.index')}
+          />
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {/* Mobile: compact list */}
+            <div className="lg:hidden space-y-3">
+              {shortlisted.data.map(profile => {
+                const age     = profile.birth_date ? calcAge(profile.birth_date) : null
+                const blurred = profile.photo_visibility === 'blurred'
+
+                return (
+                  <article
+                    key={profile.registration_id}
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                  >
+                    <Link
+                      href={route('profile.show', { registrationId: profile.registration_id })}
+                      className="flex gap-3 p-3"
+                    >
+                      {/* Avatar */}
+                      <div className="h-[72px] w-[72px] rounded-full overflow-hidden bg-slate-100 shrink-0 border-2 border-slate-200">
+                        {profile.has_photo && profile.photo_url && !blurred ? (
+                          <img
+                            src={profile.photo_url}
+                            alt={profile.name}
+                            className="w-full h-full object-cover"
+                            onError={e => { (e.target as HTMLImageElement).src = `/images/avatar-${profile.gender}.svg` }}
+                          />
+                        ) : blurred ? (
+                          <div className="h-full w-full flex items-center justify-center bg-slate-200">
+                            <EyeOff size={20} className="text-slate-400" />
+                          </div>
+                        ) : (
+                          <div className={cn('h-full w-full flex items-center justify-center', profile.gender === 'female' ? 'bg-gradient-to-br from-rose-50 to-pink-100' : 'bg-gradient-to-br from-blue-50 to-sky-100')}>
+                            <img src={`/images/avatar-${profile.gender}.svg`} alt="" className="h-9 w-9 opacity-40" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-900 text-[15px] leading-tight truncate">{profile.name}</p>
+                        <p className="text-xs text-slate-500 mt-1 font-mono">{profile.registration_id}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {[
+                            age ? `${age} ${t('common', 'yrs')}` : null,
+                            profile.height_cm ? cmToFeetInches(profile.height_cm) : null,
+                            profile.district,
+                            profile.occupation,
+                          ].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                    </Link>
+
+                    {/* Actions */}
+                    <div className="flex border-t border-slate-100">
+                      <Link
+                        href={route('profile.show', { registrationId: profile.registration_id })}
+                        className="flex-1 py-2.5 text-xs font-semibold text-primary-700 text-center hover:bg-slate-50 transition-colors"
+                      >
+                        {t('dashboard', 'view_profile')}
+                      </Link>
+                      <div className="w-px bg-slate-100" />
+                      <button
+                        onClick={() => removeFromShortlist(profile.registration_id)}
+                        className="flex items-center justify-center gap-1 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        <X size={13} />
+                        {t('dashboard', 'shortlist_remove')}
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+
+            {/* Desktop: card grid */}
+            <div className="hidden lg:grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {shortlisted.data.map(profile => {
                 const age     = profile.birth_date ? calcAge(profile.birth_date) : null
                 const blurred = profile.photo_visibility === 'blurred'
@@ -66,7 +147,6 @@ export default function Shortlist({ shortlisted }: Props) {
                     className="group rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
                   >
                     <Link href={route('profile.show', { registrationId: profile.registration_id })}>
-                      {/* Photo area */}
                       <div className="h-40 bg-slate-100 relative flex items-center justify-center overflow-hidden">
                         {profile.has_photo && profile.photo_url && !blurred ? (
                           <img
@@ -78,55 +158,32 @@ export default function Shortlist({ shortlisted }: Props) {
                         ) : blurred ? (
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-200">
                             <EyeOff size={24} className="text-slate-400 mb-1" />
-                            <p className="text-xs text-slate-500 text-center px-3">
-                              {t('dashboard', 'photo_hidden_msg')}
-                            </p>
+                            <p className="text-xs text-slate-500 text-center px-3">{t('dashboard', 'photo_hidden_msg')}</p>
                           </div>
                         ) : (
-                          <div className={`h-full w-full flex items-center justify-center ${profile.gender === 'male' ? 'bg-gradient-to-br from-blue-50 to-sky-100' : 'bg-gradient-to-br from-rose-50 to-pink-100'}`}>
+                          <div className={cn('h-full w-full flex items-center justify-center', profile.gender === 'male' ? 'bg-gradient-to-br from-blue-50 to-sky-100' : 'bg-gradient-to-br from-rose-50 to-pink-100')}>
                             <span className="text-5xl opacity-70">{profile.gender === 'male' ? '👨' : '👩'}</span>
                           </div>
                         )}
-
                         {profile.platform_mode === 'islamic' && (
                           <span className="absolute top-2 right-2 text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
                             {t('dashboard', 'halal_badge')}
                           </span>
                         )}
                       </div>
-
-                      {/* Info */}
                       <div className="p-4">
                         <p className="font-semibold text-slate-900 truncate">{profile.name}</p>
                         <p className="text-sm text-slate-500 mt-0.5">
-                          {[
-                            age ? `${age} ${t('common', 'yrs')}` : null,
-                            profile.district,
-                            profile.occupation,
-                          ].filter(Boolean).join(' · ')}
+                          {[age ? `${age} ${t('common', 'yrs')}` : null, profile.district, profile.occupation].filter(Boolean).join(' · ')}
                         </p>
-                        {profile.height_cm && (
-                          <p className="text-xs text-slate-400 mt-1">{cmToFeetInches(profile.height_cm)}</p>
-                        )}
+                        {profile.height_cm && <p className="text-xs text-slate-400 mt-1">{cmToFeetInches(profile.height_cm)}</p>}
                       </div>
                     </Link>
-
-                    {/* Actions */}
                     <div className="px-4 pb-4 flex gap-2">
-                      <Link
-                        href={route('profile.show', { registrationId: profile.registration_id })}
-                        className="flex-1"
-                      >
-                        <Button variant="outline" size="sm" className="w-full">
-                          {t('dashboard', 'view_profile')}
-                        </Button>
+                      <Link href={route('profile.show', { registrationId: profile.registration_id })} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">{t('dashboard', 'view_profile')}</Button>
                       </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFromShortlist(profile.registration_id)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => removeFromShortlist(profile.registration_id)} className="text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0">
                         {t('dashboard', 'shortlist_remove')}
                       </Button>
                     </div>
@@ -137,25 +194,15 @@ export default function Shortlist({ shortlisted }: Props) {
 
             {/* Pagination */}
             {shortlisted.last_page > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-10">
+              <div className="flex items-center justify-center gap-2 mt-8">
                 {shortlisted.current_page > 1 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.get(shortlisted.prev_page_url ?? '', {}, { preserveScroll: true })}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => router.get(shortlisted.prev_page_url ?? '', {}, { preserveScroll: true })}>
                     ← {t('common', 'previous')}
                   </Button>
                 )}
-                <span className="text-sm text-slate-500">
-                  {shortlisted.current_page} / {shortlisted.last_page}
-                </span>
+                <span className="text-sm text-slate-500">{shortlisted.current_page} / {shortlisted.last_page}</span>
                 {shortlisted.current_page < shortlisted.last_page && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.get(shortlisted.next_page_url ?? '', {}, { preserveScroll: true })}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => router.get(shortlisted.next_page_url ?? '', {}, { preserveScroll: true })}>
                     {t('common', 'next')} →
                   </Button>
                 )}

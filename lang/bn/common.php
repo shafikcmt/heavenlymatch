@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 return [
 
+    // ── Mobile bottom nav labels ─────────────────────────────────────────────
+    'nav_home'    => 'হোম',
+    'nav_search'  => 'খুঁজুন',
+    'nav_mailbox' => 'বার্তা',
+    'nav_upgrade' => 'আপগ্রেড',
+    'nav_profile' => 'প্রোফাইল',
+
     // ── Navigation ───────────────────────────────────────────────────────────
     'home'          => 'হোম',
     'dashboard'     => 'ড্যাশবোর্ড',

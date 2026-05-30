@@ -11,23 +11,19 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // HeavenlyMatch brand palette
+        // HeavenlyMatch brand palette — deep Islamic green (#006847)
         primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
-        },
-        emerald: {
-          50:  '#ecfdf5',
-          600: '#059669',
+          50:  '#edfdf5',
+          100: '#d1f7e6',
+          200: '#a5efce',
+          300: '#6de0b0',
+          400: '#2dc98e',
+          500: '#0aad75',
+          600: '#008b5c',
+          700: '#006847',   // main brand green
+          800: '#005237',
+          900: '#003d29',
+          950: '#00251a',
         },
       },
       borderRadius: {
