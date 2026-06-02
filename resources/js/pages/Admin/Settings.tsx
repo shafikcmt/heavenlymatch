@@ -74,6 +74,9 @@ export default function Settings({ settings, gateways, mediaUrls }: Props) {
         google_enabled:   settings['social.google_enabled'] ?? '1',
         facebook_enabled: settings['social.facebook_enabled'] ?? '1',
       },
+      system: {
+        profile_approval_required: settings['system.profile_approval_required'] ?? '1',
+      },
     },
     gateways: gateways.map(gw => ({
       id:          gw.id,
@@ -161,6 +164,39 @@ export default function Settings({ settings, gateways, mediaUrls }: Props) {
                 </label>
               </FormField>
             </div>
+          </section>
+
+          {/* Biodata Approval Control */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1">
+              {t('admin', 'settings_group_biodata_approval')}
+            </h2>
+            <p className="text-xs text-slate-400 mb-4">{t('admin', 'settings_biodata_approval_desc')}</p>
+            <FormField label={t('admin', 'settings_require_biodata_approval')}>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    data.settings.system.profile_approval_required === '1' ? 'bg-emerald-500' : 'bg-slate-300'
+                  }`}
+                  onClick={() => setData('settings', {
+                    ...data.settings,
+                    system: {
+                      ...data.settings.system,
+                      profile_approval_required: data.settings.system.profile_approval_required === '1' ? '0' : '1',
+                    },
+                  })}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    data.settings.system.profile_approval_required === '1' ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </div>
+                <span className="text-sm text-slate-600">
+                  {data.settings.system.profile_approval_required === '1'
+                    ? t('admin', 'settings_approval_enabled')
+                    : t('admin', 'settings_approval_disabled')}
+                </span>
+              </label>
+            </FormField>
           </section>
 
           {/* Email notification settings */}

@@ -233,6 +233,13 @@ return [
     'settings_social_facebook' => 'Facebook Login',
     'settings_social_desc'     => 'Enable or disable social login buttons. Credentials must also be set in .env to show buttons.',
 
+    // ── Biodata Approval Control ──────────────────────────────────────────────
+    'settings_group_biodata_approval'    => 'Biodata Approval Control',
+    'settings_biodata_approval_desc'     => 'When enabled, biodata must be reviewed and approved by admin. When disabled, submitted biodata will be approved automatically by system.',
+    'settings_require_biodata_approval'  => 'Require Admin Approval for Biodata',
+    'settings_approval_enabled'          => 'Enabled — admin review required',
+    'settings_approval_disabled'         => 'Disabled — auto-approve',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'Homepage Images',
     'settings_hero_image'        => 'Hero Banner Image',

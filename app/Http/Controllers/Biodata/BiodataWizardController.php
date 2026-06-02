@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Biodata;
 use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Registration;
+use App\Models\SystemSetting;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,7 +85,13 @@ class BiodataWizardController extends Controller
 
         if ($step === count(self::STEPS)) {
             $biodata->is_completed = true;
-            $biodata->status = 'pending';
+        }
+
+        // Apply the Biodata Approval Control workflow once the biodata is complete.
+        // Drafts (incomplete) keep their current status; admin-hidden profiles are never
+        // auto-changed here so the moderator's hide action is preserved.
+        if ($biodata->is_completed && $biodata->status !== 'hidden') {
+            $this->applyApprovalStatus($biodata);
         }
 
         $biodata->save();
@@ -241,6 +248,34 @@ class BiodataWizardController extends Controller
             ],
             default => [],
         };
+    }
+
+    /**
+     * Decide the biodata status based on the "Require Admin Approval for Biodata"
+     * setting (system.profile_approval_required, default enabled).
+     *
+     *  - Enabled  → status = pending, clear approval stamps. A new submission or an
+     *               edit by an already-approved member goes back to admin review.
+     *  - Disabled → status = approved automatically, stamped immediately so the
+     *               profile is visible in public/search listings without admin action.
+     */
+    private function applyApprovalStatus(Biodata $biodata): void
+    {
+        $approvalRequired = SystemSetting::bool('system.profile_approval_required', true);
+
+        if ($approvalRequired) {
+            $biodata->status      = 'pending';
+            $biodata->approved_at = null;
+            $biodata->approved_by = null;
+
+            return;
+        }
+
+        // System auto-approval: no admin actor recorded in approved_by.
+        $biodata->status      = 'approved';
+        $biodata->approved_at = $biodata->approved_at ?? now();
+        $biodata->rejected_at = null;
+        $biodata->rejected_by = null;
     }
 
     private function computeCompleteness(Biodata $biodata): int

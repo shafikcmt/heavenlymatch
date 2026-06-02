@@ -25,13 +25,17 @@ class AdminSettingsController extends Controller
         'notification.mail_from_address',
         'social.google_enabled',
         'social.facebook_enabled',
+        // Biodata Approval Control — '1' requires admin approval, '0' auto-approves.
+        'system.profile_approval_required',
     ];
 
     public function index(): Response
     {
         $settings = [];
         foreach (self::EDITABLE_KEYS as $key) {
-            $settings[$key] = SystemSetting::get($key, '');
+            // Biodata approval defaults to enabled ('1') so the safe workflow stays on.
+            $default = $key === 'system.profile_approval_required' ? '1' : '';
+            $settings[$key] = SystemSetting::get($key, $default);
         }
 
         $gateways = PaymentGateway::where('is_active', true)
@@ -63,6 +67,7 @@ class AdminSettingsController extends Controller
             'settings.notification.mail_from_address' => 'nullable|email|max:150',
             'settings.social.google_enabled'          => 'nullable|string|in:0,1',
             'settings.social.facebook_enabled'        => 'nullable|string|in:0,1',
+            'settings.system.profile_approval_required' => 'nullable|string|in:0,1',
             'gateways'                          => 'array',
             'gateways.*.id'                     => 'required|integer|exists:payment_gateways,id',
             'gateways.*.merchant_id'            => 'nullable|string|max:100',

@@ -233,6 +233,13 @@ return [
     'settings_social_facebook' => 'ফেসবুক লগইন',
     'settings_social_desc'     => 'সোশ্যাল লগইন বাটন চালু বা বন্ধ করুন। বাটন দেখাতে .env ফাইলেও শংসাপত্র থাকতে হবে।',
 
+    // ── Biodata Approval Control ──────────────────────────────────────────────
+    'settings_group_biodata_approval'    => 'বায়োডাটা অনুমোদন নিয়ন্ত্রণ',
+    'settings_biodata_approval_desc'     => 'চালু থাকলে বায়োডাটা অ্যাডমিন কর্তৃক পর্যালোচনা ও অনুমোদন করতে হবে। বন্ধ থাকলে জমা দেওয়া বায়োডাটা সিস্টেম স্বয়ংক্রিয়ভাবে অনুমোদন করবে।',
+    'settings_require_biodata_approval'  => 'বায়োডাটার জন্য অ্যাডমিন অনুমোদন আবশ্যক',
+    'settings_approval_enabled'          => 'চালু — অ্যাডমিন পর্যালোচনা প্রয়োজন',
+    'settings_approval_disabled'         => 'বন্ধ — স্বয়ংক্রিয় অনুমোদন',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'হোমপেজ ছবি',
     'settings_hero_image'        => 'হিরো ব্যানার ছবি',
