@@ -1,1 +1,0 @@
-import{j as t,H as e}from"./app-IdC9GEl4.js";function o(){return t.jsxs(t.Fragment,{children:[t.jsx(e,{title:"Show"}),t.jsx("div",{className:"p-8 text-center text-slate-500",children:"Show — Coming soon"})]})}export{o as default};

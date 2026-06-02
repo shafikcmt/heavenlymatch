@@ -34,6 +34,7 @@ return [
     'interest_declined'           => 'Declined',
     'interest_withdrawn'          => 'Withdrawn',
     'interest_sent_success'       => 'Interest sent successfully.',
+    'interest_sent_email_failed'  => 'Interest sent successfully, but email notification could not be delivered.',
     'interest_withdrawn_success'  => 'Interest withdrawn.',
     'interest_accepted_success'   => 'Interest accepted! You can now message each other.',
     'interest_declined_success'   => 'Interest declined.',

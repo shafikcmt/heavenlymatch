@@ -247,8 +247,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Flash messages */}
-        {(flash.success || flash.error || flash.info) && (
-          <div className="px-4 pt-4">
+        {(flash.success || flash.error || flash.warning || flash.info) && (
+          <div className="px-4 pt-4 space-y-2">
             {flash.success && (
               <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
                 ✓ {flash.success}
@@ -257,6 +257,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {flash.error && (
               <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
                 ✕ {flash.error}
+              </div>
+            )}
+            {flash.warning && (
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                ⚠ {flash.warning}
               </div>
             )}
             {flash.info && (

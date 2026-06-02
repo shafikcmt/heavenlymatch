@@ -34,6 +34,7 @@ return [
     'interest_declined'           => 'প্রত্যাখ্যাত',
     'interest_withdrawn'          => 'প্রত্যাহৃত',
     'interest_sent_success'       => 'আগ্রহ সফলভাবে পাঠানো হয়েছে।',
+    'interest_sent_email_failed'  => 'আগ্রহ সফলভাবে পাঠানো হয়েছে, তবে ইমেইল নোটিফিকেশন পাঠানো যায়নি।',
     'interest_withdrawn_success'  => 'আগ্রহ প্রত্যাহার করা হয়েছে।',
     'interest_accepted_success'   => 'আগ্রহ গৃহীত হয়েছে! এখন আপনারা একে অপরকে বার্তা পাঠাতে পারবেন।',
     'interest_declined_success'   => 'আগ্রহ প্রত্যাখ্যান করা হয়েছে।',

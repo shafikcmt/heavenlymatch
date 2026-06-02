@@ -18,6 +18,7 @@ export interface AuthUser {
 export interface Flash {
   success: string | null
   error: string | null
+  warning: string | null
   info: string | null
 }
 

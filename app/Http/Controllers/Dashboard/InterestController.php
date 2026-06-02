@@ -12,8 +12,11 @@ use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Throwable;
 
 class InterestController extends Controller
 {
@@ -122,9 +125,14 @@ class InterestController extends Controller
             ->select(['id', 'registration_id', 'name', 'email', 'preferred_language'])
             ->first();
 
+        // Tracks whether the email notification could not be delivered, so we can
+        // show the sender a soft warning instead of crashing the request.
+        $emailFailed = false;
+
         if ($receiver) {
             $lang = $receiver->preferred_language ?? 'bn';
 
+            // Internal (database) notification must always succeed regardless of email.
             UserNotification::send(
                 $receiver->registration_id,
                 'interest',
@@ -133,15 +141,43 @@ class InterestController extends Controller
                 ['from' => $user->registration_id],
             );
 
-            $receiver->notify(new HeavenlyMatchNotification(
-                subject: trans('notifications.email_subject_interest', ['name' => $user->name], $lang),
-                greeting: trans('notifications.email_greeting', ['name' => $receiver->name], $lang),
-                introLines: [
-                    trans('notifications.interest_received_body', ['name' => $user->name], $lang),
-                ],
-                actionUrl: url('/interests/received'),
-                actionText: trans('notifications.email_action_view_interests', [], $lang),
-            ));
+            // Only attempt email if the receiver has a syntactically valid address.
+            $email = trim((string) $receiver->email);
+            if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $emailFailed = true;
+                Log::warning('Interest email notification skipped: missing or invalid receiver email.', [
+                    'receiver_registration_id' => $receiver->registration_id,
+                    'receiver_email'           => $receiver->email,
+                ]);
+            } else {
+                try {
+                    $receiver->notify(new HeavenlyMatchNotification(
+                        subject: trans('notifications.email_subject_interest', ['name' => $user->name], $lang),
+                        greeting: trans('notifications.email_greeting', ['name' => $receiver->name], $lang),
+                        introLines: [
+                            trans('notifications.interest_received_body', ['name' => $user->name], $lang),
+                        ],
+                        actionUrl: url('/interests/received'),
+                        actionText: trans('notifications.email_action_view_interests', [], $lang),
+                    ));
+                } catch (TransportExceptionInterface | Throwable $e) {
+                    // Email delivery failed (e.g. SMTP 550, unreachable host). The interest
+                    // is already saved and the in-app notification sent, so we swallow the
+                    // exception, log the technical details for admins, and warn the sender
+                    // gently — without exposing the receiver's email or the raw error.
+                    $emailFailed = true;
+                    Log::error('Interest email notification failed to send.', [
+                        'receiver_registration_id' => $receiver->registration_id,
+                        'receiver_email'           => $receiver->email,
+                        'exception'                => $e::class,
+                        'message'                  => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+
+        if ($emailFailed) {
+            return back()->with('warning', __('dashboard.interest_sent_email_failed'));
         }
 
         return back()->with('success', __('dashboard.interest_sent_success'));
