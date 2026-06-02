@@ -1,0 +1,1 @@
+import{j as t,H as e}from"./app-BQf8khhW.js";function r(){return t.jsxs(t.Fragment,{children:[t.jsx(e,{title:"Privacy"}),t.jsx("div",{className:"p-8 text-center text-slate-500",children:"Privacy — Coming soon"})]})}export{r as default};
