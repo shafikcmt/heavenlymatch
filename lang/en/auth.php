@@ -118,6 +118,20 @@ return [
     'email_taken'            => 'This email is already registered. Please sign in or use another email.',
     'email_taken_signin'     => 'Already have an account? Sign In',
 
+    // ── Email OTP verification ────────────────────────────────────────────────
+    'email_otp_sent'         => 'OTP sent to your email.',
+    'email_otp_verified'     => 'Email verified successfully.',
+    'email_otp_send_failed'  => 'OTP could not be sent right now. Please try again later.',
+    'email_otp_required'     => 'Please verify your email before continuing.',
+    'email_otp_hint'         => 'We sent a 6-digit OTP to your email address.',
+    'email_otp_label'        => 'Enter 6-digit OTP',
+    'email_verified_badge'   => 'Email verified',
+    'btn_send_email_otp'     => 'Send OTP',
+    'btn_resend_email_otp'   => 'Resend OTP',
+    'btn_verify_email_otp'   => 'Verify OTP',
+    'change_email'           => 'Change email',
+    'verify_email_first'     => 'Please verify your email to continue.',
+
     // ── Mobile number + OTP verification ──────────────────────────────────────
     'field_mobile'           => 'Mobile Number',
     'field_mobile_ph'        => '+880 1XXX-XXXXXX',

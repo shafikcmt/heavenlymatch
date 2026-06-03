@@ -109,6 +109,20 @@ return [
     'email_taken'            => 'এই ইমেইলটি ইতিমধ্যে নিবন্ধিত। অনুগ্রহ করে সাইন ইন করুন বা অন্য ইমেইল ব্যবহার করুন।',
     'email_taken_signin'     => 'ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন করুন',
 
+    // ── Email OTP verification ────────────────────────────────────────────────
+    'email_otp_sent'         => 'আপনার ইমেইলে OTP পাঠানো হয়েছে।',
+    'email_otp_verified'     => 'ইমেইল সফলভাবে যাচাই হয়েছে।',
+    'email_otp_send_failed'  => 'এখন OTP পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    'email_otp_required'     => 'এগিয়ে যাওয়ার আগে আপনার ইমেইল যাচাই করুন।',
+    'email_otp_hint'         => 'আপনার ইমেইল ঠিকানায় আমরা একটি ৬-সংখ্যার OTP পাঠিয়েছি।',
+    'email_otp_label'        => '৬-সংখ্যার OTP লিখুন',
+    'email_verified_badge'   => 'ইমেইল যাচাই হয়েছে',
+    'btn_send_email_otp'     => 'OTP পাঠান',
+    'btn_resend_email_otp'   => 'আবার OTP পাঠান',
+    'btn_verify_email_otp'   => 'OTP যাচাই করুন',
+    'change_email'           => 'ইমেইল পরিবর্তন করুন',
+    'verify_email_first'     => 'এগিয়ে যেতে আপনার ইমেইল যাচাই করুন।',
+
     // ── Mobile number + OTP verification ──────────────────────────────────────
     'field_mobile'           => 'মোবাইল নম্বর',
     'field_mobile_ph'        => '+880 1XXX-XXXXXX',

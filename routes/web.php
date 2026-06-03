@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\PhoneVerificationController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Dashboard\DashboardController;
@@ -74,6 +75,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/email/check', [RegisterController::class, 'checkEmail'])
         ->middleware('throttle:20,1')
         ->name('register.email.check');
+
+    // Registration email OTP (JSON). Throttled to curb mail abuse.
+    Route::post('/register/email/send-otp', [EmailVerificationController::class, 'sendOtp'])
+        ->middleware('throttle:6,10')
+        ->name('register.email.send-otp');
+    Route::post('/register/email/verify-otp', [EmailVerificationController::class, 'verifyOtp'])
+        ->middleware('throttle:10,10')
+        ->name('register.email.verify-otp');
 
     // Registration phone OTP (JSON). Throttled to curb SMS abuse.
     Route::post('/register/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])

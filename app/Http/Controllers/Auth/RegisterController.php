@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
 use App\Models\SystemSetting;
+use App\Services\EmailOtpService;
 use App\Services\PhoneOtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,8 +20,10 @@ use Inertia\Response;
 
 class RegisterController extends Controller
 {
-    public function __construct(private readonly PhoneOtpService $otp)
-    {
+    public function __construct(
+        private readonly PhoneOtpService $otp,
+        private readonly EmailOtpService $emailOtp,
+    ) {
     }
 
     public function show(): Response
@@ -99,6 +102,20 @@ class RegisterController extends Controller
             }
         }
 
+        // Email OTP gate — when enabled, the address must have a verified code.
+        $emailVerified = false;
+        if ($requireEmail) {
+            if (! $this->emailOtp->isEmailVerified($validated['email'])) {
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.email_otp_required'),
+                ]);
+            }
+            $emailVerified = true;
+        } else {
+            // OTP skipped — honor a verification only if one happened to occur.
+            $emailVerified = $this->emailOtp->isEmailVerified($validated['email']);
+        }
+
         $reg = Registration::create([
             'name'                => $validated['name'],
             'email'               => $validated['email'],
@@ -117,23 +134,23 @@ class RegisterController extends Controller
             // account_status = 'active',  role = 'user'
         ]);
 
-        // OTP fulfilled its purpose — remove all codes for this number.
+        // OTP fulfilled its purpose — remove the codes used to register.
         if ($mobile !== null) {
             $this->otp->clearForPhone($mobile);
+        }
+
+        // Mark the email as verified (OTP-based) and clear its codes.
+        // No verification *link* is ever sent — email is verified up-front via OTP.
+        if ($emailVerified) {
+            $reg->markEmailAsVerified();
+            $this->emailOtp->clearForEmail($validated['email']);
         }
 
         Auth::login($reg);
         $request->session()->regenerate();
 
-        // Email verification enabled → keep the standard verify-email flow.
-        if ($requireEmail) {
-            $reg->sendEmailVerificationNotification();
-
-            return redirect()->route('verification.notice')
-                ->with('status', trans('auth.register_success'));
-        }
-
-        // Email verification disabled → straight into onboarding, no blocking notice.
+        // Email is already OTP-verified (or verification is off) — go straight to
+        // onboarding. The legacy verify-email link flow is no longer used here.
         return redirect()->route('dashboard')
             ->with('success', trans('auth.register_success'));
     }

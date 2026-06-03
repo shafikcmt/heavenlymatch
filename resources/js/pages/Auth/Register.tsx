@@ -14,8 +14,15 @@ type Step = 1 | 2 | 3
 
 export default function Register() {
   const { t } = useTranslation()
-  const { googleEnabled, facebookEnabled, requirePhoneVerification = true } = usePage<
-    PageProps & { googleEnabled: boolean; facebookEnabled: boolean; requirePhoneVerification?: boolean }
+  const {
+    googleEnabled, facebookEnabled,
+    requirePhoneVerification = true,
+    requireEmailVerification = true,
+  } = usePage<
+    PageProps & {
+      googleEnabled: boolean; facebookEnabled: boolean
+      requirePhoneVerification?: boolean; requireEmailVerification?: boolean
+    }
   >().props
   const [step, setStep] = useState<Step>(1)
 
@@ -32,6 +39,16 @@ export default function Register() {
   // ── Email availability state ────────────────────────────────────────────────
   type EmailStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
   const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle')
+
+  // ── Email OTP verification state ────────────────────────────────────────────
+  const [emailOtpSent, setEmailOtpSent] = useState(false)
+  const [emailOtpVerified, setEmailOtpVerified] = useState(false)
+  const [emailOtp, setEmailOtp] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailVerifying, setEmailVerifying] = useState(false)
+  const [emailOtpError, setEmailOtpError] = useState('')
+  const [emailOtpInfo, setEmailOtpInfo] = useState('')
+  const [emailResendIn, setEmailResendIn] = useState(0)
 
   const { data, setData, post, processing, errors } = useForm({
     name: '',
@@ -96,6 +113,66 @@ export default function Register() {
     return () => clearTimeout(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.email])
+
+  // Email-OTP resend countdown tick
+  useEffect(() => {
+    if (emailResendIn <= 0) return
+    const id = setTimeout(() => setEmailResendIn(s => s - 1), 1000)
+    return () => clearTimeout(id)
+  }, [emailResendIn])
+
+  // Changing the email invalidates any prior email OTP / verification
+  const handleEmailChange = (value: string) => {
+    setData('email', value)
+    if (emailOtpSent || emailOtpVerified) {
+      setEmailOtpSent(false)
+      setEmailOtpVerified(false)
+      setEmailOtp('')
+      setEmailOtpError('')
+      setEmailOtpInfo('')
+      setEmailResendIn(0)
+    }
+  }
+
+  const resetEmailVerification = () => {
+    setEmailOtpSent(false)
+    setEmailOtpVerified(false)
+    setEmailOtp('')
+    setEmailOtpError('')
+    setEmailOtpInfo('')
+    setEmailResendIn(0)
+  }
+
+  const handleSendEmailOtp = async () => {
+    setEmailOtpError(''); setEmailOtpInfo(''); setEmailSending(true)
+    try {
+      const { data: res } = await axios.post(route('register.email.send-otp'), { email: data.email })
+      setEmailOtpSent(true)
+      setEmailOtpInfo(res?.message ?? t('auth', 'email_otp_sent'))
+      setEmailResendIn(res?.retry_after ?? 60)
+    } catch (e: any) {
+      setEmailOtpError(e?.response?.data?.message ?? t('auth', 'email_otp_send_failed'))
+    } finally {
+      setEmailSending(false)
+    }
+  }
+
+  const handleVerifyEmailOtp = async () => {
+    setEmailOtpError(''); setEmailOtpInfo(''); setEmailVerifying(true)
+    try {
+      const { data: res } = await axios.post(route('register.email.verify-otp'), {
+        email: data.email,
+        otp: emailOtp,
+      })
+      setEmailOtpVerified(true)
+      setEmailOtpSent(false)
+      setEmailOtpInfo(res?.message ?? t('auth', 'email_otp_verified'))
+    } catch (e: any) {
+      setEmailOtpError(e?.response?.data?.message ?? t('auth', 'otp_invalid'))
+    } finally {
+      setEmailVerifying(false)
+    }
+  }
 
   // Changing the number invalidates any prior OTP / verification
   const handleMobileChange = (value: string) => {
@@ -163,6 +240,11 @@ export default function Register() {
       const email = data.email.trim()
       if (!EMAIL_RE.test(email)) { setEmailStatus('invalid'); return }
       if (emailStatus === 'taken') return
+      // When email verification is enabled, the email OTP must be verified first.
+      if (requireEmailVerification && !emailOtpVerified) {
+        setEmailOtpError(t('auth', 'verify_email_first'))
+        return
+      }
       // Confirm availability if the debounced check hasn't resolved yet.
       if (emailStatus !== 'available') {
         setEmailStatus('checking')
@@ -302,13 +384,14 @@ export default function Register() {
                   label={t('auth', 'field_email')}
                   type="email"
                   value={data.email}
-                  onChange={e => setData('email', e.target.value)}
+                  onChange={e => handleEmailChange(e.target.value)}
                   error={errors.email}
                   placeholder={t('auth', 'field_email_ph')}
+                  disabled={emailOtpVerified}
                   className={cn(
                     !errors.email && (emailStatus === 'taken' || emailStatus === 'invalid') &&
                       'border-red-400 focus:border-red-500 focus:ring-red-500',
-                    !errors.email && emailStatus === 'available' &&
+                    !errors.email && (emailStatus === 'available' || emailOtpVerified) &&
                       'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500',
                   )}
                   required
@@ -344,6 +427,78 @@ export default function Register() {
                     </Link>
                   </div>
                 )}
+
+                {/* ── Email OTP verification (when enabled by admin) ── */}
+                {requireEmailVerification && !errors.email && (
+                  <div className="mt-2 space-y-2">
+                    {/* Send / Resend — only once the address is confirmed free */}
+                    {emailStatus === 'available' && !emailOtpVerified && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSendEmailOtp}
+                        disabled={emailSending || emailResendIn > 0}
+                        isLoading={emailSending}
+                        className="w-full"
+                      >
+                        {emailOtpSent
+                          ? (emailResendIn > 0
+                              ? t('auth', 'otp_resend_in', { seconds: emailResendIn })
+                              : t('auth', 'btn_resend_email_otp'))
+                          : t('auth', 'btn_send_email_otp')}
+                      </Button>
+                    )}
+
+                    {/* Verified badge */}
+                    {emailOtpVerified && (
+                      <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                        <span className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                          <ShieldCheck size={16} />
+                          {t('auth', 'email_verified_badge')}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={resetEmailVerification}
+                          className="text-xs font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                        >
+                          {t('auth', 'change_email')}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* OTP entry card */}
+                    {emailOtpSent && !emailOtpVerified && (
+                      <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-xs text-slate-600">{t('auth', 'email_otp_hint')}</p>
+                        <Input
+                          label={t('auth', 'email_otp_label')}
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={emailOtp}
+                          onChange={e => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="123456"
+                          autoFocus
+                        />
+                        <Button
+                          type="button"
+                          className="w-full"
+                          onClick={handleVerifyEmailOtp}
+                          disabled={emailVerifying || emailOtp.length !== 6}
+                          isLoading={emailVerifying}
+                        >
+                          {emailVerifying ? t('auth', 'verifying') : t('auth', 'btn_verify_email_otp')}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Inline OTP messages */}
+                    {emailOtpError && <p className="text-xs text-red-600">{emailOtpError}</p>}
+                    {!emailOtpError && emailOtpInfo && (
+                      <p className="text-xs text-emerald-600">{emailOtpInfo}</p>
+                    )}
+                  </div>
+                )}
               </div>
               <Input
                 label={t('auth', 'field_password')}
@@ -363,7 +518,12 @@ export default function Register() {
                 placeholder={t('auth', 'field_confirm_ph')}
                 required
               />
-              <Button type="submit" className="w-full" size="lg" disabled={emailStatus === 'taken'}>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={emailStatus === 'taken' || (requireEmailVerification && !emailOtpVerified)}
+              >
                 {t('auth', 'btn_continue')} →
               </Button>
             </>
