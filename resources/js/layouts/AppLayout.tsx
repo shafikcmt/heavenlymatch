@@ -5,7 +5,7 @@ import type { PageProps } from '@/types'
 import {
   Home, Search, Heart, MessageCircle, Star, Bell,
   User, Settings, LogOut, Menu, X,
-  Shield, Sparkles, Crown, TrendingUp, Headphones,
+  Shield, Sparkles, Crown, TrendingUp, Headphones, FileEdit,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
@@ -66,24 +66,41 @@ function MembershipBadge({ tier }: { tier: string | null }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { auth, flash, completion, unread_notifications } = usePage<PageProps>().props
+  const { auth, flash, completion, access, unread_notifications } = usePage<PageProps>().props
   const { t } = useTranslation()
   const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
-  const showTabs = TAB_PATHS.some(p => currentPath.startsWith(p))
   const activeTab = getActiveTab(currentPath)
   const pageTitle = t('common', getPageTitleKey(currentPath))
 
-  const navItems = [
-    { label: t('common', 'dashboard'),     href: '/dashboard',          icon: Home },
-    { label: t('common', 'matches'),       href: '/matches',            icon: Sparkles },
-    { label: t('common', 'search'),        href: '/search',             icon: Search },
-    { label: t('common', 'interests'),     href: '/interests/received', icon: Heart },
-    { label: t('common', 'inbox'),         href: '/inbox',              icon: MessageCircle },
-    { label: t('common', 'shortlist'),     href: '/shortlist',          icon: Star },
-    { label: t('common', 'notifications'), href: '/notifications',      icon: Bell },
-  ]
+  // Matching features unlock only once the biodata is approved.
+  const fullAccess = access ? access.can_access_matches : true
+  // Match-list tabs + notification bell are only meaningful for approved users.
+  const showTabs = fullAccess && TAB_PATHS.some(p => currentPath.startsWith(p))
+  const showBell = fullAccess
+
+  // Conditional sidebar: before approval show only Dashboard + Biodata
+  // (Settings + Logout live in the footer and stay visible in every state).
+  const biodataItem = {
+    label: access && !access.has_biodata ? t('dashboard', 'complete_biodata') : t('common', 'edit_biodata'),
+    href: '/biodata/wizard',
+    icon: FileEdit,
+  }
+  const navItems = fullAccess
+    ? [
+        { label: t('common', 'dashboard'),     href: '/dashboard',          icon: Home },
+        { label: t('common', 'matches'),       href: '/matches',            icon: Sparkles },
+        { label: t('common', 'search'),        href: '/search',             icon: Search },
+        { label: t('common', 'interests'),     href: '/interests/received', icon: Heart },
+        { label: t('common', 'inbox'),         href: '/inbox',              icon: MessageCircle },
+        { label: t('common', 'shortlist'),     href: '/shortlist',          icon: Star },
+        { label: t('common', 'notifications'), href: '/notifications',      icon: Bell },
+      ]
+    : [
+        { label: t('common', 'dashboard'), href: '/dashboard', icon: Home },
+        biodataItem,
+      ]
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -227,18 +244,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <h1 className="text-lg font-bold text-slate-900 tracking-tight">{pageTitle}</h1>
 
           <div className="ml-auto flex items-center gap-2">
-            <Link
-              href="/notifications"
-              aria-label={t('common', 'notifications')}
-              className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-            >
-              <Bell size={20} />
-              {unread_notifications > 0 && (
-                <span className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
-                  {unread_notifications > 9 ? '9+' : unread_notifications}
-                </span>
-              )}
-            </Link>
+            {showBell && (
+              <Link
+                href="/notifications"
+                aria-label={t('common', 'notifications')}
+                className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              >
+                <Bell size={20} />
+                {unread_notifications > 0 && (
+                  <span className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                    {unread_notifications > 9 ? '9+' : unread_notifications}
+                  </span>
+                )}
+              </Link>
+            )}
             <LanguageSwitcher />
             <div className="h-6 w-px bg-slate-200" />
             <UserMenu />
@@ -265,18 +284,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3">
               <LanguageSwitcher inverted />
 
-              <Link
-                href="/notifications"
-                aria-label={t('common', 'notifications')}
-                className="relative text-white/80 hover:text-white"
-              >
-                <Bell size={22} />
-                {unread_notifications > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
-                    {unread_notifications > 9 ? '9+' : unread_notifications}
-                  </span>
-                )}
-              </Link>
+              {showBell && (
+                <Link
+                  href="/notifications"
+                  aria-label={t('common', 'notifications')}
+                  className="relative text-white/80 hover:text-white"
+                >
+                  <Bell size={22} />
+                  {unread_notifications > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                      {unread_notifications > 9 ? '9+' : unread_notifications}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               <button
                 aria-label="Support"

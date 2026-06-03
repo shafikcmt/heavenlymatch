@@ -14,6 +14,8 @@ return [
     'nav_mailbox' => 'Mailbox',
     'nav_upgrade' => 'Upgrade',
     'nav_profile' => 'Profile',
+    'nav_biodata' => 'Biodata',
+    'nav_settings'=> 'Settings',
 
     // ── Navigation ───────────────────────────────────────────────────────────
     'home'          => 'Home',

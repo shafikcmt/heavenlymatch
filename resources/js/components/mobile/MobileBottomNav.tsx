@@ -1,11 +1,11 @@
 /// <reference path="../../types/ziggy.d.ts" />
 import { Link, usePage } from '@inertiajs/react'
-import { Home, Search, Mail, Crown, User } from 'lucide-react'
+import { Home, Search, Mail, Crown, User, FileEdit, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PageProps } from '@/types'
 import { useTranslation } from '@/lib/i18n'
 
-const NAV_ITEMS = [
+const FULL_NAV = [
   { key: 'home',    label: 'nav_home',    href: '/dashboard',        icon: Home,   exact: true },
   { key: 'search',  label: 'nav_search',  href: '/search',           icon: Search, exact: false },
   { key: 'mailbox', label: 'nav_mailbox', href: '/inbox',            icon: Mail,   exact: false },
@@ -13,10 +13,20 @@ const NAV_ITEMS = [
   { key: 'profile', label: 'nav_profile', href: '/dashboard/profile',icon: User,   exact: false },
 ]
 
+// Before biodata approval: focus on completing the biodata.
+const ONBOARD_NAV = [
+  { key: 'home',     label: 'nav_home',     href: '/dashboard',        icon: Home,     exact: true },
+  { key: 'biodata',  label: 'nav_biodata',  href: '/biodata/wizard',   icon: FileEdit, exact: false },
+  { key: 'profile',  label: 'nav_profile',  href: '/dashboard/profile',icon: User,     exact: false },
+  { key: 'settings', label: 'nav_settings', href: '/settings',         icon: Settings, exact: false },
+]
+
 export function MobileBottomNav() {
-  const { unread_notifications } = usePage<PageProps>().props
+  const { unread_notifications, access } = usePage<PageProps>().props
   const { t } = useTranslation()
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+  const fullAccess = access ? access.can_access_matches : true
+  const navItems = fullAccess ? FULL_NAV : ONBOARD_NAV
 
   const isActive = (href: string, exact: boolean) =>
     exact ? currentPath === href : currentPath.startsWith(href)
@@ -26,7 +36,7 @@ export function MobileBottomNav() {
       aria-label="Mobile navigation"
       className="fixed bottom-0 left-0 right-0 z-50 flex h-16 border-t border-slate-200 bg-white lg:hidden safe-bottom"
     >
-      {NAV_ITEMS.map(({ key, label, href, icon: Icon, exact }) => {
+      {navItems.map(({ key, label, href, icon: Icon, exact }) => {
         const active = isActive(href, exact)
         const isMailbox = key === 'mailbox'
         return (

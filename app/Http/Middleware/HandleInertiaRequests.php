@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Registration;
 use App\Services\ProfileCompletionService;
+use App\Services\UserAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Lang;
@@ -73,6 +74,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'completion' => fn () => $user
                 ? ProfileCompletionService::compute($user)
+                : null,
+            'access' => fn () => $user
+                ? UserAccessService::compute($user)
                 : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

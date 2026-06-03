@@ -33,6 +33,22 @@ export interface CompletionData {
   has_photo: boolean
 }
 
+export type AccessStateName = 'incomplete' | 'pending' | 'rejected' | 'hidden' | 'approved'
+
+export interface AccessState {
+  has_biodata: boolean
+  is_completed: boolean
+  completion_percentage: number
+  biodata_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'hidden' | null
+  approval_required: boolean
+  state: AccessStateName
+  can_access_matches: boolean
+  can_access_search: boolean
+  can_send_interest: boolean
+  missing_sections: string[]
+  next_step_url: string
+}
+
 export interface PageProps {
   auth: { user: AuthUser | null }
   flash: Flash
@@ -40,6 +56,7 @@ export interface PageProps {
   locale: 'en' | 'bn'
   translations: Record<string, Record<string, unknown>>
   completion: CompletionData | null
+  access: AccessState | null
   unread_notifications: number
   [key: string]: unknown
 }

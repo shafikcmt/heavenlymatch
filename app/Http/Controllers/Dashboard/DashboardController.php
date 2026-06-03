@@ -11,6 +11,7 @@ use App\Models\ProfileView;
 use App\Models\Registration;
 use App\Services\MatchingEngine;
 use App\Services\PhotoPrivacyService;
+use App\Services\UserAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -28,6 +29,26 @@ class DashboardController extends Controller
         /** @var Registration $user */
         $user = $request->user();
         $regId = $user->registration_id;
+
+        $access = UserAccessService::compute($user);
+
+        // ── Onboarding / non-approved users ───────────────────────────────────
+        // Skip all matching queries (stats, daily picks, visitors) — these
+        // features are locked until the biodata is approved. The frontend
+        // renders a focused completion/status dashboard from `access`.
+        if (! $access['can_access_matches']) {
+            return Inertia::render('Dashboard/Index', [
+                'stats'                => $this->emptyStats(),
+                'daily_picks'          => [],
+                'biodata_completeness' => $access['completion_percentage'],
+                'biodata_status'       => $access['biodata_status'],
+                'rejection_reason'     => $access['biodata_status'] === 'rejected'
+                    ? $user->biodata?->admin_note
+                    : null,
+                'recent_visitors'      => [],
+                'is_verified'          => $user->identity_verification_status === 'verified',
+            ]);
+        }
 
         // ── Stats (cached 15 min) ─────────────────────────────────────────────
         $stats = Cache::remember("dashboard_stats:{$regId}", 900, function () use ($regId) {
@@ -109,6 +130,19 @@ class DashboardController extends Controller
             'recent_visitors'     => $recentVisitors,
             'is_verified'         => $user->identity_verification_status === 'verified',
         ]);
+    }
+
+    /** Zeroed stat block for users who don't yet have matching access. */
+    private function emptyStats(): array
+    {
+        return [
+            'matches_today'      => 0,
+            'interests_received' => 0,
+            'interests_sent'     => 0,
+            'profile_views'      => 0,
+            'messages_unread'    => 0,
+            'shortlisted_count'  => 0,
+        ];
     }
 
     private function formatProfile(Registration $reg, int $score, ?array $breakdown, Registration $viewer): ?array

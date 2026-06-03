@@ -304,5 +304,45 @@ return [
     'dash_go_biodata'           => 'Update Biodata',
     'dash_rejection_reason_label' => 'Reason:',
 
+    // ── Access gate messages (server-side redirects) ──────────────────────────
+    'access_msg_incomplete'  => 'Please complete your biodata first to access this feature.',
+    'access_msg_pending'     => 'Your biodata is waiting for admin approval.',
+    'access_msg_rejected'    => 'Please update your biodata and submit again.',
+    'access_msg_hidden'      => 'Your biodata is currently hidden. Please contact support.',
+    'access_msg_min_profile' => 'Please complete at least 30% of your biodata profile before taking this action.',
+
+    // ── Onboarding dashboard (biodata not yet approved) ───────────────────────
+    'onboard_title'        => 'Complete your biodata to start your matching journey',
+    'onboard_subtitle'     => 'Your biodata helps us find suitable, halal and meaningful matches for you. Complete your profile carefully to get better responses.',
+    'onboard_progress'     => 'Profile completion',
+    'onboard_cta_complete' => 'Complete Biodata',
+    'onboard_cta_continue' => 'Continue Biodata',
+    'onboard_note'         => 'Profiles above 80% completion receive more suitable match suggestions.',
+    'onboard_tips_title'   => 'A few tips for a great profile',
+    'onboard_tip_accurate' => 'Add accurate information',
+    'onboard_tip_accurate_desc' => 'Honest, detailed answers lead to better matches.',
+    'onboard_tip_photo'    => 'Upload a profile photo if allowed',
+    'onboard_tip_photo_desc'    => 'Profiles with a photo receive more responses.',
+    'onboard_tip_family'   => 'Complete family & partner preferences',
+    'onboard_tip_family_desc'   => 'This helps us match you with compatible families.',
+    'onboard_tip_protected'=> 'Your information is protected',
+    'onboard_tip_protected_desc'=> 'Your data stays private and is shared responsibly.',
+    'onboard_locked_title' => 'Unlock matches, search & interests',
+    'onboard_locked_desc'  => 'Complete and get your biodata approved to access all features.',
+
+    // ── Pending / rejected / hidden focused states ────────────────────────────
+    'state_pending_title'  => 'Your biodata has been submitted for admin review.',
+    'state_pending_badge'  => 'Pending Approval',
+    'state_pending_note'   => 'Once approved, you can access matches, search and interest features.',
+    'state_rejected_title' => 'Your biodata needs an update before approval.',
+    'state_rejected_note'  => 'Please review the reason below, update your biodata and submit again.',
+    'state_rejected_cta'   => 'Update Biodata',
+    'state_hidden_title'   => 'Your biodata is currently hidden.',
+    'state_hidden_note'    => 'Your profile is not visible to members right now. Please contact support if you think this is a mistake.',
+    'state_badge_pending'  => 'Pending Approval',
+    'state_badge_rejected' => 'Needs Update',
+    'state_badge_hidden'   => 'Hidden',
+    'complete_biodata'     => 'Complete Biodata',
+
 ];
 
