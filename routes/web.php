@@ -70,6 +70,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register',[RegisterController::class, 'store'])->name('register.store');
 
+    // Registration email availability check (JSON). Throttled to curb scraping.
+    Route::post('/register/email/check', [RegisterController::class, 'checkEmail'])
+        ->middleware('throttle:20,1')
+        ->name('register.email.check');
+
     // Registration phone OTP (JSON). Throttled to curb SMS abuse.
     Route::post('/register/phone/send-otp', [PhoneVerificationController::class, 'sendOtp'])
         ->middleware('throttle:6,10')

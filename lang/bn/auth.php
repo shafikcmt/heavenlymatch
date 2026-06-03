@@ -102,6 +102,13 @@ return [
     'choose_experience'      => 'আপনার পছন্দের অভিজ্ঞতা বেছে নিন',
     'mode_islamic_badge'     => 'সবচেয়ে জনপ্রিয়',
 
+    // ── Email availability check ──────────────────────────────────────────────
+    'email_checking'         => 'যাচাই করা হচ্ছে…',
+    'email_available'        => 'ইমেইলটি ব্যবহারযোগ্য',
+    'email_invalid'          => 'একটি বৈধ ইমেইল ঠিকানা লিখুন।',
+    'email_taken'            => 'এই ইমেইলটি ইতিমধ্যে নিবন্ধিত। অনুগ্রহ করে সাইন ইন করুন বা অন্য ইমেইল ব্যবহার করুন।',
+    'email_taken_signin'     => 'ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন করুন',
+
     // ── Mobile number + OTP verification ──────────────────────────────────────
     'field_mobile'           => 'মোবাইল নম্বর',
     'field_mobile_ph'        => '+880 1XXX-XXXXXX',

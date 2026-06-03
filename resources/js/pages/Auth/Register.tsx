@@ -5,7 +5,7 @@ import GuestLayout from '@/layouts/GuestLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useState, useEffect } from 'react'
-import { CheckCircle, CheckCircle2, Crown, ShieldCheck } from 'lucide-react'
+import { CheckCircle, CheckCircle2, Crown, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
 import type { PageProps } from '@/types'
@@ -28,6 +28,10 @@ export default function Register() {
   const [otpError, setOtpError] = useState('')
   const [otpInfo, setOtpInfo] = useState('')
   const [resendIn, setResendIn] = useState(0)
+
+  // ── Email availability state ────────────────────────────────────────────────
+  type EmailStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle')
 
   const { data, setData, post, processing, errors } = useForm({
     name: '',
@@ -63,6 +67,35 @@ export default function Register() {
     const id = setTimeout(() => setResendIn(s => s - 1), 1000)
     return () => clearTimeout(id)
   }, [resendIn])
+
+  // ── Email availability (debounced live check) ───────────────────────────────
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  // Returns true = available, false = taken, null = could not determine
+  const checkEmailAvailable = async (email: string): Promise<boolean | null> => {
+    try {
+      const { data: res } = await axios.post(route('register.email.check'), { email })
+      return !!res?.available
+    } catch {
+      return null
+    }
+  }
+
+  useEffect(() => {
+    const email = data.email.trim()
+    if (!email) { setEmailStatus('idle'); return }
+    if (!EMAIL_RE.test(email)) { setEmailStatus('invalid'); return }
+
+    setEmailStatus('checking')
+    const id = setTimeout(async () => {
+      const ok = await checkEmailAvailable(email)
+      // On a network error, stay neutral — the server still enforces uniqueness.
+      if (ok === null) { setEmailStatus('idle'); return }
+      setEmailStatus(ok ? 'available' : 'taken')
+    }, 500)
+    return () => clearTimeout(id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.email])
 
   // Changing the number invalidates any prior OTP / verification
   const handleMobileChange = (value: string) => {
@@ -122,8 +155,25 @@ export default function Register() {
     }
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Step 1 cannot advance with an invalid or already-registered email.
+    if (step === 1) {
+      const email = data.email.trim()
+      if (!EMAIL_RE.test(email)) { setEmailStatus('invalid'); return }
+      if (emailStatus === 'taken') return
+      // Confirm availability if the debounced check hasn't resolved yet.
+      if (emailStatus !== 'available') {
+        setEmailStatus('checking')
+        const ok = await checkEmailAvailable(email)
+        if (ok === false) { setEmailStatus('taken'); return }
+        setEmailStatus(ok === true ? 'available' : 'idle')
+      }
+      next()
+      return
+    }
+
     // Step 2 cannot advance until the mobile number is OTP-verified
     // (only when phone verification is enabled by admin).
     if (step === 2 && requirePhoneVerification && !otpVerified) {
@@ -247,15 +297,54 @@ export default function Register() {
                 required
                 autoFocus
               />
-              <Input
-                label={t('auth', 'field_email')}
-                type="email"
-                value={data.email}
-                onChange={e => setData('email', e.target.value)}
-                error={errors.email}
-                placeholder={t('auth', 'field_email_ph')}
-                required
-              />
+              <div>
+                <Input
+                  label={t('auth', 'field_email')}
+                  type="email"
+                  value={data.email}
+                  onChange={e => setData('email', e.target.value)}
+                  error={errors.email}
+                  placeholder={t('auth', 'field_email_ph')}
+                  className={cn(
+                    !errors.email && (emailStatus === 'taken' || emailStatus === 'invalid') &&
+                      'border-red-400 focus:border-red-500 focus:ring-red-500',
+                    !errors.email && emailStatus === 'available' &&
+                      'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500',
+                  )}
+                  required
+                />
+
+                {/* Live availability feedback (hidden when a server error is shown) */}
+                {!errors.email && emailStatus === 'checking' && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
+                    <Loader2 size={12} className="animate-spin" /> {t('auth', 'email_checking')}
+                  </p>
+                )}
+                {!errors.email && emailStatus === 'available' && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
+                    <CheckCircle2 size={12} /> {t('auth', 'email_available')}
+                  </p>
+                )}
+                {!errors.email && emailStatus === 'invalid' && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                    <AlertCircle size={12} /> {t('auth', 'email_invalid')}
+                  </p>
+                )}
+                {!errors.email && emailStatus === 'taken' && (
+                  <div className="mt-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2">
+                    <p className="flex items-start gap-1.5 text-xs font-medium text-red-700">
+                      <AlertCircle size={13} className="mt-px shrink-0" />
+                      {t('auth', 'email_taken')}
+                    </p>
+                    <Link
+                      href={route('login')}
+                      className="mt-1 inline-block text-xs font-semibold text-primary-600 hover:underline"
+                    >
+                      {t('auth', 'email_taken_signin')}
+                    </Link>
+                  </div>
+                )}
+              </div>
               <Input
                 label={t('auth', 'field_password')}
                 type="password"
@@ -274,7 +363,7 @@ export default function Register() {
                 placeholder={t('auth', 'field_confirm_ph')}
                 required
               />
-              <Button type="submit" className="w-full" size="lg">
+              <Button type="submit" className="w-full" size="lg" disabled={emailStatus === 'taken'}>
                 {t('auth', 'btn_continue')} →
               </Button>
             </>

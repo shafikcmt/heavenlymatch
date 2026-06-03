@@ -111,6 +111,13 @@ return [
     'choose_experience'      => 'Choose your experience',
     'mode_islamic_badge'     => 'Most Chosen',
 
+    // ── Email availability check ──────────────────────────────────────────────
+    'email_checking'         => 'Checking availability…',
+    'email_available'        => 'Email available',
+    'email_invalid'          => 'Please enter a valid email address.',
+    'email_taken'            => 'This email is already registered. Please sign in or use another email.',
+    'email_taken_signin'     => 'Already have an account? Sign In',
+
     // ── Mobile number + OTP verification ──────────────────────────────────────
     'field_mobile'           => 'Mobile Number',
     'field_mobile_ph'        => '+880 1XXX-XXXXXX',

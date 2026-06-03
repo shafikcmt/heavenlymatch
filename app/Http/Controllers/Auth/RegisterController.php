@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Registration;
 use App\Models\SystemSetting;
 use App\Services\PhoneOtpService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,21 @@ class RegisterController extends Controller
         ]);
     }
 
+    /**
+     * Live availability check for the Step 1 email field (JSON).
+     * Never reveals anything beyond whether the address is free to use.
+     */
+    public function checkEmail(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:180',
+        ]);
+
+        $exists = Registration::where('email', $validated['email'])->exists();
+
+        return response()->json(['available' => ! $exists]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $requireEmail = SystemSetting::bool('system.require_email_verification', true);
@@ -46,6 +62,9 @@ class RegisterController extends Controller
             'mobile_number'       => ($requirePhone ? 'required' : 'nullable') . '|string|max:20',
             'platform_mode'       => 'required|in:general,islamic',
             'terms_accepted'      => 'accepted',
+        ], [
+            // Friendly message instead of Laravel's default "has already been taken".
+            'email.unique' => trans('auth.email_taken'),
         ]);
 
         // Resolve the phone number when one was provided (always required if $requirePhone).
