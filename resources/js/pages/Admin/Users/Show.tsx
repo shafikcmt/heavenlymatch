@@ -1,341 +1,227 @@
 /// <reference path="../../../types/ziggy.d.ts" />
-import { Head, router, useForm } from '@inertiajs/react'
+import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import AdminLayout from '@/layouts/AdminLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
-import { ArrowLeft, ShieldCheck, ShieldX, UserX, UserCheck, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  ArrowLeft, Pencil, Pause, Play, KeyRound, Trash2, ShieldCheck, Mail, Phone,
+  CheckCircle2, XCircle, ExternalLink,
+} from 'lucide-react'
+import ConfirmDialog from '@/components/admin/ConfirmDialog'
+import ResetPasswordModal from '@/components/admin/ResetPasswordModal'
 
-interface Biodata {
-  id: number
-  status: string
-  updated_at: string
-}
-
-interface Payment {
-  id: number
-  transaction_no: string
-  plan_name: string
-  amount: number
-  status: string
-  created_at: string
-  external_transaction_id: string | null
-}
-
+interface Biodata { id: number; status: string; is_completed: boolean }
 interface User {
-  registration_id: string
-  name: string
-  email: string
-  mobile_number: string | null
-  is_mobile_verified: boolean
-  gender: 'male' | 'female'
-  account_status: string
-  membership_status: string
-  membership_plan_name: string | null
-  membership_expires_at: string | null
+  id: number; registration_id: string; name: string; email: string; mobile_number: string | null
+  gender: string; profile_created_for: string; account_status: string
+  membership_status: string; membership_plan_name: string | null
+  is_email_verified: boolean; is_mobile_verified: boolean; is_admin: boolean; role: string | null
   identity_verification_status: string | null
-  role: string
-  is_admin: boolean
-  created_at: string
-  last_login_at: string | null
-  blocked_at: string | null
-  blocked_reason: string | null
+  last_login_at: string | null; created_at: string; deleted_at: string | null
   biodata: Biodata | null
 }
-
+interface Payment { id: number; transaction_no: string; plan_name: string; amount: number; status: string; created_at: string }
 interface Props {
   user: User
   payments: Payment[]
+  stats: { interests_sent: number; interests_received: number }
+  authRegistrationId: string
 }
 
-function ActionModal({
-  title,
-  description,
-  placeholder,
-  confirmLabel,
-  confirmVariant,
-  onConfirm,
-  onClose,
-}: {
-  title: string
-  description: string
-  placeholder?: string
-  confirmLabel: string
-  confirmVariant?: 'destructive' | 'default'
-  onConfirm: (reason: string) => void
-  onClose: () => void
-}) {
-  const [reason, setReason] = useState('')
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
-        <p className="text-sm text-slate-500 mb-4">{description}</p>
-        {placeholder !== undefined && (
-          <textarea
-            value={reason}
-            onChange={e => setReason(e.target.value)}
-            rows={3}
-            placeholder={placeholder}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none mb-4"
-          />
-        )}
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="flex-1">
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant={confirmVariant ?? 'default'}
-            size="sm"
-            onClick={() => onConfirm(reason)}
-            className="flex-1"
-          >
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function UserShow({ user, payments }: Props) {
+export default function UserShow({ user, payments, stats, authRegistrationId }: Props) {
   const { t } = useTranslation()
-  const [modal, setModal] = useState<'ban' | 'suspend' | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
 
-  function post(routeName: string, params: Record<string, string> = {}) {
-    router.post(routeName, params)
-  }
+  const isSelf = user.registration_id === authRegistrationId
+  const locked = user.is_admin || isSelf
+  const suspended = user.account_status === 'suspended'
+
+  const post = (name: string) => router.post(route(name, user.registration_id), {}, { preserveScroll: true })
 
   return (
     <AdminLayout>
-      <Head title={user.name} />
+      <Head title={`${user.name} — ${t('admin', 'details_title')}`} />
 
-      {modal === 'ban' && (
-        <ActionModal
-          title={t('admin', 'user_ban')}
-          description={t('admin', 'user_ban_reason')}
-          placeholder="e.g. Spam / fake profile / abuse"
-          confirmLabel={t('admin', 'user_ban')}
-          confirmVariant="destructive"
-          onConfirm={reason => { post(route('admin.users.ban', user.registration_id), { reason }); setModal(null) }}
-          onClose={() => setModal(null)}
-        />
-      )}
+      <div className="max-w-4xl space-y-5">
+        <Link href={route('admin.users.index')} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+          <ArrowLeft size={15} /> {t('admin', 'back_to_users')}
+        </Link>
 
-      {modal === 'suspend' && (
-        <ActionModal
-          title={t('admin', 'user_suspend')}
-          description={t('admin', 'user_suspend_reason')}
-          placeholder="e.g. Policy violation"
-          confirmLabel={t('admin', 'user_suspend')}
-          confirmVariant="destructive"
-          onConfirm={reason => { post(route('admin.users.suspend', user.registration_id), { reason }); setModal(null) }}
-          onClose={() => setModal(null)}
-        />
-      )}
-
-      <div className="max-w-2xl space-y-5">
-        {/* Back */}
-        <button
-          onClick={() => router.get(route('admin.users.index'))}
-          className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
-        >
-          <ArrowLeft size={14} />
-          {t('admin', 'users_title')}
-        </button>
-
-        {/* Profile card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">{user.name}</h1>
-              <p className="text-sm text-slate-500">{user.email}</p>
-              {user.mobile_number && (
-                <p className="flex items-center gap-2 text-sm text-slate-500">
-                  {user.mobile_number}
-                  <span
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
-                      user.is_mobile_verified
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-slate-100 text-slate-500',
-                    )}
-                  >
-                    {user.is_mobile_verified ? 'Verified' : 'Not Verified'}
-                  </span>
-                </p>
-              )}
+        {/* Header card */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 text-xl font-bold">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-slate-900">{user.name}</h1>
+                  {user.is_admin && <span className="rounded bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">ADMIN</span>}
+                </div>
+                <p className="text-sm text-slate-500">{user.email}</p>
+                <p className="font-mono text-xs text-slate-400">{user.registration_id}</p>
+              </div>
             </div>
-            <div className="text-right shrink-0">
-              <StatusBadge status={user.account_status} />
-              <p className="text-xs text-slate-400 mt-1 font-mono">{user.registration_id}</p>
-            </div>
+            <StatusBadge status={user.account_status} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-            <InfoRow label={t('admin', 'col_gender')} value={user.gender} />
-            <InfoRow label={t('admin', 'user_role_label')} value={user.role ?? 'user'} />
-            <InfoRow label={t('admin', 'col_membership')} value={user.membership_status} />
-            {user.membership_plan_name && <InfoRow label={t('admin', 'user_plan_label')} value={user.membership_plan_name} />}
-            {user.membership_expires_at && (
-              <InfoRow label={t('admin', 'user_expires_label')} value={new Date(user.membership_expires_at).toLocaleDateString('en-BD')} />
-            )}
-            <InfoRow label={t('admin', 'user_identity_label')} value={user.identity_verification_status ?? 'unverified'} />
-            <InfoRow label={t('admin', 'col_joined')} value={new Date(user.created_at).toLocaleDateString('en-BD')} />
-            {user.last_login_at && (
-              <InfoRow label={t('admin', 'user_last_login_label')} value={new Date(user.last_login_at).toLocaleDateString('en-BD')} />
-            )}
-            {user.blocked_reason && <InfoRow label={t('admin', 'user_ban_reason_label')} value={user.blocked_reason} />}
-          </div>
-
-          {/* Biodata status */}
-          {user.biodata && (
-            <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <span className="text-sm text-slate-600">{t('admin', 'user_biodata_status_label')}</span>
-              <span className={cn(
-                'text-xs font-medium rounded-full px-2.5 py-0.5',
-                user.biodata.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
-                user.biodata.status === 'pending'  ? 'bg-amber-100 text-amber-700' :
-                'bg-red-100 text-red-700',
-              )}>
-                {user.biodata.status}
-              </span>
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div className="flex flex-wrap gap-2">
-            {user.account_status !== 'active' && (
-              <Button
-                size="sm"
-                variant="default"
-                onClick={() => post(route('admin.users.activate', user.registration_id))}
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                <UserCheck size={14} />
-                {t('admin', 'user_activate')}
-              </Button>
-            )}
-            {user.account_status === 'active' && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setModal('suspend')}
-              >
-                <AlertTriangle size={14} />
-                {t('admin', 'user_suspend')}
-              </Button>
-            )}
-            {user.account_status !== 'banned' ? (
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setModal('ban')}
-              >
-                <UserX size={14} />
-                {t('admin', 'user_ban')}
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => post(route('admin.users.unban', user.registration_id))}
-              >
-                <UserCheck size={14} />
-                {t('admin', 'user_unban')}
-              </Button>
-            )}
-            {user.identity_verification_status !== 'verified' && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => post(route('admin.users.verify', user.registration_id))}
-              >
-                <ShieldCheck size={14} />
-                {t('admin', 'user_verify_identity')}
-              </Button>
-            )}
+          {/* Action bar */}
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            <Link href={route('admin.users.edit', user.registration_id)}>
+              <Button size="sm" variant="outline"><Pencil size={14} /> {t('admin', 'action_edit')}</Button>
+            </Link>
+            {suspended
+              ? <Button size="sm" variant="outline" onClick={() => post('admin.users.activate')}><Play size={14} /> {t('admin', 'action_activate')}</Button>
+              : !locked && <Button size="sm" variant="outline" onClick={() => post('admin.users.suspend')}><Pause size={14} /> {t('admin', 'action_suspend')}</Button>}
+            <Button size="sm" variant="outline" onClick={() => setResetOpen(true)}><KeyRound size={14} /> {t('admin', 'action_reset_password')}</Button>
+            {!locked && <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(true)}><Trash2 size={14} /> {t('admin', 'action_delete')}</Button>}
           </div>
         </div>
 
-        {/* Payment history */}
-        <section>
-          <h2 className="text-base font-semibold text-slate-900 mb-3">{t('admin', 'payment_history')}</h2>
+        <div className="grid gap-5 md:grid-cols-3">
+          {/* Basic info */}
+          <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-6">
+            <h2 className="mb-4 text-sm font-semibold text-slate-900">{t('admin', 'basic_info')}</h2>
+            <dl className="grid gap-y-3 gap-x-6 sm:grid-cols-2 text-sm">
+              <Row label={t('admin', 'field_email')}>
+                <span className="flex items-center gap-2"><Mail size={14} className="text-slate-400" />{user.email}
+                  <VerifyDot on={user.is_email_verified} /></span>
+              </Row>
+              <Row label={t('admin', 'field_phone')}>
+                <span className="flex items-center gap-2"><Phone size={14} className="text-slate-400" />{user.mobile_number || '—'}
+                  {user.mobile_number && <VerifyDot on={user.is_mobile_verified} />}</span>
+              </Row>
+              <Row label={t('admin', 'field_gender')}><span className="capitalize">{user.gender}</span></Row>
+              <Row label={t('admin', 'field_profile_for')}><span className="capitalize">{user.profile_created_for}</span></Row>
+              <Row label={t('admin', 'col_membership')}>
+                {user.membership_status === 'active'
+                  ? <span className="font-medium text-violet-700">{user.membership_plan_name || 'Premium'}</span>
+                  : <span className="text-slate-500">{t('admin', 'membership_free')}</span>}
+              </Row>
+              <Row label="Identity">
+                <span className="flex items-center gap-1 capitalize">
+                  <ShieldCheck size={14} className={user.identity_verification_status === 'verified' ? 'text-emerald-500' : 'text-slate-300'} />
+                  {user.identity_verification_status ?? 'unverified'}
+                </span>
+              </Row>
+              <Row label={t('admin', 'joined')}>{new Date(user.created_at).toLocaleString('en-BD')}</Row>
+              <Row label={t('admin', 'last_login')}>{user.last_login_at ? new Date(user.last_login_at).toLocaleString('en-BD') : t('admin', 'never')}</Row>
+            </dl>
+          </div>
+
+          {/* Side: stats + biodata */}
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="mb-3 text-sm font-semibold text-slate-900">Activity</h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-slate-500">{t('admin', 'interests_sent')}</span><b>{stats.interests_sent}</b></div>
+                <div className="flex justify-between"><span className="text-slate-500">{t('admin', 'interests_received')}</span><b>{stats.interests_received}</b></div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="mb-3 text-sm font-semibold text-slate-900">{t('admin', 'col_biodata')}</h2>
+              {user.biodata ? (
+                <>
+                  <BioBadge status={user.biodata.status} />
+                  <div className="mt-3 flex flex-col gap-2">
+                    <Link href={route('admin.biodatas.show', user.biodata.id)} className="inline-flex items-center gap-1 text-sm text-primary-600 hover:underline">
+                      <ExternalLink size={13} /> {t('admin', 'view_biodata')}
+                    </Link>
+                    {user.biodata.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="islamic" onClick={() => router.post(route('admin.biodatas.approve', user.biodata!.id), {}, { preserveScroll: true })}>
+                          <CheckCircle2 size={14} /> {t('common', 'approve') || 'Approve'}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => router.post(route('admin.biodatas.reject', user.biodata!.id), {}, { preserveScroll: true })}>
+                          <XCircle size={14} /> {t('common', 'reject') || 'Reject'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-slate-400">{t('admin', 'no_biodata')}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Payments */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="mb-3 text-sm font-semibold text-slate-900">{t('admin', 'payment_history')}</h2>
           {payments.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-6 rounded-2xl border border-slate-200 bg-white">
-              {t('admin', 'no_payments')}
-            </p>
+            <p className="text-sm text-slate-400">{t('admin', 'no_payments')}</p>
           ) : (
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[520px]">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_ref')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_plan')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_amount')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_status')}</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_date')}</th>
+                  <tr className="border-b border-slate-100 text-left text-xs font-semibold text-slate-500">
+                    <th className="py-2 pr-4">#</th><th className="py-2 pr-4">{t('admin', 'field_plan')}</th>
+                    <th className="py-2 pr-4">Amount</th><th className="py-2 pr-4">{t('admin', 'col_status')}</th><th className="py-2">{t('admin', 'joined')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {payments.map(p => (
                     <tr key={p.id} className="border-b border-slate-50 last:border-0">
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500">{p.transaction_no}</td>
-                      <td className="px-4 py-3 text-slate-700">{p.plan_name}</td>
-                      <td className="px-4 py-3 font-medium">৳{p.amount.toLocaleString('en-BD')}</td>
-                      <td className="px-4 py-3">
-                        <PaymentStatusBadge status={p.status} labelApproved={t('admin', 'col_paid_status')} />
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-400">
-                        {new Date(p.created_at).toLocaleDateString('en-BD')}
-                      </td>
+                      <td className="py-2 pr-4 font-mono text-xs text-slate-500">{p.transaction_no}</td>
+                      <td className="py-2 pr-4">{p.plan_name}</td>
+                      <td className="py-2 pr-4">৳{p.amount}</td>
+                      <td className="py-2 pr-4 capitalize">{p.status}</td>
+                      <td className="py-2 text-xs text-slate-400">{new Date(p.created_at).toLocaleDateString('en-BD')}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-        </section>
+        </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete} title={t('admin', 'confirm_delete_title')} body={t('admin', 'confirm_delete_body')}
+        confirmLabel={t('admin', 'action_delete')} cancelLabel={t('common', 'cancel') || 'Cancel'}
+        onConfirm={() => router.delete(route('admin.users.destroy', user.registration_id))}
+        onClose={() => setConfirmDelete(false)}
+      />
+      <ResetPasswordModal open={resetOpen} registrationId={user.registration_id} userName={user.name} onClose={() => setResetOpen(false)} />
     </AdminLayout>
   )
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg bg-slate-50 px-3 py-2">
-      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
-      <p className="text-sm font-medium text-slate-800 capitalize">{value}</p>
+    <div>
+      <dt className="text-xs text-slate-400">{label}</dt>
+      <dd className="mt-0.5 text-slate-800">{children}</dd>
     </div>
+  )
+}
+
+function VerifyDot({ on }: { on: boolean }) {
+  return (
+    <span className={cn('inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium', on ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400')}>
+      {on ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+    </span>
   )
 }
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    active:    'bg-emerald-100 text-emerald-700',
-    inactive:  'bg-slate-100 text-slate-600',
-    suspended: 'bg-amber-100 text-amber-700',
-    banned:    'bg-red-100 text-red-700',
+    active: 'bg-emerald-100 text-emerald-700', inactive: 'bg-slate-100 text-slate-600',
+    suspended: 'bg-amber-100 text-amber-700', banned: 'bg-red-100 text-red-700',
   }
-  return (
-    <span className={cn('inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-600')}>
-      {status}
-    </span>
-  )
+  return <span className={cn('inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize', map[status] ?? 'bg-slate-100 text-slate-600')}>{status}</span>
 }
 
-function PaymentStatusBadge({ status, labelApproved }: { status: string; labelApproved: string }) {
+function BioBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    paid:      'bg-emerald-100 text-emerald-700',
-    pending:   'bg-amber-100 text-amber-700',
-    failed:    'bg-red-100 text-red-700',
-    cancelled: 'bg-slate-100 text-slate-500',
+    approved: 'bg-emerald-100 text-emerald-700', pending: 'bg-amber-100 text-amber-700',
+    rejected: 'bg-red-100 text-red-700', draft: 'bg-slate-100 text-slate-500', hidden: 'bg-slate-100 text-slate-500',
   }
-  return (
-    <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-500')}>
-      {status === 'paid' ? labelApproved : status}
-    </span>
-  )
+  return <span className={cn('inline-block rounded-full px-2.5 py-1 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-500')}>{status}</span>
 }

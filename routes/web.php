@@ -204,8 +204,25 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 // ── Admin panel (auth + admin middleware, no verified.user required) ───────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/',           [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users',      [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
-    Route::get('/users/{id}', [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
+    // ── User management ───────────────────────────────────────────────────────
+    // Static segments MUST precede the /users/{id} wildcard so they aren't captured.
+    Route::get('/users',                 [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/create',          [\App\Http\Controllers\Admin\AdminUserController::class, 'create'])->name('users.create');
+    Route::post('/users',                [\App\Http\Controllers\Admin\AdminUserController::class, 'store'])->name('users.store');
+    Route::get('/users/export',          [\App\Http\Controllers\Admin\AdminUserController::class, 'export'])->name('users.export');
+    Route::get('/users/import',          [\App\Http\Controllers\Admin\AdminUserController::class, 'importForm'])->name('users.import');
+    Route::post('/users/import/preview', [\App\Http\Controllers\Admin\AdminUserController::class, 'importPreview'])->name('users.import.preview');
+    Route::post('/users/import',         [\App\Http\Controllers\Admin\AdminUserController::class, 'import'])->name('users.import.store');
+    Route::post('/users/bulk-action',    [\App\Http\Controllers\Admin\AdminUserController::class, 'bulkAction'])->name('users.bulk-action');
+
+    Route::get('/users/{id}',            [\App\Http\Controllers\Admin\AdminUserController::class, 'show'])->name('users.show');
+    Route::get('/users/{id}/edit',       [\App\Http\Controllers\Admin\AdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}',            [\App\Http\Controllers\Admin\AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{id}',         [\App\Http\Controllers\Admin\AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{id}/restore',   [\App\Http\Controllers\Admin\AdminUserController::class, 'restore'])->name('users.restore');
+    Route::delete('/users/{id}/force',   [\App\Http\Controllers\Admin\AdminUserController::class, 'forceDelete'])->name('users.force-delete');
+    Route::post('/users/{id}/reset-password', [\App\Http\Controllers\Admin\AdminUserController::class, 'resetPassword'])->name('users.reset-password');
+
     Route::post('/users/{id}/ban',      [\App\Http\Controllers\Admin\AdminUserController::class, 'ban'])->name('users.ban');
     Route::post('/users/{id}/unban',    [\App\Http\Controllers\Admin\AdminUserController::class, 'unban'])->name('users.unban');
     Route::post('/users/{id}/suspend',  [\App\Http\Controllers\Admin\AdminUserController::class, 'suspend'])->name('users.suspend');

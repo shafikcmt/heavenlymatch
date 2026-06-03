@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class Registration extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
 
     protected $fillable = [
         // ── Core identity ─────────────────────────────────────────────────────
@@ -214,6 +215,60 @@ class Registration extends Authenticatable implements MustVerifyEmail
     public function promoteToAdmin(): void
     {
         $this->forceFill(['is_admin' => true, 'role' => 'admin'])->save();
+    }
+
+    /** True for admins / super-admins — used to protect them from admin actions. */
+    public function isProtectedAccount(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /** Admin-driven email verification toggle (no OTP). */
+    public function markEmailVerified(bool $verified = true): void
+    {
+        $this->forceFill([
+            'is_email_verified' => $verified,
+            'email_verified_at' => $verified ? ($this->email_verified_at ?? now()) : null,
+        ])->save();
+    }
+
+    /** Admin-driven phone verification toggle (no OTP). */
+    public function markPhoneVerified(bool $verified = true): void
+    {
+        $this->forceFill([
+            'is_mobile_verified' => $verified,
+            'mobile_verified_at' => $verified ? ($this->mobile_verified_at ?? now()) : null,
+        ])->save();
+    }
+
+    /**
+     * Assign a membership. Pass a MembershipPlan for premium, or null/'free'
+     * to reset to the free tier. Uses forceFill (membership fields are sensitive).
+     */
+    public function setMembership(MembershipPlan|string|null $plan): void
+    {
+        if ($plan instanceof MembershipPlan) {
+            $this->forceFill([
+                'membership_plan_id'    => $plan->id,
+                'membership_plan_name'  => $plan->name,
+                'membership_status'     => 'active',
+                'membership_started_at' => now(),
+                'membership_expires_at' => $plan->validity_days && $plan->validity_days > 0
+                    ? now()->addDays((int) $plan->validity_days)
+                    : null,
+            ])->save();
+
+            return;
+        }
+
+        // Reset to free.
+        $this->forceFill([
+            'membership_plan_id'    => null,
+            'membership_plan_name'  => null,
+            'membership_status'     => 'free',
+            'membership_started_at' => null,
+            'membership_expires_at' => null,
+        ])->save();
     }
 
     protected static function boot(): void
