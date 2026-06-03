@@ -135,6 +135,8 @@ class Biodata extends Model
         'guardian_mobile',
         'guardian_relationship',
         'guardian_email',
+        'whatsapp_number',
+        'contact_privacy',
 
         // Admin & Moderation
         'status',

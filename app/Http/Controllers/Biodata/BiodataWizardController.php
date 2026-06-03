@@ -6,28 +6,38 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Registration;
 use App\Models\SystemSetting;
+use App\Services\PhoneOtpService;
 use App\Services\PhotoPrivacyService;
+use App\Services\ProfileCompletionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class BiodataWizardController extends Controller
 {
-    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+    public function __construct(
+        private PhotoPrivacyService $photoPrivacy,
+        private PhoneOtpService $phone,
+    ) {}
 
+    /** 10-step wizard. Each step counts as 10% of completion. */
     private const STEPS = [
-        1 => 'general',
-        2 => 'location',
-        3 => 'religion',
-        4 => 'education',
-        5 => 'family',
-        6 => 'lifestyle',
-        7 => 'marriage',
-        8 => 'partner',
-        9 => 'photos',
+        1  => 'general',
+        2  => 'location',
+        3  => 'religion',
+        4  => 'education',
+        5  => 'lifestyle',   // physical + lifestyle / health
+        6  => 'family',
+        7  => 'marriage',
+        8  => 'partner',
+        9  => 'contact',     // guardian contact, WhatsApp, privacy
+        10 => 'review',      // photo + final confirmation
     ];
+
+    private const PHOTO_STEP = 10;
 
     public function show(int $step = 1): Response|RedirectResponse
     {
@@ -45,7 +55,7 @@ class BiodataWizardController extends Controller
         $biodataData['completeness_score'] = $biodata->completeness_score ?? 0;
 
         $photoData = [];
-        if ($step === 9) {
+        if ($step === self::PHOTO_STEP) {
             $photos    = $biodata->photos ?? [];
             $photoUrls = array_map(
                 fn (int $i) => $this->photoPrivacy->photoUrl($user->registration_id, $i, $user->registration_id),
@@ -75,28 +85,70 @@ class BiodataWizardController extends Controller
     {
         /** @var Registration $user */
         $user = Auth::user();
-        $rules = $this->rulesForStep($step, $user->gender ?? 'male');
+        $isDraft = $request->boolean('save_draft');
+
+        // Draft → lenient (everything optional). Continue / Submit → enforce this step's required fields.
+        $rules = $this->baseRulesForStep($step, $user->gender ?? 'male');
+        if (! $isDraft) {
+            $required = $this->requiredForStep($step);
+
+            // Prayer practice is only relevant (and only shown) for Muslims.
+            if ($step === 3) {
+                $religion = strtolower((string) $request->input('religion'));
+                if ($religion === '' || $religion === 'islam') {
+                    $required[] = 'prayers_info';
+                }
+            }
+
+            foreach ($required as $field) {
+                $existing = $rules[$field] ?? ['nullable'];
+                $existing = array_values(array_filter($existing, fn ($r) => $r !== 'nullable'));
+                $rules[$field] = array_values(array_unique([...['required'], ...$existing]));
+            }
+            if ($step === self::PHOTO_STEP) {
+                $rules['confirm_correct'] = ['accepted'];
+            }
+        }
 
         $validated = $request->validate($rules);
+        unset($validated['confirm_correct']); // transient — not a biodata column
+
+        // Normalise + validate the optional WhatsApp number (Bangladesh format).
+        if ($step === 9 && ! empty($validated['whatsapp_number'])) {
+            $normalized = $this->phone->normalizePhone($validated['whatsapp_number']);
+            if ($normalized === null) {
+                throw ValidationException::withMessages([
+                    'whatsapp_number' => __('biodata.whatsapp_invalid'),
+                ]);
+            }
+            $validated['whatsapp_number'] = $normalized;
+        }
 
         $biodata = Biodata::firstOrNew(['registration_id' => $user->registration_id]);
         $biodata->fill($validated);
-        $biodata->completeness_score = $this->computeCompleteness($biodata);
 
-        if ($step === count(self::STEPS)) {
+        // Final submit: enforce that every required content section is complete.
+        if ($step === self::PHOTO_STEP && ! $isDraft) {
+            $missing = ProfileCompletionService::missingRequiredSections($biodata);
+            if (! empty($missing)) {
+                $firstStep = ProfileCompletionService::SECTION_STEP[$missing[0]] ?? 1;
+                return redirect()->route('biodata.wizard', ['step' => $firstStep])
+                    ->with('error', __('biodata.complete_required_first'));
+            }
             $biodata->is_completed = true;
         }
 
+        $biodata->completeness_score = ProfileCompletionService::computePercentage($biodata);
+
         // Apply the Biodata Approval Control workflow once the biodata is complete.
-        // Drafts (incomplete) keep their current status; admin-hidden profiles are never
-        // auto-changed here so the moderator's hide action is preserved.
+        // Drafts keep their current status; admin-hidden profiles are never auto-changed.
         if ($biodata->is_completed && $biodata->status !== 'hidden') {
             $this->applyApprovalStatus($biodata);
         }
 
         $biodata->save();
 
-        if ($request->boolean('save_draft')) {
+        if ($isDraft) {
             return redirect()->route('biodata.wizard', ['step' => $step])
                 ->with('success', __('biodata.draft_saved'));
         }
@@ -110,16 +162,30 @@ class BiodataWizardController extends Controller
         return redirect()->route('biodata.wizard', ['step' => $nextStep]);
     }
 
-    private function rulesForStep(int $step, string $gender): array
+    /** Required field names per step (enforced on Continue / Submit, skipped for drafts). */
+    private function requiredForStep(int $step): array
+    {
+        return match ($step) {
+            1  => ['marital_status', 'birth_date'],
+            2  => ['residing_country', 'residing_city', 'division', 'district'],
+            3  => ['religion'], // prayers_info added conditionally (Muslims only) in save()
+            4  => ['highest_qualification', 'occupation'],
+            5  => ['height_cm', 'weight_kg', 'complexion'],
+            6  => ['father_profession', 'mother_profession', 'family_type'],
+            7  => ['residence_after_marriage'],
+            8  => ['partner_age_min', 'partner_age_max', 'partner_education', 'partner_division'],
+            9  => ['contact_privacy'],
+            default => [],
+        };
+    }
+
+    /** Type/format rules (all nullable). Required-ness is layered on in save(). */
+    private function baseRulesForStep(int $step, string $gender): array
     {
         return match ($step) {
             1 => [
                 'marital_status'   => ['nullable', 'in:never_married,married,divorced,widowed'],
                 'birth_date'       => ['nullable', 'date', 'before:-18 years'],
-                'height_cm'        => ['nullable', 'integer', 'min:100', 'max:250'],
-                'weight_kg'        => ['nullable', 'integer', 'min:20', 'max:200'],
-                'complexion'       => ['nullable', 'in:very_fair,fair,wheatish,medium,dark'],
-                'blood_group'      => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
                 'about_me'         => ['nullable', 'string', 'max:1000'],
                 'profile_headline' => ['nullable', 'string', 'max:200'],
                 'mother_tongue'    => ['nullable', 'string', 'max:50'],
@@ -174,6 +240,19 @@ class BiodataWizardController extends Controller
                 'monthly_income'        => ['nullable', 'integer', 'min:0'],
             ],
             5 => [
+                'height_cm'           => ['nullable', 'integer', 'min:100', 'max:250'],
+                'weight_kg'           => ['nullable', 'integer', 'min:20', 'max:200'],
+                'complexion'          => ['nullable', 'in:very_fair,fair,wheatish,medium,dark'],
+                'blood_group'         => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+                'health_status'       => ['nullable', 'in:healthy,minor_condition,disability,prefer_not_say'],
+                'health_details'      => ['nullable', 'string', 'max:500'],
+                'diet'                => ['nullable', 'in:halal_only,vegetarian,no_restriction'],
+                'smoking'             => ['nullable', 'in:never,occasionally,regularly'],
+                'hobbies'             => ['nullable', 'string', 'max:500'],
+                'watch_entertainment' => ['nullable', 'string', 'max:50'],
+                'special_category'    => ['nullable', 'string', 'max:100'],
+            ],
+            6 => [
                 'father_name'              => ['nullable', 'string', 'max:100'],
                 'father_alive'             => ['nullable', 'boolean'],
                 'father_profession'        => ['nullable', 'string', 'max:100'],
@@ -202,15 +281,6 @@ class BiodataWizardController extends Controller
                 'family_details'           => ['nullable', 'string', 'max:1000'],
                 'family_religious_condition' => ['nullable', 'string', 'max:100'],
             ],
-            6 => [
-                'health_status'       => ['nullable', 'in:healthy,minor_condition,disability,prefer_not_say'],
-                'health_details'      => ['nullable', 'string', 'max:500'],
-                'diet'                => ['nullable', 'in:halal_only,vegetarian,no_restriction'],
-                'smoking'             => ['nullable', 'in:never,occasionally,regularly'],
-                'hobbies'             => ['nullable', 'string', 'max:500'],
-                'watch_entertainment' => ['nullable', 'string', 'max:50'],
-                'special_category'    => ['nullable', 'string', 'max:100'],
-            ],
             7 => [
                 'guardian_agree'           => ['nullable', 'boolean'],
                 'wife_in_veil'             => ['nullable', 'boolean'],
@@ -223,9 +293,6 @@ class BiodataWizardController extends Controller
                 'children_count'           => ['nullable', 'integer', 'min:0', 'max:30'],
                 'children_live_with'       => ['nullable', 'string', 'max:100'],
                 'children_notes'           => ['nullable', 'string', 'max:500'],
-                'guardian_mobile'          => ['nullable', 'string', 'max:20'],
-                'guardian_relationship'    => ['nullable', 'string', 'max:50'],
-                'guardian_email'           => ['nullable', 'email', 'max:100'],
             ],
             8 => [
                 'partner_age_min'           => ['nullable', 'integer', 'min:18', 'max:80'],
@@ -244,7 +311,14 @@ class BiodataWizardController extends Controller
                 'partner_expectations'      => ['nullable', 'string', 'max:1000'],
             ],
             9 => [
-                // Photos handled via separate upload endpoint; step 9 just marks completion
+                'guardian_mobile'       => ['nullable', 'string', 'max:20'],
+                'guardian_relationship' => ['nullable', 'string', 'max:50'],
+                'guardian_email'        => ['nullable', 'email', 'max:100'],
+                'whatsapp_number'       => ['nullable', 'string', 'max:20'],
+                'contact_privacy'       => ['nullable', 'in:private,request_only,matches_only'],
+            ],
+            10 => [
+                // Review step — only a confirmation checkbox (added in save()).
             ],
             default => [],
         };
@@ -253,11 +327,6 @@ class BiodataWizardController extends Controller
     /**
      * Decide the biodata status based on the "Require Admin Approval for Biodata"
      * setting (system.profile_approval_required, default enabled).
-     *
-     *  - Enabled  → status = pending, clear approval stamps. A new submission or an
-     *               edit by an already-approved member goes back to admin review.
-     *  - Disabled → status = approved automatically, stamped immediately so the
-     *               profile is visible in public/search listings without admin action.
      */
     private function applyApprovalStatus(Biodata $biodata): void
     {
@@ -276,30 +345,5 @@ class BiodataWizardController extends Controller
         $biodata->approved_at = $biodata->approved_at ?? now();
         $biodata->rejected_at = null;
         $biodata->rejected_by = null;
-    }
-
-    private function computeCompleteness(Biodata $biodata): int
-    {
-        $fields = [
-            'marital_status', 'birth_date', 'height_cm', 'about_me',
-            'division', 'district', 'residing_country',
-            'religion', 'is_practicing', 'prayers_info',
-            'highest_qualification', 'occupation',
-            'family_type', 'brothers', 'sisters',
-            'health_status', 'diet',
-            'partner_age_min', 'partner_age_max', 'partner_expectations',
-        ];
-
-        $filled = collect($fields)
-            ->filter(fn($f) => !is_null($biodata->$f) && $biodata->$f !== '')
-            ->count();
-
-        $base = (int) round(($filled / count($fields)) * 80);
-
-        $bonus = 0;
-        if (!empty($biodata->about_me) && strlen($biodata->about_me) > 100) $bonus += 10;
-        if (!empty($biodata->photos)) $bonus += 10;
-
-        return min(100, $base + $bonus);
     }
 }

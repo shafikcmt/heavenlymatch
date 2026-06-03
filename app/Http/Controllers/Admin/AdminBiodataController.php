@@ -144,6 +144,8 @@ class AdminBiodataController extends Controller
                 'guardian_mobile'       => $b->guardian_mobile
                     ? substr($b->guardian_mobile, 0, 4) . '***' . substr($b->guardian_mobile, -2)
                     : null,
+                'whatsapp_number'       => $b->whatsapp_number,
+                'contact_privacy'       => $b->contact_privacy,
             ],
             'photos_count' => is_array($b->photos) ? count($b->photos) : 0,
         ]);

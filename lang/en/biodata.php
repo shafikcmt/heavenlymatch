@@ -15,28 +15,30 @@ return [
     'wizard_next'       => 'Save & Continue',
     'wizard_progress'   => ':percent% Complete',
     'step_labels' => [
-        1 => 'General',
-        2 => 'Location',
-        3 => 'Religion',
-        4 => 'Education',
-        5 => 'Family',
-        6 => 'Lifestyle',
-        7 => 'Marriage',
-        8 => 'Partner',
-        9 => 'Photos',
+        1  => 'Basic Information',
+        2  => 'Location',
+        3  => 'Religious Practice',
+        4  => 'Education & Career',
+        5  => 'Physical & Lifestyle',
+        6  => 'Family Background',
+        7  => 'Marriage Preferences',
+        8  => 'Partner Preferences',
+        9  => 'Contact & Privacy',
+        10 => 'Profile Photo & Review',
     ],
 
     // ── Step helper text ──────────────────────────────────────────────────────
     'step_helper' => [
-        1 => 'Tell us about yourself — age, marital status, and personal details.',
-        2 => 'Where are you from, and where do you currently live?',
-        3 => 'Share your religious beliefs and daily practice.',
-        4 => 'Your education background and current occupation.',
-        5 => 'Help us understand your family background.',
-        6 => 'Your lifestyle, health, and daily habits.',
-        7 => 'Marriage expectations and guardian information.',
-        8 => 'What qualities are you looking for in a life partner?',
-        9 => 'A photo increases your match rate by 3× — add one now.',
+        1  => 'Tell us about yourself — marital status, date of birth and a short intro.',
+        2  => 'Where are you from, and where do you currently live?',
+        3  => 'Share your religious beliefs and daily practice.',
+        4  => 'Your education background and current occupation.',
+        5  => 'Your physical details, health and lifestyle habits.',
+        6  => 'Help us understand your family background.',
+        7  => 'Marriage expectations and after-marriage plans.',
+        8  => 'What qualities are you looking for in a life partner?',
+        9  => 'Guardian contact, WhatsApp and who can see your details.',
+        10 => 'Add a profile photo and confirm your information.',
     ],
 
     // ── Completion section labels (for dashboard checklist) ───────────────────
@@ -49,6 +51,8 @@ return [
         'lifestyle' => 'Lifestyle & Health',
         'marriage'  => 'Marriage Preferences',
         'partner'   => 'Partner Preferences',
+        'contact'   => 'Contact & Privacy',
+        'review'    => 'Photo & Review',
         'photos'    => 'Profile Photo',
     ],
 
@@ -368,5 +372,25 @@ return [
     'step9_optional_badge' => 'Optional — but strongly recommended',
     'step9_note'           => 'Photo is optional. You can also manage all photos from your Profile page anytime.',
     'step9_submit_hint'    => 'Click "Complete & Submit" below to finalize your biodata.',
+
+    // ── Step 5: Physical & Lifestyle ──────────────────────────────────────────
+    'section_physical'        => 'Physical Attributes',
+
+    // ── Step 9: Contact & Privacy ─────────────────────────────────────────────
+    'contact_intro'           => 'Add contact details for your guardian. These stay private and follow your privacy preference below.',
+    'whatsapp_number'         => 'WhatsApp Number',
+    'whatsapp_hint'           => 'Bangladesh format: 01XXXXXXXXX or +8801XXXXXXXXX. Never shown publicly.',
+    'whatsapp_invalid'        => 'Please enter a valid Bangladeshi WhatsApp number.',
+    'contact_privacy_section' => 'Contact Privacy',
+    'contact_privacy'         => 'Who can see your contact details',
+    'contact_privacy_private' => 'Private — only admin can see',
+    'contact_privacy_request' => 'Request only — shown after you approve a request',
+    'contact_privacy_matches' => 'Approved matches only',
+    'contact_privacy_note'    => 'Your WhatsApp and guardian contact are never shown on your public profile.',
+
+    // ── Step 8 / Step 10 misc ─────────────────────────────────────────────────
+    'partner_location_required' => 'Preferred Location (Bangladesh)',
+    'confirm_correct'           => 'I confirm that the information provided is correct and accurate.',
+    'complete_required_first'   => 'Please complete all required fields before submitting your biodata.',
 
 ];

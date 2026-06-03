@@ -75,6 +75,8 @@ interface BiodataDetail {
   // Contact
   guardian_mobile: string | null
   guardian_relationship: string | null
+  whatsapp_number: string | null
+  contact_privacy: string | null
   // Photos
   photos: Array<{ path: string; is_primary: boolean }> | null
   registration: Registration | null
@@ -364,15 +366,12 @@ export default function BiodataShow({ biodata }: Props) {
           )}
         </Section>
 
-        {/* Contact & Guardian (masked) */}
+        {/* Contact & Guardian (admin sees full details) */}
         <Section title={t('admin', 'biodata_section_contact')}>
           <Field label={t('admin', 'biodata_label_guardian_rel')}  value={biodata.guardian_relationship} />
-          <Field
-            label={t('admin', 'biodata_label_guardian_mobile')}
-            value={biodata.guardian_mobile
-              ? biodata.guardian_mobile.slice(0, 4) + '***' + biodata.guardian_mobile.slice(-2)
-              : null}
-          />
+          <Field label={t('admin', 'biodata_label_guardian_mobile')} value={biodata.guardian_mobile} />
+          <Field label={t('biodata', 'whatsapp_number')} value={biodata.whatsapp_number} />
+          <Field label={t('biodata', 'contact_privacy')} value={biodata.contact_privacy} />
         </Section>
 
         {/* Bottom action bar */}

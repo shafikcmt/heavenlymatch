@@ -757,6 +757,8 @@ function PreviewModal({ id, t, onClose, onApprove, onReject }: {
               <PreviewSection title={t('admin', 'biodata_sec_contact')} rows={[
                 [t('admin', 'biodata_label_guardian_rel'), data.contact.guardian_relationship],
                 [t('admin', 'biodata_label_guardian_mobile'), data.contact.guardian_mobile],
+                [t('biodata', 'whatsapp_number'), data.contact.whatsapp_number],
+                [t('biodata', 'contact_privacy'), data.contact.contact_privacy],
               ]} />
             </div>
           )}

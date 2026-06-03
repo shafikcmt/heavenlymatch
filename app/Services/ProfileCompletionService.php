@@ -4,60 +4,46 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Biodata;
 use App\Models\Registration;
 
 class ProfileCompletionService
 {
     /**
-     * Each section maps to the wizard step number and the key fields
-     * that must have at least one non-null value for the section to count as "started".
+     * The 10 wizard sections, each worth 10% of completion.
+     * Section key => wizard step number.
      */
-    private const SECTION_STEP = [
+    public const SECTION_STEP = [
         'general'   => 1,
         'location'  => 2,
         'religion'  => 3,
         'education' => 4,
-        'family'    => 5,
-        'lifestyle' => 6,
+        'lifestyle' => 5,
+        'family'    => 6,
         'marriage'  => 7,
         'partner'   => 8,
-        'photos'    => 9,
-    ];
-
-    private const SECTION_FIELDS = [
-        'general'   => ['marital_status', 'birth_date', 'height_cm'],
-        'location'  => ['residing_country', 'division', 'district'],
-        'religion'  => ['religion', 'prayers_info'],
-        'education' => ['highest_qualification', 'occupation'],
-        'family'    => ['family_type'],
-        'lifestyle' => ['diet', 'health_status'],
-        'marriage'  => ['guardian_agree', 'residence_after_marriage'],
-        'partner'   => ['partner_age_min', 'partner_age_max'],
-    ];
-
-    /** Fields used for computing the overall completeness percentage. */
-    private const SCORED_FIELDS = [
-        'marital_status', 'birth_date', 'height_cm', 'about_me',
-        'division', 'district', 'residing_country',
-        'religion', 'is_practicing', 'prayers_info',
-        'highest_qualification', 'occupation',
-        'family_type', 'brothers', 'sisters',
-        'health_status', 'diet',
-        'partner_age_min', 'partner_age_max', 'partner_expectations',
+        'contact'   => 9,
+        'review'    => 10,
     ];
 
     /**
-     * Compute completion data for a user.
-     *
-     * Returns:
-     *  - percentage             (0–100, stored completeness_score or computed)
-     *  - completed_sections     list of done sections
-     *  - missing_sections       list of sections still needed
-     *  - next_step              wizard step number of first missing section
-     *  - next_step_url          URL to that wizard step
-     *  - can_send_interest      true if percentage >= 30
-     *  - can_be_publicly_listed true if percentage >= 60
-     *  - has_photo              whether any photo is uploaded
+     * Required fields that must all be filled for a section to count as complete.
+     * The "review" section (step 10) is completed via the is_completed flag, not fields.
+     */
+    public const SECTION_REQUIRED = [
+        'general'   => ['marital_status', 'birth_date'],
+        'location'  => ['residing_country', 'residing_city', 'division', 'district'],
+        'religion'  => ['religion', 'prayers_info'],
+        'education' => ['highest_qualification', 'occupation'],
+        'lifestyle' => ['height_cm', 'weight_kg', 'complexion'],
+        'family'    => ['father_profession', 'mother_profession', 'family_type'],
+        'marriage'  => ['residence_after_marriage'],
+        'partner'   => ['partner_age_min', 'partner_age_max', 'partner_education', 'partner_division'],
+        'contact'   => ['contact_privacy'],
+    ];
+
+    /**
+     * Compute completion data for a user. Each completed section = 10%.
      */
     public static function compute(Registration $user): array
     {
@@ -76,36 +62,12 @@ class ProfileCompletionService
             ];
         }
 
-        $completed = [];
-        $missing   = [];
+        ['completed' => $completed, 'missing' => $missing] = self::sectionStatus($biodata);
 
-        foreach (self::SECTION_FIELDS as $section => $fields) {
-            $started = collect($fields)->some(
-                fn ($f) => ! is_null($biodata->$f) && $biodata->$f !== '' && $biodata->$f !== false
-            );
-            if ($started) {
-                $completed[] = $section;
-            } else {
-                $missing[] = $section;
-            }
-        }
+        $percentage = count($completed) * 10;
 
-        // Photos section
-        $hasPhoto = ! empty($biodata->photos);
-        if ($hasPhoto) {
-            $completed[] = 'photos';
-        } else {
-            $missing[] = 'photos';
-        }
-
-        // Use stored completeness_score if saved, otherwise compute from fields
-        $percentage = ($biodata->completeness_score > 0)
-            ? $biodata->completeness_score
-            : self::computePercentage($biodata);
-
-        // Next step = first missing section's wizard step
-        $nextSection = count($missing) > 0 ? $missing[0] : null;
-        $nextStep    = $nextSection ? (self::SECTION_STEP[$nextSection] ?? 1) : 9;
+        $nextSection = $missing[0] ?? 'review';
+        $nextStep    = self::SECTION_STEP[$nextSection] ?? 10;
 
         return [
             'percentage'             => $percentage,
@@ -115,28 +77,55 @@ class ProfileCompletionService
             'next_step_url'          => route('biodata.wizard', ['step' => $nextStep]),
             'can_send_interest'      => $percentage >= 30,
             'can_be_publicly_listed' => $percentage >= 60,
-            'has_photo'              => $hasPhoto,
+            'has_photo'              => ! empty($biodata->photos),
         ];
     }
 
-    /** Recompute percentage from raw fields (used when completeness_score is 0/null). */
-    public static function computePercentage(object $biodata): int
+    /**
+     * Determine which sections are complete / missing for a biodata.
+     *
+     * @return array{completed: array<int,string>, missing: array<int,string>}
+     */
+    public static function sectionStatus(Biodata $biodata): array
     {
-        $total  = count(self::SCORED_FIELDS);
-        $filled = collect(self::SCORED_FIELDS)
-            ->filter(fn ($f) => ! is_null($biodata->$f) && $biodata->$f !== '')
-            ->count();
+        $completed = [];
+        $missing   = [];
 
-        $base  = (int) round(($filled / $total) * 80);
-        $bonus = 0;
-
-        if (! empty($biodata->about_me) && strlen((string) $biodata->about_me) > 100) {
-            $bonus += 10;
-        }
-        if (! empty($biodata->photos)) {
-            $bonus += 10;
+        foreach (self::SECTION_REQUIRED as $section => $fields) {
+            $allFilled = collect($fields)->every(fn ($f) => self::filled($biodata->$f));
+            $allFilled ? $completed[] = $section : $missing[] = $section;
         }
 
-        return min(100, $base + $bonus);
+        // Photos/review section completes once the wizard is finished.
+        if ($biodata->is_completed) {
+            $completed[] = 'review';
+        } else {
+            $missing[] = 'review';
+        }
+
+        return ['completed' => $completed, 'missing' => $missing];
+    }
+
+    /** Step-based percentage (completed sections × 10). */
+    public static function computePercentage(Biodata $biodata): int
+    {
+        $completed = self::sectionStatus($biodata)['completed'];
+
+        return count($completed) * 10;
+    }
+
+    /** Required content sections (excluding review) still missing — used to gate final submit. */
+    public static function missingRequiredSections(Biodata $biodata): array
+    {
+        return array_values(array_filter(
+            self::sectionStatus($biodata)['missing'],
+            fn ($s) => $s !== 'review',
+        ));
+    }
+
+    /** A value counts as filled when it is not null and not an empty string. */
+    private static function filled($value): bool
+    {
+        return ! is_null($value) && $value !== '';
     }
 }

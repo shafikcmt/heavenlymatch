@@ -34,7 +34,7 @@ interface Props {
   is_verified: boolean
 }
 
-const SECTIONS = ['general','location','religion','education','family','lifestyle','marriage','partner','photos'] as const
+const SECTIONS = ['general','location','religion','education','lifestyle','family','marriage','partner','contact','review'] as const
 
 export default function Dashboard(props: Props) {
   const { auth, completion, access } = usePage<PageProps>().props

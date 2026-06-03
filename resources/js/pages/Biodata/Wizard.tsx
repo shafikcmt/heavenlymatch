@@ -10,7 +10,11 @@ import { WeightSelect } from '@/components/ui/WeightSelect'
 import { DateOfBirthSelect } from '@/components/ui/DateOfBirthSelect'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
-import { CheckCircle, Save, Plus, Trash2, Camera, Upload, X, Star } from 'lucide-react'
+import {
+  CheckCircle, Save, Plus, Trash2, Camera, Upload, X, Star,
+  User, MapPin, Moon, GraduationCap, HeartPulse, Users, HeartHandshake,
+  Search, Phone, ClipboardCheck,
+} from 'lucide-react'
 import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 
 // ─── Sub-types ────────────────────────────────────────────────────────────────
@@ -106,6 +110,9 @@ interface BiodataData {
   guardian_mobile?: string
   guardian_relationship?: string
   guardian_email?: string
+  whatsapp_number?: string
+  contact_privacy?: string
+  confirm_correct?: boolean
   partner_age_min?: number | ''
   partner_age_max?: number | ''
   partner_height_cm_min?: number | ''
@@ -506,6 +513,12 @@ const PROFESSION_OPTIONS = [
 
 const COUNT_OPTIONS = Array.from({ length: 21 }, (_, i) => ({ value: String(i), label: String(i) }))
 
+// Step number → related icon for the progress indicator.
+const STEP_ICONS: Record<number, any> = {
+  1: User, 2: MapPin, 3: Moon, 4: GraduationCap, 5: HeartPulse,
+  6: Users, 7: HeartHandshake, 8: Search, 9: Phone, 10: ClipboardCheck,
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BiodataWizard({ step, steps, biodata, user, photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
@@ -573,7 +586,15 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
     education_details: toEduList(biodata.education_details),
     brothers_details: toSiblingList(biodata.brothers_details),
     sisters_details: toSiblingList(biodata.sisters_details),
+    contact_privacy: biodata.contact_privacy ?? 'private',
+    confirm_correct: false,
   })
+
+  const contactPrivacyOpts = [
+    { value: 'private',       label: t('biodata', 'contact_privacy_private') },
+    { value: 'request_only',  label: t('biodata', 'contact_privacy_request') },
+    { value: 'matches_only',  label: t('biodata', 'contact_privacy_matches') },
+  ]
 
   const [savingDraft, setSavingDraft] = useState(false)
 
@@ -788,48 +809,55 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
 
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
 
-        {/* Completion bar */}
-        {completenessScore > 0 && (
-          <div className="mb-5">
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-slate-500">{t('biodata', 'profile_completion')}</span>
-              <span className={cn('font-bold',
-                completenessScore >= 80 ? 'text-emerald-600' :
-                completenessScore >= 50 ? 'text-primary-600' : 'text-amber-600',
-              )}>{completenessScore}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-              <div className={cn('h-full rounded-full transition-all duration-700',
-                completenessScore >= 80 ? 'bg-emerald-500' :
-                completenessScore >= 50 ? 'bg-primary-500' : 'bg-amber-400',
-              )} style={{ width: `${completenessScore}%` }} />
+        {/* Step-based progress (each step = 10%) */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-semibold text-primary-600 uppercase tracking-wide">
+              {t('biodata', 'wizard_subtitle', { step: String(step), total: String(totalSteps) })}
+            </span>
+            <span className="font-bold text-slate-700 tabular-nums">{step * 10}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-200 overflow-hidden mb-5">
+            <div
+              className="h-full rounded-full bg-primary-600 transition-all duration-500"
+              style={{ width: `${step * 10}%` }}
+            />
+          </div>
+
+          {/* Step circles with centered connector line */}
+          <div className="relative px-1">
+            <div className="absolute top-4 left-3 right-3 h-0.5 bg-slate-200" />
+            <div
+              className="absolute top-4 left-3 h-0.5 bg-emerald-400 transition-all duration-500"
+              style={{ width: `calc((100% - 1.5rem) * ${(step - 1) / (totalSteps - 1)})` }}
+            />
+            <div className="relative flex justify-between">
+              {Array.from({ length: totalSteps }, (_, i) => i + 1).map(num => {
+                const Icon = STEP_ICONS[num] ?? User
+                const done = step > num
+                const active = step === num
+                const clickable = num < step
+                return (
+                  <button
+                    key={num}
+                    type="button"
+                    title={steps[num]}
+                    onClick={() => clickable ? router.get(route('biodata.wizard', { step: num })) : undefined}
+                    className={cn('flex items-center justify-center', clickable ? 'cursor-pointer' : 'cursor-default')}
+                  >
+                    <span className={cn(
+                      'h-8 w-8 rounded-full flex items-center justify-center transition-all duration-200',
+                      done   ? 'bg-emerald-500 text-white hover:scale-105' :
+                      active ? 'bg-primary-600 text-white ring-4 ring-primary-100 scale-110 shadow-sm' :
+                               'bg-white text-slate-300 border-2 border-slate-200',
+                    )}>
+                      {done ? <CheckCircle size={15} /> : <Icon size={15} />}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
-        )}
-
-        {/* Step progress */}
-        <div className="flex items-center gap-0 mb-6 overflow-x-auto pb-1 scrollbar-none">
-          {Array.from({ length: totalSteps }, (_, i) => i + 1).map(num => (
-            <div key={num} className="flex items-center flex-shrink-0">
-              <button
-                type="button"
-                title={steps[num]}
-                onClick={() => num < step ? router.get(route('biodata.wizard', { step: num })) : undefined}
-                className={cn(
-                  'h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200',
-                  step > num ? 'bg-emerald-500 text-white cursor-pointer hover:bg-emerald-600 hover:scale-105' :
-                  step === num ? 'bg-primary-600 text-white shadow-md shadow-primary-200 scale-110' :
-                  'bg-slate-100 text-slate-400 cursor-default border-2 border-slate-200',
-                )}
-              >{step > num ? <CheckCircle size={14} /> : num}</button>
-              {num < totalSteps && (
-                <div className={cn('h-0.5 transition-colors duration-300',
-                  num < 5 ? 'w-5 sm:w-7' : 'w-4 sm:w-6',
-                  step > num ? 'bg-emerald-400' : 'bg-slate-200',
-                )} />
-              )}
-            </div>
-          ))}
         </div>
 
         {/* Form card */}
@@ -885,6 +913,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   onChange={v => setData('marital_status', v as never)}
                   options={maritalStatusOpts}
                   error={errors.marital_status}
+                  required
                 />
 
                 <DateOfBirthSelect
@@ -892,39 +921,8 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   value={(data.birth_date as string) ?? ''}
                   onChange={v => setData('birth_date', v as never)}
                   error={errors.birth_date}
+                  required
                 />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <HeightSelect
-                    label={t('biodata', 'height')}
-                    value={data.height_cm ?? ''}
-                    onChange={v => setData('height_cm', v as never)}
-                    error={errors.height_cm}
-                  />
-                  <WeightSelect
-                    label={t('biodata', 'weight')}
-                    value={data.weight_kg ?? ''}
-                    onChange={v => setData('weight_kg', v as never)}
-                    error={errors.weight_kg}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'complexion')}
-                    value={data.complexion ?? ''}
-                    onChange={v => setData('complexion', v as never)}
-                    options={complexionOpts}
-                    error={errors.complexion}
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'blood_group')}
-                    value={data.blood_group ?? ''}
-                    onChange={v => setData('blood_group', v as never)}
-                    options={bloodGroupOpts}
-                    error={errors.blood_group}
-                  />
-                </div>
 
                 <SearchableSelect
                   label={t('biodata', 'mother_tongue')}
@@ -960,6 +958,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={COUNTRY_OPTIONS}
                     error={errors.residing_country}
                     allowFreeText
+                    required
                     placeholder="e.g. Bangladesh, UK..."
                   />
                   <SearchableSelect
@@ -969,6 +968,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={cityOptions}
                     error={errors.residing_city}
                     allowFreeText
+                    required
                     placeholder={isBangladesh ? 'e.g. Dhaka, Sylhet...' : 'Enter your city'}
                     emptyText={isBangladesh ? 'Type to search or add city' : 'Type your city name'}
                   />
@@ -1023,6 +1023,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={RELIGION_OPTIONS}
                     error={errors.religion}
                     allowFreeText
+                    required
                     placeholder="Select religion..."
                   />
                   {isIslam && (
@@ -1053,6 +1054,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                         onChange={v => setData('prayers_info', v as never)}
                         options={prayersOpts}
                         error={errors.prayers_info}
+                        required
                       />
                       <SearchableSelect
                         label={t('biodata', 'quran_recitation')}
@@ -1150,6 +1152,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     onChange={v => setData('highest_qualification', v as never)}
                     options={qualOpts}
                     error={errors.highest_qualification}
+                    required
                   />
                 </div>
 
@@ -1204,6 +1207,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={OCCUPATION_OPTIONS}
                     error={errors.occupation}
                     allowFreeText
+                    required
                     placeholder="e.g. Software Engineer"
                   />
                 </div>
@@ -1228,8 +1232,8 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
               </>
             )}
 
-            {/* ── Step 5: Family ── */}
-            {step === 5 && (
+            {/* ── Step 6: Family ── */}
+            {step === 6 && (
               <>
                 <SectionLabel>Father's Information</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1247,6 +1251,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={PROFESSION_OPTIONS}
                     error={errors.father_profession}
                     allowFreeText
+                    required
                     placeholder="e.g. Retired, Business"
                   />
                 </div>
@@ -1272,6 +1277,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={PROFESSION_OPTIONS}
                     error={errors.mother_profession}
                     allowFreeText
+                    required
                     placeholder="e.g. Homemaker, Teacher"
                   />
                 </div>
@@ -1356,6 +1362,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     onChange={v => setData('family_type', v as never)}
                     options={familyTypeOpts}
                     error={errors.family_type}
+                    required
                   />
                   <SearchableSelect
                     label={t('biodata', 'family_financial_status')}
@@ -1384,9 +1391,45 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
               </>
             )}
 
-            {/* ── Step 6: Lifestyle & Health ── */}
-            {step === 6 && (
+            {/* ── Step 5: Physical & Lifestyle ── */}
+            {step === 5 && (
               <>
+                <SectionLabel>{t('biodata', 'section_physical')}</SectionLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <HeightSelect
+                    label={t('biodata', 'height')}
+                    value={data.height_cm ?? ''}
+                    onChange={v => setData('height_cm', v as never)}
+                    error={errors.height_cm}
+                    required
+                  />
+                  <WeightSelect
+                    label={t('biodata', 'weight')}
+                    value={data.weight_kg ?? ''}
+                    onChange={v => setData('weight_kg', v as never)}
+                    error={errors.weight_kg}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SearchableSelect
+                    label={t('biodata', 'complexion')}
+                    value={data.complexion ?? ''}
+                    onChange={v => setData('complexion', v as never)}
+                    options={complexionOpts}
+                    error={errors.complexion}
+                    required
+                  />
+                  <SearchableSelect
+                    label={t('biodata', 'blood_group')}
+                    value={data.blood_group ?? ''}
+                    onChange={v => setData('blood_group', v as never)}
+                    options={bloodGroupOpts}
+                    error={errors.blood_group}
+                  />
+                </div>
+
+                <SectionLabel>{t('biodata', 'section_lifestyle')}</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <SearchableSelect
                     label={t('biodata', 'health_status')}
@@ -1449,6 +1492,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={RESIDENCE_OPTIONS}
                     error={errors.residence_after_marriage}
                     allowFreeText
+                    required
                     placeholder="Dhaka / Abroad / Flexible"
                   />
                   <SearchableSelect
@@ -1503,40 +1547,63 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   </div>
                 )}
 
-                {/* Guardian contact */}
-                <div className="border-t border-slate-100 pt-5">
-                  <p className="text-sm font-semibold text-slate-700 mb-4">
-                    {t('biodata', 'guardian_contact_section')}
-                  </p>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        label={t('biodata', 'guardian_mobile')}
-                        value={data.guardian_mobile ?? ''}
-                        onChange={e => setData('guardian_mobile', e.target.value as never)}
-                        error={errors.guardian_mobile}
-                        placeholder="+88017XXXXXXXX"
-                      />
-                      <SearchableSelect
-                        label={t('biodata', 'guardian_relationship')}
-                        value={data.guardian_relationship ?? ''}
-                        onChange={v => setData('guardian_relationship', v as never)}
-                        options={GUARDIAN_REL_OPTIONS}
-                        error={errors.guardian_relationship}
-                        allowFreeText
-                        placeholder="Father / Brother / Uncle"
-                      />
-                    </div>
-                    <Input
-                      label={t('biodata', 'guardian_email')}
-                      type="email"
-                      value={data.guardian_email ?? ''}
-                      onChange={e => setData('guardian_email', e.target.value as never)}
-                      error={errors.guardian_email}
-                      placeholder="guardian@example.com"
-                    />
-                  </div>
+              </>
+            )}
+
+            {/* ── Step 9: Contact & Privacy ── */}
+            {step === 9 && (
+              <>
+                <div className="rounded-xl bg-primary-50 border border-primary-100 px-4 py-3 text-sm text-primary-700">
+                  {t('biodata', 'contact_intro')}
                 </div>
+
+                <SectionLabel>{t('biodata', 'guardian_contact_section')}</SectionLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={`${t('biodata', 'guardian_mobile')} (${t('common', 'optional')})`}
+                    value={data.guardian_mobile ?? ''}
+                    onChange={e => setData('guardian_mobile', e.target.value as never)}
+                    error={errors.guardian_mobile}
+                    placeholder="+88017XXXXXXXX"
+                  />
+                  <SearchableSelect
+                    label={`${t('biodata', 'guardian_relationship')} (${t('common', 'optional')})`}
+                    value={data.guardian_relationship ?? ''}
+                    onChange={v => setData('guardian_relationship', v as never)}
+                    options={GUARDIAN_REL_OPTIONS}
+                    error={errors.guardian_relationship}
+                    allowFreeText
+                    placeholder="Father / Brother / Uncle"
+                  />
+                </div>
+                <Input
+                  label={`${t('biodata', 'guardian_email')} (${t('common', 'optional')})`}
+                  type="email"
+                  value={data.guardian_email ?? ''}
+                  onChange={e => setData('guardian_email', e.target.value as never)}
+                  error={errors.guardian_email}
+                  placeholder="guardian@example.com"
+                />
+
+                <Input
+                  label={`${t('biodata', 'whatsapp_number')} (${t('common', 'optional')})`}
+                  value={data.whatsapp_number ?? ''}
+                  onChange={e => setData('whatsapp_number', e.target.value as never)}
+                  error={errors.whatsapp_number}
+                  placeholder="01XXXXXXXXX"
+                  helperText={t('biodata', 'whatsapp_hint')}
+                />
+
+                <SectionLabel>{t('biodata', 'contact_privacy_section')}</SectionLabel>
+                <SearchableSelect
+                  label={t('biodata', 'contact_privacy')}
+                  value={data.contact_privacy ?? 'private'}
+                  onChange={v => setData('contact_privacy', v as never)}
+                  options={contactPrivacyOpts}
+                  error={errors.contact_privacy}
+                  required
+                />
+                <p className="text-xs text-slate-400 leading-relaxed">{t('biodata', 'contact_privacy_note')}</p>
               </>
             )}
 
@@ -1552,6 +1619,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={ageOpts}
                     error={errors.partner_age_min}
                     placeholder="Min age"
+                    required
                   />
                   <SearchableSelect
                     label={t('biodata', 'partner_age_max')}
@@ -1560,6 +1628,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     options={ageOpts}
                     error={errors.partner_age_max}
                     placeholder="Max age"
+                    required
                   />
                 </div>
 
@@ -1624,6 +1693,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     onChange={v => setData('partner_education', v as never)}
                     options={partnerEduOpts}
                     error={errors.partner_education}
+                    required
                   />
                   <SearchableSelect
                     label={t('biodata', 'partner_family_type')}
@@ -1634,7 +1704,7 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   />
                 </div>
 
-                <SectionLabel>Preferred Location (Bangladesh)</SectionLabel>
+                <SectionLabel>{t('biodata', 'partner_location_required')}</SectionLabel>
                 <BangladeshAddressPicker
                   value={{
                     division: (data.partner_division as string) ?? undefined,
@@ -1645,6 +1715,10 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     partner_division: val.division ?? '',
                     partner_district: val.district ?? '',
                   })}
+                  errors={{
+                    division: errors.partner_division as string | undefined,
+                    district: errors.partner_district as string | undefined,
+                  }}
                   showUpazila={false}
                 />
 
@@ -1660,8 +1734,8 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
               </>
             )}
 
-            {/* ── Step 9: Photos ── */}
-            {step === 9 && (
+            {/* ── Step 10: Profile Photo & Review ── */}
+            {step === 10 && (
               <div className="space-y-5">
                 {/* Header */}
                 <div className="text-center pb-1">
@@ -1768,6 +1842,22 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                 <p className="text-xs text-slate-400 text-center leading-relaxed">
                   {t('biodata', 'step9_note')}
                 </p>
+
+                {/* Final confirmation */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!data.confirm_correct}
+                      onChange={e => setData('confirm_correct', e.target.checked as never)}
+                      className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-slate-700">{t('biodata', 'confirm_correct')}</span>
+                  </label>
+                  {errors.confirm_correct && (
+                    <p className="mt-1.5 text-xs text-red-600">{errors.confirm_correct}</p>
+                  )}
+                </div>
               </div>
             )}
 
