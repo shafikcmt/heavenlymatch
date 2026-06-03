@@ -47,6 +47,10 @@ return [
     'biodata_approved_body'     => 'Your biodata has been approved and is now visible to members.',
     'biodata_rejected_title'    => 'Biodata needs corrections',
     'biodata_rejected_body'     => 'Your biodata was not approved. Reason: :reason. Please update and resubmit.',
+    'biodata_hidden_title'      => 'Biodata hidden',
+    'biodata_hidden_body'       => 'Your biodata has been temporarily hidden by our team and is not visible to members right now.',
+    'biodata_unhidden_title'    => 'Biodata visible again',
+    'biodata_unhidden_body'     => 'Your biodata is visible to members again.',
     'identity_verified_title'   => 'Identity verified',
     'identity_verified_body'    => 'Your identity has been verified. Your profile now shows a Verified badge.',
 

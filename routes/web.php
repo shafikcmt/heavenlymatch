@@ -228,10 +228,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{id}/suspend',  [\App\Http\Controllers\Admin\AdminUserController::class, 'suspend'])->name('users.suspend');
     Route::post('/users/{id}/activate', [\App\Http\Controllers\Admin\AdminUserController::class, 'activate'])->name('users.activate');
     Route::post('/users/{id}/verify',   [\App\Http\Controllers\Admin\AdminUserController::class, 'verify'])->name('users.verify');
-    Route::get('/biodatas',              [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
-    Route::get('/biodatas/{id}',         [\App\Http\Controllers\Admin\AdminBiodataController::class, 'show'])->name('biodatas.show');
-    Route::post('/biodatas/{id}/approve',[\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve');
-    Route::post('/biodatas/{id}/reject', [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject');
+    Route::get('/biodatas',                 [\App\Http\Controllers\Admin\AdminBiodataController::class, 'index'])->name('biodatas.index');
+    Route::post('/biodatas/bulk-action',    [\App\Http\Controllers\Admin\AdminBiodataController::class, 'bulkAction'])->name('biodatas.bulk-action');
+    Route::get('/biodatas/{id}',            [\App\Http\Controllers\Admin\AdminBiodataController::class, 'show'])->name('biodatas.show')->whereNumber('id');
+    Route::get('/biodatas/{id}/preview',    [\App\Http\Controllers\Admin\AdminBiodataController::class, 'preview'])->name('biodatas.preview')->whereNumber('id');
+    Route::post('/biodatas/{id}/approve',   [\App\Http\Controllers\Admin\AdminBiodataController::class, 'approve'])->name('biodatas.approve')->whereNumber('id');
+    Route::post('/biodatas/{id}/reject',    [\App\Http\Controllers\Admin\AdminBiodataController::class, 'reject'])->name('biodatas.reject')->whereNumber('id');
+    Route::post('/biodatas/{id}/hide',      [\App\Http\Controllers\Admin\AdminBiodataController::class, 'hide'])->name('biodatas.hide')->whereNumber('id');
+    Route::post('/biodatas/{id}/unhide',    [\App\Http\Controllers\Admin\AdminBiodataController::class, 'unhide'])->name('biodatas.unhide')->whereNumber('id');
     Route::get('/payments',                    [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{id}/approve',      [\App\Http\Controllers\Admin\AdminPaymentController::class, 'approve'])->name('payments.approve');
     Route::post('/payments/{id}/reject',       [\App\Http\Controllers\Admin\AdminPaymentController::class, 'reject'])->name('payments.reject');

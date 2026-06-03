@@ -4,7 +4,7 @@ import { useState } from 'react'
 import AdminLayout from '@/layouts/AdminLayout'
 import { Button } from '@/components/ui/Button'
 import { useTranslation } from '@/lib/i18n'
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, EyeOff, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Registration {
@@ -163,6 +163,16 @@ export default function BiodataShow({ biodata }: Props) {
     router.post(route('admin.biodatas.approve', biodata.id))
   }
 
+  function hide() {
+    if (!confirm(t('admin', 'biodata_confirm_hide_title'))) return
+    router.post(route('admin.biodatas.hide', biodata.id), {}, { preserveScroll: true })
+  }
+
+  function unhide() {
+    if (!confirm(t('admin', 'biodata_confirm_unhide_title'))) return
+    router.post(route('admin.biodatas.unhide', biodata.id), {}, { preserveScroll: true })
+  }
+
   const statusColor =
     biodata.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
     biodata.status === 'pending'  ? 'bg-amber-100 text-amber-700' :
@@ -253,6 +263,18 @@ export default function BiodataShow({ biodata }: Props) {
               >
                 <XCircle size={14} />
                 {t('admin', 'biodata_reject')}
+              </Button>
+            )}
+            {biodata.status === 'approved' && (
+              <Button size="sm" variant="outline" onClick={hide} className="gap-1.5">
+                <EyeOff size={14} />
+                {t('admin', 'biodata_hide')}
+              </Button>
+            )}
+            {biodata.status === 'hidden' && (
+              <Button size="sm" variant="outline" onClick={unhide} className="gap-1.5">
+                <Eye size={14} />
+                {t('admin', 'biodata_unhide')}
               </Button>
             )}
           </div>
@@ -368,6 +390,18 @@ export default function BiodataShow({ biodata }: Props) {
             <Button size="sm" variant="destructive" onClick={() => setRejectOpen(true)} className="gap-1.5">
               <XCircle size={14} />
               {t('admin', 'biodata_reject')}
+            </Button>
+          )}
+          {biodata.status === 'approved' && (
+            <Button size="sm" variant="outline" onClick={hide} className="gap-1.5">
+              <EyeOff size={14} />
+              {t('admin', 'biodata_hide')}
+            </Button>
+          )}
+          {biodata.status === 'hidden' && (
+            <Button size="sm" variant="outline" onClick={unhide} className="gap-1.5">
+              <Eye size={14} />
+              {t('admin', 'biodata_unhide')}
             </Button>
           )}
         </div>
