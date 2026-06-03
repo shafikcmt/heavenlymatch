@@ -75,7 +75,9 @@ export default function Settings({ settings, gateways, mediaUrls }: Props) {
         facebook_enabled: settings['social.facebook_enabled'] ?? '1',
       },
       system: {
-        profile_approval_required: settings['system.profile_approval_required'] ?? '1',
+        profile_approval_required:   settings['system.profile_approval_required'] ?? '1',
+        require_email_verification:  settings['system.require_email_verification'] ?? '1',
+        require_phone_verification:  settings['system.require_phone_verification'] ?? '1',
       },
     },
     gateways: gateways.map(gw => ({
@@ -197,6 +199,67 @@ export default function Settings({ settings, gateways, mediaUrls }: Props) {
                 </span>
               </label>
             </FormField>
+          </section>
+
+          {/* User Verification Control */}
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-sm font-semibold text-slate-900 mb-1">
+              {t('admin', 'settings_group_verification')}
+            </h2>
+            <p className="text-xs text-slate-400 mb-4">{t('admin', 'settings_verification_desc')}</p>
+            <div className="space-y-4">
+              <FormField label={t('admin', 'settings_require_email_verification')}>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      data.settings.system.require_email_verification === '1' ? 'bg-emerald-500' : 'bg-slate-300'
+                    }`}
+                    onClick={() => setData('settings', {
+                      ...data.settings,
+                      system: {
+                        ...data.settings.system,
+                        require_email_verification: data.settings.system.require_email_verification === '1' ? '0' : '1',
+                      },
+                    })}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      data.settings.system.require_email_verification === '1' ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </div>
+                  <span className="text-sm text-slate-600">
+                    {data.settings.system.require_email_verification === '1'
+                      ? t('admin', 'settings_verification_enabled')
+                      : t('admin', 'settings_verification_disabled')}
+                  </span>
+                </label>
+              </FormField>
+
+              <FormField label={t('admin', 'settings_require_phone_verification')}>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      data.settings.system.require_phone_verification === '1' ? 'bg-emerald-500' : 'bg-slate-300'
+                    }`}
+                    onClick={() => setData('settings', {
+                      ...data.settings,
+                      system: {
+                        ...data.settings.system,
+                        require_phone_verification: data.settings.system.require_phone_verification === '1' ? '0' : '1',
+                      },
+                    })}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      data.settings.system.require_phone_verification === '1' ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </div>
+                  <span className="text-sm text-slate-600">
+                    {data.settings.system.require_phone_verification === '1'
+                      ? t('admin', 'settings_verification_enabled')
+                      : t('admin', 'settings_verification_disabled')}
+                  </span>
+                </label>
+              </FormField>
+            </div>
           </section>
 
           {/* Email notification settings */}

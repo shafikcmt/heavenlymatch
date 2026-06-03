@@ -102,6 +102,34 @@ return [
     'choose_experience'      => 'আপনার পছন্দের অভিজ্ঞতা বেছে নিন',
     'mode_islamic_badge'     => 'সবচেয়ে জনপ্রিয়',
 
+    // ── Mobile number + OTP verification ──────────────────────────────────────
+    'field_mobile'           => 'মোবাইল নম্বর',
+    'field_mobile_ph'        => '+880 1XXX-XXXXXX',
+    'mobile_required'        => 'মোবাইল নম্বর আবশ্যক।',
+    'btn_send_otp'           => 'OTP পাঠান',
+    'btn_verify_otp'         => 'OTP যাচাই করুন',
+    'btn_resend_otp'         => 'আবার OTP পাঠান',
+    'otp_label'              => '৬-সংখ্যার OTP লিখুন',
+    'otp_sent_hint'          => 'আপনার মোবাইল নম্বরে আমরা একটি ৬-সংখ্যার OTP পাঠিয়েছি।',
+    'otp_resend_in'          => ':seconds সেকেন্ড পর আবার পাঠান',
+    'phone_verified_badge'   => 'ফোন যাচাই হয়েছে',
+    'change_number'          => 'নম্বর পরিবর্তন করুন',
+    'verifying'              => 'যাচাই হচ্ছে…',
+    'verify_phone_first'     => 'এগিয়ে যেতে আপনার মোবাইল নম্বর যাচাই করুন।',
+
+    // OTP server messages (also used by PhoneOtpService / controllers)
+    'otp_sent'               => 'আপনার মোবাইল নম্বরে আমরা একটি ৬-সংখ্যার OTP পাঠিয়েছি।',
+    'otp_invalid_phone'      => 'একটি বৈধ বাংলাদেশি মোবাইল নম্বর লিখুন।',
+    'otp_invalid'            => 'ভুল OTP। আবার চেষ্টা করুন।',
+    'otp_expired'            => 'আপনার OTP-এর মেয়াদ শেষ হয়েছে। নতুন একটি অনুরোধ করুন।',
+    'otp_too_many'           => 'অনেকবার চেষ্টা করা হয়েছে। নতুন OTP অনুরোধ করুন।',
+    'otp_verified'           => 'ফোন যাচাই হয়েছে।',
+    'otp_resend_wait'        => 'আরেকটি OTP চাওয়ার আগে :seconds সেকেন্ড অপেক্ষা করুন।',
+    'otp_send_failed'        => 'এখন OTP পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    'otp_no_code'            => 'প্রথমে একটি OTP অনুরোধ করুন।',
+    'otp_phone_taken'        => 'এই মোবাইল নম্বরটি ইতিমধ্যে নিবন্ধিত।',
+    'otp_not_verified'       => 'এগিয়ে যাওয়ার আগে আপনার মোবাইল নম্বর যাচাই করুন।',
+
     // ── Trust side panel (Register & Login) ───────────────────────────────────
     'trust_title'            => 'হালাল জীবনসঙ্গী খুঁজুন',
     'trust_subtitle'         => 'বাংলাদেশের সবচেয়ে বিশ্বস্ত বিবাহ প্ল্যাটফর্মে ৫০,০০০+ মুসলিম পরিবারে যোগ দিন।',

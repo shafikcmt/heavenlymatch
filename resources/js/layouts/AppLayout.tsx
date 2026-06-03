@@ -12,6 +12,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
 import { MobileBottomNav } from '@/components/mobile/MobileBottomNav'
 import { MobileTabs, type MobileTab } from '@/components/mobile/MobileTabs'
+import UserMenu from '@/components/UserMenu'
 
 // Determine which tab key is active from the current path
 function getActiveTab(path: string): string {
@@ -36,6 +37,19 @@ const MATCH_TABS: MobileTab[] = [
 // Pages that show the match tabs row
 const TAB_PATHS = ['/dashboard', '/matches', '/search', '/shortlist', '/interests/received', '/profile/who-viewed']
 
+// Map the current path to a `common` translation key for the desktop header title
+function getPageTitleKey(path: string): string {
+  if (path.startsWith('/matches'))       return 'matches'
+  if (path.startsWith('/search'))        return 'search'
+  if (path.startsWith('/interests'))     return 'interests'
+  if (path.startsWith('/inbox'))         return 'inbox'
+  if (path.startsWith('/shortlist'))     return 'shortlist'
+  if (path.startsWith('/notifications')) return 'notifications'
+  if (path.startsWith('/settings'))      return 'settings'
+  if (path.startsWith('/profile') || path.startsWith('/dashboard/profile')) return 'profile'
+  return 'dashboard'
+}
+
 function MembershipBadge({ tier }: { tier: string | null }) {
   if (!tier || tier === 'free') return null
   const map: Record<string, { label: string; className: string }> = {
@@ -59,6 +73,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
   const showTabs = TAB_PATHS.some(p => currentPath.startsWith(p))
   const activeTab = getActiveTab(currentPath)
+  const pageTitle = t('common', getPageTitleKey(currentPath))
 
   const navItems = [
     { label: t('common', 'dashboard'),     href: '/dashboard',          icon: Home },
@@ -133,47 +148,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User section */}
-        <div className="border-t border-slate-100 p-3">
+        {/* User section — sticky footer; Logout always stays in view (no scroll) */}
+        <div className="border-t border-slate-100 p-3 space-y-2">
           {user.platform_mode === 'islamic' && (
-            <div className="mb-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 flex items-center gap-2">
+            <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 flex items-center gap-2">
               <Shield size={13} />
               {t('common', 'mode_islamic')}
             </div>
           )}
-          <div className="flex items-center gap-3 rounded-xl px-3 py-2">
-            <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-              <User size={18} className="text-slate-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
-              <div className="flex items-center gap-1">
-                <p className="text-xs text-slate-400 truncate">{user.registration_id}</p>
-                <MembershipBadge tier={user.membership_plan} />
-              </div>
-            </div>
-          </div>
-          <div className="mt-1 grid grid-cols-2 gap-1">
-            <Link
-              href={route('settings.index')}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
-            >
-              <Settings size={14} />
-              {t('common', 'settings')}
-            </Link>
-            <Link
-              href={route('logout')}
-              method="post"
-              as="button"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-red-500 hover:bg-red-50"
-            >
-              <LogOut size={14} />
-              {t('common', 'logout')}
-            </Link>
-          </div>
+
           {/* Profile completion mini-bar */}
           {completion && completion.percentage < 100 && (
-            <Link href={completion.next_step_url} className="block mt-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 hover:bg-amber-100 transition-colors">
+            <Link href={completion.next_step_url} className="block rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 hover:bg-amber-100 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
                   <TrendingUp size={11} />
@@ -189,14 +175,75 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
           )}
-          <div className="mt-2 px-1">
+
+          {/* User identity */}
+          <Link
+            href={route('dashboard.profile')}
+            className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-100 transition-colors"
+          >
+            <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+              <User size={18} className="text-primary-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-slate-400 truncate">{user.registration_id}</p>
+                <MembershipBadge tier={user.membership_plan} />
+              </div>
+            </div>
+          </Link>
+
+          <div className="px-1">
             <LanguageSwitcher className="w-full justify-center" />
+          </div>
+
+          {/* Settings + Logout — Logout is the last, always-visible action */}
+          <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <Link
+              href={route('settings.index')}
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <Settings size={14} />
+              {t('common', 'settings')}
+            </Link>
+            <Link
+              href={route('logout')}
+              method="post"
+              as="button"
+              className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors"
+            >
+              <LogOut size={14} />
+              {t('common', 'logout')}
+            </Link>
           </div>
         </div>
       </aside>
 
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-w-0">
+
+        {/* ── Desktop header (sticky, with account dropdown) ── */}
+        <header className="hidden lg:flex sticky top-0 z-30 h-16 items-center gap-4 border-b border-slate-200 bg-white/95 backdrop-blur px-6">
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">{pageTitle}</h1>
+
+          <div className="ml-auto flex items-center gap-2">
+            <Link
+              href="/notifications"
+              aria-label={t('common', 'notifications')}
+              className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+            >
+              <Bell size={20} />
+              {unread_notifications > 0 && (
+                <span className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
+                  {unread_notifications > 9 ? '9+' : unread_notifications}
+                </span>
+              )}
+            </Link>
+            <LanguageSwitcher />
+            <div className="h-6 w-px bg-slate-200" />
+            <UserMenu />
+          </div>
+        </header>
 
         {/* ── Mobile header (green brand) ── */}
         <header className="sticky top-0 z-30 lg:hidden">

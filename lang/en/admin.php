@@ -240,6 +240,23 @@ return [
     'settings_approval_enabled'          => 'Enabled — admin review required',
     'settings_approval_disabled'         => 'Disabled — auto-approve',
 
+    // ── User Verification Control ─────────────────────────────────────────────
+    'settings_group_verification'        => 'User Verification Control',
+    'settings_verification_desc'         => 'Admin can control whether email verification and phone OTP verification are required during registration.',
+    'settings_require_email_verification'=> 'Require Email Verification',
+    'settings_require_phone_verification'=> 'Require Phone OTP Verification',
+    'settings_verification_enabled'      => 'Enabled — required',
+    'settings_verification_disabled'     => 'Disabled — not required',
+
+    // ── User verification badges (Users list) ─────────────────────────────────
+    'col_verified'                       => 'Verified',
+    'badge_email'                        => 'Email',
+    'badge_phone'                        => 'Phone',
+    'email_verified'                     => 'Email verified',
+    'email_not_verified'                 => 'Email not verified',
+    'phone_verified'                     => 'Phone verified',
+    'phone_not_verified'                 => 'Phone not verified',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'Homepage Images',
     'settings_hero_image'        => 'Hero Banner Image',

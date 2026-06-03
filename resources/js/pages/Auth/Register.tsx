@@ -1,10 +1,11 @@
 /// <reference path="../../types/ziggy.d.ts" />
 import { Head, Link, useForm, usePage } from '@inertiajs/react'
+import axios from 'axios'
 import GuestLayout from '@/layouts/GuestLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useState, useEffect } from 'react'
-import { CheckCircle, CheckCircle2, Crown } from 'lucide-react'
+import { CheckCircle, CheckCircle2, Crown, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
 import type { PageProps } from '@/types'
@@ -13,8 +14,20 @@ type Step = 1 | 2 | 3
 
 export default function Register() {
   const { t } = useTranslation()
-  const { googleEnabled, facebookEnabled } = usePage<PageProps & { googleEnabled: boolean; facebookEnabled: boolean }>().props
+  const { googleEnabled, facebookEnabled, requirePhoneVerification = true } = usePage<
+    PageProps & { googleEnabled: boolean; facebookEnabled: boolean; requirePhoneVerification?: boolean }
+  >().props
   const [step, setStep] = useState<Step>(1)
+
+  // ── Mobile OTP verification state ──────────────────────────────────────────
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpVerified, setOtpVerified] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [sending, setSending] = useState(false)
+  const [verifying, setVerifying] = useState(false)
+  const [otpError, setOtpError] = useState('')
+  const [otpInfo, setOtpInfo] = useState('')
+  const [resendIn, setResendIn] = useState(0)
 
   const { data, setData, post, processing, errors } = useForm({
     name: '',
@@ -44,8 +57,79 @@ export default function Register() {
   const next = () => setStep(s => Math.min(3, s + 1) as Step)
   const back = () => setStep(s => Math.max(1, s - 1) as Step)
 
+  // Resend countdown tick
+  useEffect(() => {
+    if (resendIn <= 0) return
+    const id = setTimeout(() => setResendIn(s => s - 1), 1000)
+    return () => clearTimeout(id)
+  }, [resendIn])
+
+  // Changing the number invalidates any prior OTP / verification
+  const handleMobileChange = (value: string) => {
+    setData('mobile_number', value)
+    if (otpSent || otpVerified) {
+      setOtpSent(false)
+      setOtpVerified(false)
+      setOtp('')
+      setOtpError('')
+      setOtpInfo('')
+    }
+  }
+
+  const resetVerification = () => {
+    setOtpSent(false)
+    setOtpVerified(false)
+    setOtp('')
+    setOtpError('')
+    setOtpInfo('')
+    setResendIn(0)
+  }
+
+  const handleSendOtp = async () => {
+    if (!data.mobile_number.trim()) {
+      setOtpError(t('auth', 'mobile_required'))
+      return
+    }
+    setOtpError(''); setOtpInfo(''); setSending(true)
+    try {
+      const { data: res } = await axios.post(route('register.phone.send-otp'), {
+        mobile_number: data.mobile_number,
+      })
+      setOtpSent(true)
+      setOtpInfo(res?.message ?? t('auth', 'otp_sent'))
+      setResendIn(res?.retry_after ?? 60)
+    } catch (e: any) {
+      setOtpError(e?.response?.data?.message ?? t('auth', 'otp_send_failed'))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleVerifyOtp = async () => {
+    setOtpError(''); setOtpInfo(''); setVerifying(true)
+    try {
+      const { data: res } = await axios.post(route('register.phone.verify-otp'), {
+        mobile_number: data.mobile_number,
+        otp,
+      })
+      setOtpVerified(true)
+      setOtpSent(false)
+      setOtpInfo(res?.message ?? t('auth', 'otp_verified'))
+    } catch (e: any) {
+      setOtpError(e?.response?.data?.message ?? t('auth', 'otp_invalid'))
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Step 2 cannot advance until the mobile number is OTP-verified
+    // (only when phone verification is enabled by admin).
+    if (step === 2 && requirePhoneVerification && !otpVerified) {
+      setOtpError(t('auth', 'verify_phone_first'))
+      return
+    }
     if (step < 3) { next(); return }
     post(route('register'))
   }
@@ -239,20 +323,111 @@ export default function Register() {
                 </select>
               </div>
 
-              <Input
-                label="Mobile Number (Optional)"
-                type="tel"
-                value={data.mobile_number}
-                onChange={e => setData('mobile_number', e.target.value)}
-                error={errors.mobile_number}
-                placeholder="+880 1XXX-XXXXXX"
-              />
+              {/* ── Mobile number (+ OTP when verification is enabled) ── */}
+              {requirePhoneVerification ? (
+                <div className="space-y-2">
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Input
+                        label={t('auth', 'field_mobile')}
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={data.mobile_number}
+                        onChange={e => handleMobileChange(e.target.value)}
+                        error={errors.mobile_number}
+                        placeholder={t('auth', 'field_mobile_ph')}
+                        disabled={otpVerified}
+                        required
+                      />
+                    </div>
+                    {!otpVerified && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleSendOtp}
+                        disabled={sending || !data.mobile_number.trim() || resendIn > 0}
+                        isLoading={sending}
+                        className="mb-0.5 whitespace-nowrap"
+                      >
+                        {otpSent
+                          ? (resendIn > 0 ? t('auth', 'otp_resend_in', { seconds: resendIn }) : t('auth', 'btn_resend_otp'))
+                          : t('auth', 'btn_send_otp')}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Verified badge */}
+                  {otpVerified && (
+                    <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                      <span className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                        <ShieldCheck size={16} />
+                        {t('auth', 'phone_verified_badge')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={resetVerification}
+                        className="text-xs font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                      >
+                        {t('auth', 'change_number')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* OTP entry card */}
+                  {otpSent && !otpVerified && (
+                    <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs text-slate-600">{t('auth', 'otp_sent_hint')}</p>
+                      <Input
+                        label={t('auth', 'otp_label')}
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={otp}
+                        onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="123456"
+                        autoFocus
+                      />
+                      <Button
+                        type="button"
+                        className="w-full"
+                        onClick={handleVerifyOtp}
+                        disabled={verifying || otp.length !== 6}
+                        isLoading={verifying}
+                      >
+                        {verifying ? t('auth', 'verifying') : t('auth', 'btn_verify_otp')}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Inline OTP messages */}
+                  {otpError && <p className="text-xs text-red-600">{otpError}</p>}
+                  {!otpError && otpInfo && (
+                    <p className="text-xs text-emerald-600">{otpInfo}</p>
+                  )}
+                </div>
+              ) : (
+                /* Phone OTP disabled by admin — plain optional number, no OTP step */
+                <Input
+                  label={t('auth', 'field_mobile')}
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={data.mobile_number}
+                  onChange={e => setData('mobile_number', e.target.value)}
+                  error={errors.mobile_number}
+                  placeholder={t('auth', 'field_mobile_ph')}
+                />
+              )}
 
               <div className="flex gap-3">
                 <Button type="button" variant="outline" className="flex-1" onClick={back}>
                   ← {t('auth', 'btn_back')}
                 </Button>
-                <Button type="submit" className="flex-1" disabled={!data.gender}>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={!data.gender || (requirePhoneVerification && !otpVerified)}
+                >
                   {t('auth', 'btn_continue')} →
                 </Button>
               </div>

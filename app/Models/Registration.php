@@ -40,6 +40,7 @@ class Registration extends Authenticatable implements MustVerifyEmail
         'mobile_number',
         'mobile_verification_code',
         'is_mobile_verified',
+        'mobile_verified_at',
 
         // ── Password & session ────────────────────────────────────────────────
         'password',
@@ -111,6 +112,7 @@ class Registration extends Authenticatable implements MustVerifyEmail
         // Datetimes
         'email_verified_at'          => 'datetime',
         'email_verification_sent_at' => 'datetime',
+        'mobile_verified_at'         => 'datetime',
         'terms_accepted_at'          => 'datetime',
         'last_login_at'              => 'datetime',
         'blocked_at'                 => 'datetime',

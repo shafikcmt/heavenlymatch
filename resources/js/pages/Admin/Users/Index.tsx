@@ -14,6 +14,8 @@ interface User {
   gender: 'male' | 'female'
   account_status: string
   membership_status: string
+  is_email_verified: boolean
+  is_mobile_verified: boolean
   created_at: string
   biodata: { status: string } | null
 }
@@ -125,6 +127,7 @@ export default function UsersIndex({ users, filters }: Props) {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_gender')}</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_status')}</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_membership')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_verified')}</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_biodata')}</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">{t('admin', 'col_joined')}</th>
               </tr>
@@ -132,7 +135,7 @@ export default function UsersIndex({ users, filters }: Props) {
             <tbody>
               {users.data.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400 text-sm">
                     {t('admin', 'no_users_found')}
                   </td>
                 </tr>
@@ -154,6 +157,20 @@ export default function UsersIndex({ users, filters }: Props) {
                     </td>
                     <td className="px-4 py-3">
                       <MembershipBadge status={u.membership_status} labelPremium={t('admin', 'membership_premium')} labelFree={t('admin', 'membership_free')} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        <VerifyPill
+                          label={t('admin', 'badge_email')}
+                          on={u.is_email_verified}
+                          title={u.is_email_verified ? t('admin', 'email_verified') : t('admin', 'email_not_verified')}
+                        />
+                        <VerifyPill
+                          label={t('admin', 'badge_phone')}
+                          on={u.is_mobile_verified}
+                          title={u.is_mobile_verified ? t('admin', 'phone_verified') : t('admin', 'phone_not_verified')}
+                        />
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       {u.biodata ? (
@@ -221,6 +238,21 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className={cn('inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize', map[status] ?? 'bg-slate-100 text-slate-600')}>
       {status}
+    </span>
+  )
+}
+
+function VerifyPill({ label, on, title }: { label: string; on: boolean; title: string }) {
+  return (
+    <span
+      title={title}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+        on ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400',
+      )}
+    >
+      <span className={cn('h-1.5 w-1.5 rounded-full', on ? 'bg-emerald-500' : 'bg-slate-300')} />
+      {label}
     </span>
   )
 }

@@ -28,6 +28,7 @@ interface User {
   name: string
   email: string
   mobile_number: string | null
+  is_mobile_verified: boolean
   gender: 'male' | 'female'
   account_status: string
   membership_status: string
@@ -151,7 +152,21 @@ export default function UserShow({ user, payments }: Props) {
             <div>
               <h1 className="text-xl font-bold text-slate-900">{user.name}</h1>
               <p className="text-sm text-slate-500">{user.email}</p>
-              {user.mobile_number && <p className="text-sm text-slate-500">{user.mobile_number}</p>}
+              {user.mobile_number && (
+                <p className="flex items-center gap-2 text-sm text-slate-500">
+                  {user.mobile_number}
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                      user.is_mobile_verified
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-500',
+                    )}
+                  >
+                    {user.is_mobile_verified ? 'Verified' : 'Not Verified'}
+                  </span>
+                </p>
+              )}
             </div>
             <div className="text-right shrink-0">
               <StatusBadge status={user.account_status} />

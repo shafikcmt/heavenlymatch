@@ -240,6 +240,23 @@ return [
     'settings_approval_enabled'          => 'চালু — অ্যাডমিন পর্যালোচনা প্রয়োজন',
     'settings_approval_disabled'         => 'বন্ধ — স্বয়ংক্রিয় অনুমোদন',
 
+    // ── User Verification Control ─────────────────────────────────────────────
+    'settings_group_verification'        => 'ইউজার ভেরিফিকেশন নিয়ন্ত্রণ',
+    'settings_verification_desc'         => 'নিবন্ধনের সময় ইমেইল ভেরিফিকেশন ও ফোন OTP ভেরিফিকেশন আবশ্যক কিনা তা অ্যাডমিন নিয়ন্ত্রণ করতে পারেন।',
+    'settings_require_email_verification'=> 'ইমেইল ভেরিফিকেশন আবশ্যক',
+    'settings_require_phone_verification'=> 'ফোন OTP ভেরিফিকেশন আবশ্যক',
+    'settings_verification_enabled'      => 'চালু — আবশ্যক',
+    'settings_verification_disabled'     => 'বন্ধ — আবশ্যক নয়',
+
+    // ── User verification badges (Users list) ─────────────────────────────────
+    'col_verified'                       => 'ভেরিফায়েড',
+    'badge_email'                        => 'ইমেইল',
+    'badge_phone'                        => 'ফোন',
+    'email_verified'                     => 'ইমেইল ভেরিফায়েড',
+    'email_not_verified'                 => 'ইমেইল ভেরিফায়েড নয়',
+    'phone_verified'                     => 'ফোন ভেরিফায়েড',
+    'phone_not_verified'                 => 'ফোন ভেরিফায়েড নয়',
+
     // ── Homepage images ───────────────────────────────────────────────────────
     'settings_group_homepage'    => 'হোমপেজ ছবি',
     'settings_hero_image'        => 'হিরো ব্যানার ছবি',

@@ -27,14 +27,24 @@ class AdminSettingsController extends Controller
         'social.facebook_enabled',
         // Biodata Approval Control — '1' requires admin approval, '0' auto-approves.
         'system.profile_approval_required',
+        // User Verification Control — '1' requires verification, '0' skips it.
+        'system.require_email_verification',
+        'system.require_phone_verification',
+    ];
+
+    /** Keys that default to enabled ('1') when no row exists yet. */
+    private const ENABLED_BY_DEFAULT = [
+        'system.profile_approval_required',
+        'system.require_email_verification',
+        'system.require_phone_verification',
     ];
 
     public function index(): Response
     {
         $settings = [];
         foreach (self::EDITABLE_KEYS as $key) {
-            // Biodata approval defaults to enabled ('1') so the safe workflow stays on.
-            $default = $key === 'system.profile_approval_required' ? '1' : '';
+            // Safety-first controls default to enabled ('1') so the safe workflow stays on.
+            $default = in_array($key, self::ENABLED_BY_DEFAULT, true) ? '1' : '';
             $settings[$key] = SystemSetting::get($key, $default);
         }
 
@@ -67,7 +77,9 @@ class AdminSettingsController extends Controller
             'settings.notification.mail_from_address' => 'nullable|email|max:150',
             'settings.social.google_enabled'          => 'nullable|string|in:0,1',
             'settings.social.facebook_enabled'        => 'nullable|string|in:0,1',
-            'settings.system.profile_approval_required' => 'nullable|string|in:0,1',
+            'settings.system.profile_approval_required'   => 'nullable|string|in:0,1',
+            'settings.system.require_email_verification'  => 'nullable|string|in:0,1',
+            'settings.system.require_phone_verification'  => 'nullable|string|in:0,1',
             'gateways'                          => 'array',
             'gateways.*.id'                     => 'required|integer|exists:payment_gateways,id',
             'gateways.*.merchant_id'            => 'nullable|string|max:100',

@@ -15,8 +15,16 @@ use Inertia\Response;
 
 class PublicPageController extends Controller
 {
-    public function home(): Response
+    public function home(): Response|RedirectResponse
     {
+        // Logged-in users never see the guest marketing homepage — send them to
+        // their proper dashboard (admins → admin panel, normal users → dashboard).
+        if ($user = auth()->user()) {
+            $isAdmin = (bool) ($user->is_admin ?? false) || (($user->role ?? 'user') === 'admin');
+
+            return redirect($isAdmin ? route('admin.dashboard') : route('dashboard'));
+        }
+
         $heroPath    = SystemSetting::get('marketing.hero_image', '');
         $successPath = SystemSetting::get('marketing.success_image', '');
 

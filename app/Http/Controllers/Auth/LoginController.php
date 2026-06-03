@@ -72,7 +72,7 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('success', trans('auth.logout_success'));
     }
 
     public function verifyNotice(Request $request): Response

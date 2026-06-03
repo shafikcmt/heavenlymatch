@@ -111,6 +111,34 @@ return [
     'choose_experience'      => 'Choose your experience',
     'mode_islamic_badge'     => 'Most Chosen',
 
+    // ── Mobile number + OTP verification ──────────────────────────────────────
+    'field_mobile'           => 'Mobile Number',
+    'field_mobile_ph'        => '+880 1XXX-XXXXXX',
+    'mobile_required'        => 'Mobile number is required.',
+    'btn_send_otp'           => 'Send OTP',
+    'btn_verify_otp'         => 'Verify OTP',
+    'btn_resend_otp'         => 'Resend OTP',
+    'otp_label'              => 'Enter 6-digit OTP',
+    'otp_sent_hint'          => 'We sent a 6-digit OTP to your mobile number.',
+    'otp_resend_in'          => 'Resend in :seconds s',
+    'phone_verified_badge'   => 'Phone verified',
+    'change_number'          => 'Change number',
+    'verifying'              => 'Verifying…',
+    'verify_phone_first'     => 'Please verify your mobile number to continue.',
+
+    // OTP server messages (also used by PhoneOtpService / controllers)
+    'otp_sent'               => 'We sent a 6-digit OTP to your mobile number.',
+    'otp_invalid_phone'      => 'Please enter a valid Bangladeshi mobile number.',
+    'otp_invalid'            => 'Invalid OTP. Please try again.',
+    'otp_expired'            => 'Your OTP has expired. Please request a new one.',
+    'otp_too_many'           => 'Too many attempts. Please request a new OTP.',
+    'otp_verified'           => 'Phone verified.',
+    'otp_resend_wait'        => 'Please wait :seconds seconds before requesting another OTP.',
+    'otp_send_failed'        => 'OTP could not be sent right now. Please try again later.',
+    'otp_no_code'            => 'Please request an OTP first.',
+    'otp_phone_taken'        => 'This mobile number is already registered.',
+    'otp_not_verified'       => 'Please verify your mobile number before continuing.',
+
     // ── Trust side panel (Register & Login) ───────────────────────────────────
     'trust_title'            => 'Find Your Halal Match',
     'trust_subtitle'         => 'Join 50,000+ Muslim families on Bangladesh\'s most trusted matrimony platform.',

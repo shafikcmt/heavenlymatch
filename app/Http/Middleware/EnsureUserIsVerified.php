@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\SystemSetting;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,11 @@ class EnsureUserIsVerified
 
     public function handle(Request $request, Closure $next): mixed
     {
+        // Admin can switch off email verification entirely.
+        if (! SystemSetting::bool('system.require_email_verification', true)) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user && ! $user->is_email_verified) {
