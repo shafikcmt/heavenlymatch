@@ -120,6 +120,13 @@ class BiodataWizardController extends Controller
         $validated = $request->validate($rules);
         unset($validated['confirm_correct']); // legacy transient — not a biodata column
 
+        // Education integrity (Phase: education workflow fix): a record's level may
+        // not rank above the chosen highest qualification within the same system.
+        // Unknown/legacy/free-text level strings are tolerated (skipped).
+        if ($step === 4) {
+            $this->validateEducationConsistency($validated);
+        }
+
         // Normalise + validate the optional contact numbers (Bangladesh format).
         // guardian_mobile / guardian_whatsapp / whatsapp_number all share one rule.
         if ($step === 9) {
@@ -186,6 +193,74 @@ class BiodataWizardController extends Controller
         }
 
         return redirect()->route('biodata.wizard', ['step' => $nextStep]);
+    }
+
+    /**
+     * Per-system education level ladders (rank ascending). Mirrors the frontend
+     * model in resources/js/lib/education.ts. `other` system = free text, no ladder.
+     *
+     * @var array<string,array<string,int>>
+     */
+    private const EDU_SYSTEM_LEVELS = [
+        'general' => [
+            'below_class5' => 1, 'class5' => 2, 'class8' => 3, 'ssc' => 4, 'hsc' => 5,
+            'diploma' => 6, 'bachelor' => 7, 'masters' => 8, 'phd' => 9, 'other' => 99,
+        ],
+        'qawmi' => [
+            'hifz' => 1, 'maktab' => 2, 'mutawassitah' => 3, 'sanawiyah' => 4,
+            'fazilat' => 5, 'takmil' => 6, 'ifta' => 7, 'other' => 99,
+        ],
+        'alia' => [
+            'ebtedayee' => 1, 'jdc' => 2, 'dakhil' => 3, 'alim' => 4, 'fazil' => 5,
+            'kamil' => 6, 'other' => 99,
+        ],
+        'english_medium' => [
+            'class5' => 2, 'class8' => 3, 'o_level' => 4, 'a_level' => 5, 'diploma' => 6,
+            'bachelor' => 7, 'masters' => 8, 'phd' => 9, 'other' => 99,
+        ],
+        'vocational' => [
+            'class8' => 3, 'ssc_voc' => 4, 'hsc_voc' => 5, 'diploma' => 6,
+            'bachelor' => 7, 'other' => 99,
+        ],
+        'other' => [],
+    ];
+
+    /**
+     * Reject education records whose KNOWN level ranks above the chosen highest
+     * qualification within the selected system. Legacy / free-text / unknown
+     * level strings are skipped so old rows and the free-text `other` system keep
+     * saving. Backend safety net behind the frontend's submit guard.
+     *
+     * @param  array<string,mixed>  $validated
+     */
+    private function validateEducationConsistency(array $validated): void
+    {
+        $system  = $validated['education_medium'] ?? null;
+        $highest = $validated['highest_qualification'] ?? null;
+        $records = $validated['education_details'] ?? [];
+
+        $ladder = self::EDU_SYSTEM_LEVELS[$system] ?? null;
+        if (! $ladder || ! is_array($records) || $records === []) {
+            return; // unknown system, free-text `other`, or nothing to check
+        }
+
+        $cap = $highest !== null ? ($ladder[$highest] ?? null) : null;
+        if ($cap === null) {
+            return; // unknown/unset highest → nothing to enforce against
+        }
+
+        foreach ($records as $i => $record) {
+            $level = $record['level'] ?? null;
+            if (! is_string($level) || $level === '') {
+                continue;
+            }
+            $rank = $ladder[$level] ?? null;
+            if ($rank !== null && $rank > $cap) {
+                throw ValidationException::withMessages([
+                    "education_details.$i.level" => __('biodata.edu_level_too_high'),
+                ]);
+            }
+        }
     }
 
     /**
@@ -313,7 +388,9 @@ class BiodataWizardController extends Controller
                 'education_method'                        => ['nullable', 'in:general,islamic,both'],
                 // Wider medium beside legacy education_method (Phase B).
                 'education_medium'                        => ['nullable', 'in:general,qawmi,alia,english_medium,vocational,other'],
-                'highest_qualification'                   => ['nullable', 'in:below_ssc,ssc,hsc,diploma,graduation,post_graduation,phd,hafez,alim,fazil,kamil,other'],
+                // System-scoped qualification keys (Phase: education workflow fix)
+                // plus legacy keys kept for backward compatibility with old rows.
+                'highest_qualification'                   => ['nullable', 'in:below_class5,class5,class8,ssc,hsc,diploma,bachelor,masters,phd,o_level,a_level,ssc_voc,hsc_voc,hifz,maktab,mutawassitah,sanawiyah,fazilat,takmil,ifta,ebtedayee,jdc,dakhil,alim,fazil,kamil,other,below_ssc,graduation,post_graduation,hafez'],
                 'education_details'                       => ['nullable', 'array'],
                 'education_details.*'                     => ['nullable', 'array'],
                 'education_details.*.level'               => ['nullable', 'string', 'max:100'],

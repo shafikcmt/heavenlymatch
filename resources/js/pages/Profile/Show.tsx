@@ -13,7 +13,18 @@ import {
 import { useState, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
+import { levelLabelKey } from '@/lib/education'
 import type { PageProps } from '@/types'
+
+interface EduRecordView {
+  level?: string
+  subject?: string
+  institute?: string
+  board_university?: string
+  passing_year?: string
+  result_type?: string
+  result_value?: string
+}
 
 interface BiodataDetail {
   marital_status?: string
@@ -65,6 +76,7 @@ interface BiodataDetail {
   education_method?: string
   education_medium?: string
   highest_qualification?: string
+  education_details?: EduRecordView[]
   occupation?: string
   occupation_category?: string
   monthly_income?: number
@@ -308,6 +320,31 @@ export default function ProfileShow({
     if (Array.isArray(v)) return v.join(', ')
     if (typeof v === 'boolean') return v ? t('common', 'yes') : t('common', 'no')
     return v == null ? '' : String(v)
+  }
+
+  // Education label helpers (Phase: education workflow fix). The education_medium
+  // column is the system; level values localise via lvl_* keys, with a graceful
+  // fallback to the raw text for legacy/free-text values.
+  const eduSystem = biodata?.education_medium ?? ''
+  const eduSystemLabel = eduSystem
+    ? t('biodata', `edu_medium_${eduSystem === 'english_medium' ? 'english' : eduSystem}`)
+    : null
+  const eduLevelLabel = (value?: string | null): string | null => {
+    if (!value) return null
+    const key = levelLabelKey(eduSystem, value)
+    return key ? t('biodata', key) : value.replace(/_/g, ' ')
+  }
+  const eduRecords: EduRecordView[] = Array.isArray(biodata?.education_details) ? biodata.education_details : []
+  const eduRecordLine = (r: EduRecordView): string => {
+    const parts = [
+      eduLevelLabel(r.level),
+      r.subject,
+      r.institute,
+      r.board_university,
+      r.passing_year,
+      r.result_value ? `${r.result_type ?? ''} ${r.result_value}`.trim() : null,
+    ].filter(Boolean)
+    return parts.join(' · ')
   }
 
   const [shortlisted, setShortlisted]           = useState(isShortlisted)
@@ -694,14 +731,23 @@ export default function ProfileShow({
               {/* CONTACT / EDUCATION */}
               {activeMobileTab === 'contact' && (
                 <div className="space-y-0 bg-white rounded-2xl overflow-hidden shadow-sm">
-                  <MobileRow label={t('biodata', 'education_method')} value={biodata.education_method} />
-                  <MobileRow label={t('biodata', 'education_medium')} value={biodata.education_medium ? t('biodata', `edu_medium_${biodata.education_medium === 'english_medium' ? 'english' : biodata.education_medium}`) : null} />
-                  <MobileRow label={t('dashboard', 'profile_label_qual')} value={biodata.highest_qualification?.replace(/_/g, ' ')} />
+                  <MobileRow label={t('biodata', 'education_system')} value={eduSystemLabel} />
+                  <MobileRow label={t('dashboard', 'profile_label_qual')} value={eduLevelLabel(biodata.highest_qualification)} />
                   <MobileRow label={t('dashboard', 'profile_label_occupation')} value={biodata.occupation} />
                   <MobileRow label={t('biodata', 'occupation_category')} value={biodata.occupation_category?.replace(/_/g, ' ')} />
                   <MobileRow label={t('biodata', 'workplace_type')} value={biodata.workplace_type} />
                   <MobileRow label={t('dashboard', 'profile_label_income')} value={biodata.monthly_income != null ? `৳${biodata.monthly_income.toLocaleString()}` : null} />
                   <MobileRow label={t('biodata', 'profession_halal_status')} value={biodata.profession_halal_status ? t('biodata', `halal_status_${biodata.profession_halal_status === 'halal_alternative' ? 'alternative' : biodata.profession_halal_status}`) : null} />
+                  {eduRecords.length > 0 && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1.5">{t('biodata', 'education_records')}</p>
+                      <ul className="space-y-1">
+                        {eduRecords.map((r, i) => (
+                          <li key={i} className="text-sm text-slate-800">{eduRecordLine(r)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {biodata.profession_details && (
                     <div className="px-4 py-3 border-b border-slate-50">
                       <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'profession_details')}</p>
@@ -1177,9 +1223,18 @@ export default function ProfileShow({
                 </SECTION>
 
                 <SECTION title={t('dashboard', 'profile_section_education')}>
-                  <ROW label={t('biodata', 'education_method')} value={biodata.education_method} />
-                  <ROW label={t('biodata', 'education_medium')} value={biodata.education_medium ? t('biodata', `edu_medium_${biodata.education_medium === 'english_medium' ? 'english' : biodata.education_medium}`) : null} />
-                  <ROW label={t('dashboard', 'profile_label_qual')} value={biodata.highest_qualification?.replace(/_/g, ' ')} />
+                  <ROW label={t('biodata', 'education_system')} value={eduSystemLabel} />
+                  <ROW label={t('dashboard', 'profile_label_qual')} value={eduLevelLabel(biodata.highest_qualification)} />
+                  {eduRecords.length > 0 && (
+                    <div className="py-2">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1.5">{t('biodata', 'education_records')}</p>
+                      <ul className="space-y-1">
+                        {eduRecords.map((r, i) => (
+                          <li key={i} className="text-sm text-slate-800">{eduRecordLine(r)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <ROW label={t('dashboard', 'profile_label_occupation')} value={biodata.occupation} />
                   <ROW label={t('biodata', 'occupation_category')} value={biodata.occupation_category?.replace(/_/g, ' ')} />
                   <ROW label={t('biodata', 'workplace_type')} value={biodata.workplace_type} />
