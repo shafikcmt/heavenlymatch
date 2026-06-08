@@ -39,7 +39,9 @@ interface BiodataDetail {
   nationality?: string
   division?: string
   district?: string
+  upazila?: string
   village_area?: string
+  permanent_country?: string
   current_division?: string
   current_district?: string
   current_upazila?: string
@@ -101,6 +103,7 @@ interface BiodataDetail {
   family_assets_details?: string
   family_details?: string
   health_status?: string
+  health_details?: string
   diet?: string
   smoking?: string
   hobbies?: string
@@ -335,6 +338,16 @@ export default function ProfileShow({
     return key ? t('biodata', key) : value.replace(/_/g, ' ')
   }
   const eduRecords: EduRecordView[] = Array.isArray(biodata?.education_details) ? biodata.education_details : []
+
+  // Present / Permanent address lines (empty parts dropped; null → row hidden).
+  const presentAddr = [
+    biodata?.current_area, biodata?.current_upazila, biodata?.current_district,
+    biodata?.current_division, biodata?.residing_city, biodata?.residing_country,
+  ].filter(Boolean).join(', ')
+  const permanentAddr = [
+    biodata?.village_area, biodata?.upazila, biodata?.district,
+    biodata?.division, biodata?.permanent_country,
+  ].filter(Boolean).join(', ')
   const eduRecordLine = (r: EduRecordView): string => {
     const parts = [
       eduLevelLabel(r.level),
@@ -662,22 +675,20 @@ export default function ProfileShow({
               {/* BASICS */}
               {activeMobileTab === 'basics' && (
                 <div className="space-y-0 bg-white rounded-2xl overflow-hidden shadow-sm">
-                  {biodata.about_me && (
-                    <div className="px-4 py-3 border-b border-slate-50">
-                      <p className="text-sm text-slate-700 leading-relaxed">{biodata.about_me}</p>
-                    </div>
-                  )}
+                  <MobileRow label={t('common', 'gender')} value={profile.gender ? t('common', profile.gender) : null} />
                   <MobileRow label={t('dashboard', 'profile_label_marital')} value={biodata.marital_status?.replace(/_/g, ' ')} />
                   <MobileRow label={t('dashboard', 'profile_label_age')} value={age ? `${age} years` : null} />
                   <MobileRow label={t('dashboard', 'profile_label_height')} value={biodata.height_cm ? cmToFeetInches(biodata.height_cm) : null} />
                   <MobileRow label={t('dashboard', 'profile_label_weight')} value={biodata.weight_kg ? `${biodata.weight_kg} kg` : null} />
                   <MobileRow label={t('dashboard', 'profile_label_complexion')} value={biodata.complexion} />
                   <MobileRow label={t('dashboard', 'profile_label_blood')} value={biodata.blood_group} />
+                  <MobileRow label={t('biodata', 'physical_status')} value={biodata.health_status ? t('biodata', `health_${biodata.health_status}`) : null} />
+                  {(biodata.health_status === 'minor_condition' || biodata.health_status === 'disability') && (
+                    <MobileRow label={t('biodata', 'health_issue_details')} value={biodata.health_details} />
+                  )}
                   <MobileRow label={t('biodata', 'nationality')} value={biodata.nationality} />
-                  <MobileRow label={t('biodata', 'division')} value={biodata.division} />
-                  <MobileRow label={t('biodata', 'district')} value={biodata.district} />
-                  <MobileRow label={t('biodata', 'residing_country')} value={biodata.residing_country} />
-                  <MobileRow label={t('biodata', 'residing_city')} value={biodata.residing_city} />
+                  <MobileRow label={t('biodata', 'present_address')} value={presentAddr || null} />
+                  <MobileRow label={t('biodata', 'permanent_address')} value={permanentAddr || null} />
                 </div>
               )}
 
@@ -1163,31 +1174,25 @@ export default function ProfileShow({
             ) : (
               <>
                 <SECTION title={t('dashboard', 'profile_section_general')}>
+                  <ROW label={t('common', 'gender')} value={profile.gender ? t('common', profile.gender) : null} />
                   <ROW label={t('dashboard', 'profile_label_marital')} value={biodata.marital_status?.replace(/_/g, ' ')} />
                   <ROW label={t('dashboard', 'profile_label_age')} value={age ? `${age} years` : null} />
                   <ROW label={t('dashboard', 'profile_label_height')} value={biodata.height_cm ? cmToFeetInches(biodata.height_cm) : null} />
                   <ROW label={t('dashboard', 'profile_label_weight')} value={biodata.weight_kg ? `${biodata.weight_kg} kg` : null} />
                   <ROW label={t('dashboard', 'profile_label_complexion')} value={biodata.complexion} />
                   <ROW label={t('dashboard', 'profile_label_blood')} value={biodata.blood_group} />
+                  <ROW label={t('biodata', 'physical_status')} value={biodata.health_status ? t('biodata', `health_${biodata.health_status}`) : null} />
+                  {(biodata.health_status === 'minor_condition' || biodata.health_status === 'disability') && (
+                    <ROW label={t('biodata', 'health_issue_details')} value={biodata.health_details} />
+                  )}
                 </SECTION>
 
-                {(biodata.division || biodata.residing_country || biodata.nationality) && (
+                {(presentAddr || permanentAddr || biodata.nationality) && (
                   <SECTION title={t('dashboard', 'profile_section_location')}>
                     <ROW label={t('biodata', 'nationality')} value={biodata.nationality} />
-                    <ROW label={t('biodata', 'division')} value={biodata.division} />
-                    <ROW label={t('biodata', 'district')} value={biodata.district} />
-                    <ROW label={t('biodata', 'permanent_area')} value={biodata.village_area} />
-                    {(biodata.current_district || biodata.current_area) && (
-                      <ROW
-                        label={t('biodata', 'current_address_section')}
-                        value={[biodata.current_area, biodata.current_district, biodata.current_division].filter(Boolean).join(', ') || null}
-                      />
-                    )}
-                    <ROW label={t('biodata', 'residing_country')} value={biodata.residing_country} />
-                    <ROW label={t('biodata', 'residing_city')} value={biodata.residing_city} />
-                    <ROW label={t('biodata', 'grew_up_in')} value={biodata.grew_up_in} />
+                    <ROW label={t('biodata', 'present_address')} value={presentAddr || null} />
+                    <ROW label={t('biodata', 'permanent_address')} value={permanentAddr || null} />
                     {biodata.is_nrb && <ROW label={t('biodata', 'is_nrb')} value={t('common', 'yes')} />}
-                    <ROW label={t('biodata', 'visa_status')} value={biodata.visa_status} />
                   </SECTION>
                 )}
 

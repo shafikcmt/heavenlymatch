@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/Input'
 import { SearchableSelect } from '@/components/ui/SearchableSelect'
 import { HeightSelect } from '@/components/ui/HeightSelect'
 import { WeightSelect } from '@/components/ui/WeightSelect'
-import { DateOfBirthSelect } from '@/components/ui/DateOfBirthSelect'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
 import {
@@ -51,6 +50,10 @@ interface BiodataData {
   marital_status?: string
   marital_substatus?: string
   birth_date?: string
+  // Transient DOB parts (compose birth_date on the client; not DB columns).
+  birth_day?: string
+  birth_month?: string
+  birth_year?: string
   height_cm?: number | ''
   weight_kg?: number | ''
   complexion?: string
@@ -71,6 +74,7 @@ interface BiodataData {
   current_area?: string
   present_address?: string
   residing_country?: string
+  permanent_country?: string
   residing_city?: string
   is_nrb?: boolean
   visa_status?: string
@@ -125,6 +129,7 @@ interface BiodataData {
   family_assets_details?: string
   family_details?: string
   health_status?: string
+  health_details?: string
   diet?: string
   smoking?: string
   hobbies?: string
@@ -489,16 +494,6 @@ const COUNTRY_OPTIONS = [
   'Sweden', 'Norway', 'Denmark', 'Netherlands', 'Japan', 'South Korea', 'New Zealand',
 ].map(c => ({ value: c, label: c }))
 
-const MOTHER_TONGUE_OPTIONS = [
-  { value: 'Bangla', label: 'Bangla / Bengali' },
-  { value: 'Sylheti', label: 'Sylheti' },
-  { value: 'Chittagonian', label: 'Chittagonian (Chatgaiya)' },
-  { value: 'English', label: 'English' },
-  { value: 'Hindi', label: 'Hindi' },
-  { value: 'Urdu', label: 'Urdu' },
-  { value: 'Arabic', label: 'Arabic' },
-]
-
 const BEARD_OPTIONS = [
   { value: 'Full beard (sunnah)', label: 'Full beard (sunnah)' },
   { value: 'Trimmed beard', label: 'Trimmed beard' },
@@ -595,6 +590,104 @@ const STEP_ICONS: Record<number, any> = {
   6: Users, 7: HeartHandshake, 8: Search, 9: Phone, 10: ClipboardCheck,
 }
 
+const isBdCountry = (c?: string) => !c || c.trim().toLowerCase() === 'bangladesh'
+
+/**
+ * Present / Permanent address card. Country first; Bangladesh shows the
+ * division→district→upazila cascade + area, otherwise state/city/area inputs.
+ * Maps to existing biodata columns supplied by the parent (no new column except
+ * permanent_country). Dropdowns are portalled, so the card never clips them.
+ */
+function AddressBlock({
+  title, helper, country, onCountry, bd, onBd, area, onArea, areaLabel, areaPh,
+  city, onCity, state, onState, disabled = false, errors = {},
+}: {
+  title: string
+  helper: string
+  country: string
+  onCountry: (v: string) => void
+  bd: { division?: string; district?: string; upazila?: string }
+  onBd: (v: { division?: string; district?: string; upazila?: string }) => void
+  area: string
+  onArea: (v: string) => void
+  areaLabel: string
+  areaPh: string
+  city: string
+  onCity: (v: string) => void
+  state: string
+  onState: (v: string) => void
+  disabled?: boolean
+  errors?: { country?: string; division?: string; district?: string; city?: string }
+}) {
+  const { t } = useTranslation()
+  const isBd = isBdCountry(country)
+  return (
+    <div className={cn('rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-4', disabled && 'opacity-60')}>
+      <div>
+        <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+        <p className="text-xs text-slate-400 mt-0.5">{helper}</p>
+      </div>
+
+      <SearchableSelect
+        label={t('biodata', 'addr_country')}
+        value={country}
+        onChange={onCountry}
+        options={COUNTRY_OPTIONS}
+        error={errors.country}
+        allowFreeText
+        required
+        disabled={disabled}
+        placeholder={t('biodata', 'addr_country_ph')}
+      />
+
+      {isBd ? (
+        <>
+          <BangladeshAddressPicker
+            value={{ division: bd.division || undefined, district: bd.district || undefined, upazila: bd.upazila || undefined }}
+            onChange={onBd}
+            errors={{ division: errors.division, district: errors.district }}
+          />
+          <Input
+            label={areaLabel}
+            value={area}
+            onChange={e => onArea(e.target.value)}
+            placeholder={areaPh}
+            disabled={disabled}
+          />
+        </>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label={t('biodata', 'addr_state')}
+            value={state}
+            onChange={e => onState(e.target.value)}
+            placeholder={t('biodata', 'addr_state_ph')}
+            disabled={disabled}
+          />
+          <Input
+            label={t('biodata', 'addr_city')}
+            value={city}
+            onChange={e => onCity(e.target.value)}
+            placeholder={t('biodata', 'addr_city_ph')}
+            error={errors.city}
+            required
+            disabled={disabled}
+          />
+          <div className="sm:col-span-2">
+            <Input
+              label={areaLabel}
+              value={area}
+              onChange={e => onArea(e.target.value)}
+              placeholder={areaPh}
+              disabled={disabled}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BiodataWizard({ step, steps, biodata, user, customFields = [], photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
@@ -664,6 +757,10 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     sisters_details: toSiblingList(biodata.sisters_details),
     partner_districts: Array.isArray(biodata.partner_districts) ? biodata.partner_districts : [],
     custom_fields: (biodata.custom_fields && typeof biodata.custom_fields === 'object' ? biodata.custom_fields : {}) as Record<string, string | number | boolean | string[] | null>,
+    // Split the stored birth_date into editable day/month/year parts.
+    birth_day:   biodata.birth_date ? String(Number(String(biodata.birth_date).slice(8, 10))) : '',
+    birth_month: biodata.birth_date ? String(Number(String(biodata.birth_date).slice(5, 7))) : '',
+    birth_year:  biodata.birth_date ? String(biodata.birth_date).slice(0, 4) : '',
     contact_privacy: biodata.contact_privacy ?? 'private',
     allow_shortlist: biodata.allow_shortlist ?? true,
     allow_contact_request: biodata.allow_contact_request ?? true,
@@ -684,6 +781,10 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Block step 1 on an impossible birth date (e.g. Feb 30).
+    if (step === 1 && dobInvalid) {
+      return
+    }
     // Block step 4 if any education record ranks above the highest qualification.
     if (step === 4 && eduInvalidIndexes.length > 0) {
       setEduNotice(t('biodata', 'edu_fix_records_notice'))
@@ -771,6 +872,39 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     setData('education_details', eduRecords.filter((_, i) => i !== idx) as never)
   }
 
+  // ── Date of birth: day + month + year compose birth_date (single DB column) ──
+  // birth_date stays the source of truth (age, search, matching, completion).
+  const birthDay   = (data.birth_day as string) ?? ''
+  const birthMonth = (data.birth_month as string) ?? ''
+  const birthYear  = (data.birth_year as string) ?? ''
+  const composeDob = (d: string, m: string, y: string): string => {
+    if (!d || !m || !y) return ''
+    const dd = Number(d), mm = Number(m), yy = Number(y)
+    const dt = new Date(yy, mm - 1, dd)
+    // Reject impossible combinations (e.g. Feb 30 rolls over to March).
+    if (dt.getFullYear() !== yy || dt.getMonth() !== mm - 1 || dt.getDate() !== dd) return ''
+    return `${yy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`
+  }
+  const setBirthPart = (part: 'd' | 'm' | 'y', value: string) => {
+    const d = part === 'd' ? value : birthDay
+    const m = part === 'm' ? value : birthMonth
+    const y = part === 'y' ? value : birthYear
+    setData({ ...data, birth_day: d, birth_month: m, birth_year: y, birth_date: composeDob(d, m, y) } as never)
+  }
+  const currentYear  = new Date().getFullYear()
+  const birthDayOpts  = Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))
+  const birthYearOpts = Array.from({ length: 63 }, (_, i) => {
+    const y = currentYear - 18 - i
+    return { value: String(y), label: String(y) }
+  })
+  const monthOpts = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i + 1), label: t('biodata', `month_${i + 1}`),
+  }))
+  // All three parts chosen but the combination is not a real calendar date.
+  const dobInvalid = !!(birthDay && birthMonth && birthYear) && !composeDob(birthDay, birthMonth, birthYear)
+  // Health details only matter when physical status is not "healthy"/"prefer not say".
+  const showHealthDetails = data.health_status === 'minor_condition' || data.health_status === 'disability'
+
   // ── Sibling detail helpers ───────────────────────────────────────────────────
   const broDetails: SiblingDetail[] = toSiblingList(data.brothers_details)
   const sisDetails: SiblingDetail[] = toSiblingList(data.sisters_details)
@@ -813,8 +947,22 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
   // ── Derived state ────────────────────────────────────────────────────────────
   const isIslam = !data.religion || data.religion === 'Islam'
   const isPreviouslyMarried = data.marital_status && data.marital_status !== 'never_married'
-  const isBangladesh = !data.residing_country || data.residing_country === 'Bangladesh'
-  const cityOptions = isBangladesh ? BD_CITY_OPTIONS : []
+
+  // ── Location: permanent-same-as-present toggle copies present → permanent ────
+  const sameAddr = !!data.same_as_permanent
+  const toggleSamePermanent = (v: boolean) => {
+    setData({
+      ...data,
+      same_as_permanent: v,
+      ...(v ? {
+        permanent_country: data.residing_country ?? '',
+        division:  data.current_division ?? '',
+        district:  data.current_district ?? '',
+        upazila:   data.current_upazila ?? '',
+        village_area: data.current_area ?? '',
+      } : {}),
+    } as never)
+  }
 
   // ── Translated option builders ───────────────────────────────────────────────
   const currentLabel = t('biodata', `step_labels.${step}`)
@@ -834,12 +982,6 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     { value: 'dark',      label: t('biodata', 'dark') },
   ]
   const bloodGroupOpts = ['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(b => ({ value: b, label: b }))
-  const visaOpts = [
-    { value: 'citizen',            label: t('biodata', 'visa_citizen') },
-    { value: 'permanent_resident', label: t('biodata', 'visa_permanent_resident') },
-    { value: 'work_visa',          label: t('biodata', 'visa_work_visa') },
-    { value: 'student_visa',       label: t('biodata', 'visa_student_visa') },
-  ]
   const prayersOpts = [
     { value: '5_times',   label: t('biodata', 'prayers_5_times') },
     { value: '4_times',   label: t('biodata', 'prayers_4_times') },
@@ -1080,20 +1222,12 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
           {/* Form */}
           <form onSubmit={submit} className="p-6 space-y-5">
 
-            {/* ── Step 1: General Info ── */}
+            {/* ── Step 1: Basic Information ── */}
             {step === 1 && (
               <>
                 <div className="rounded-xl bg-primary-50 border border-primary-100 px-4 py-3 text-sm text-primary-700">
-                  Welcome! Let's start with your basic information. Fill as much as you can — a complete profile gets more attention.
+                  {t('biodata', 'basic_info_subtitle')}
                 </div>
-
-                <Input
-                  label={t('biodata', 'profile_headline')}
-                  value={data.profile_headline ?? ''}
-                  onChange={e => setData('profile_headline', e.target.value as never)}
-                  error={errors.profile_headline}
-                  placeholder="e.g. Practicing Muslim, Software Engineer in Dhaka"
-                />
 
                 <SearchableSelect
                   label={t('biodata', 'marital_status')}
@@ -1104,161 +1238,147 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   required
                 />
 
-                {maritalSubstatusOpts.length > 0 && (
+                {/* Date of birth — day + month + year (composed into birth_date) */}
+                <div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <SearchableSelect
+                      label={t('biodata', 'birth_day')}
+                      value={birthDay}
+                      onChange={v => setBirthPart('d', v)}
+                      options={birthDayOpts}
+                      placeholder={t('biodata', 'birth_day')}
+                      required
+                    />
+                    <SearchableSelect
+                      label={t('biodata', 'birth_month')}
+                      value={birthMonth}
+                      onChange={v => setBirthPart('m', v)}
+                      options={monthOpts}
+                      placeholder={t('biodata', 'birth_month')}
+                      required
+                    />
+                    <SearchableSelect
+                      label={t('biodata', 'birth_year')}
+                      value={birthYear}
+                      onChange={v => setBirthPart('y', v)}
+                      options={birthYearOpts}
+                      error={errors.birth_date}
+                      required
+                    />
+                  </div>
+                  {dobInvalid && (
+                    <p className="mt-1.5 text-xs text-red-600">{t('biodata', 'dob_invalid')}</p>
+                  )}
+                </div>
+
+                {/* Physical summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <HeightSelect
+                    label={t('biodata', 'height')}
+                    value={data.height_cm ?? ''}
+                    onChange={v => setData('height_cm', v as never)}
+                    error={errors.height_cm}
+                    required
+                  />
+                  <WeightSelect
+                    label={t('biodata', 'weight')}
+                    value={data.weight_kg ?? ''}
+                    onChange={v => setData('weight_kg', v as never)}
+                    error={errors.weight_kg}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SearchableSelect
-                    label={t('biodata', 'marital_substatus')}
-                    value={data.marital_substatus ?? ''}
-                    onChange={v => setData('marital_substatus', v as never)}
-                    options={maritalSubstatusOpts}
-                    error={errors.marital_substatus}
+                    label={t('biodata', 'complexion')}
+                    value={data.complexion ?? ''}
+                    onChange={v => setData('complexion', v as never)}
+                    options={complexionOpts}
+                    error={errors.complexion}
+                    required
+                  />
+                  <SearchableSelect
+                    label={t('biodata', 'blood_group')}
+                    value={data.blood_group ?? ''}
+                    onChange={v => setData('blood_group', v as never)}
+                    options={bloodGroupOpts}
+                    error={errors.blood_group}
+                  />
+                </div>
+
+                {/* Physical / health status */}
+                <SearchableSelect
+                  label={t('biodata', 'physical_status')}
+                  value={data.health_status ?? ''}
+                  onChange={v => setData('health_status', v as never)}
+                  options={healthOpts}
+                  error={errors.health_status}
+                />
+                {showHealthDetails && (
+                  <WizardTextarea
+                    label={t('biodata', 'health_issue_details')}
+                    value={(data.health_details as string) ?? ''}
+                    onChange={v => setData('health_details', v as never)}
+                    error={errors.health_details}
+                    placeholder={t('biodata', 'health_issue_details_ph')}
+                    rows={3}
+                    maxLength={500}
                   />
                 )}
-
-                <DateOfBirthSelect
-                  label={t('biodata', 'birth_date')}
-                  value={(data.birth_date as string) ?? ''}
-                  onChange={v => setData('birth_date', v as never)}
-                  error={errors.birth_date}
-                  required
-                />
-
-                <SearchableSelect
-                  label={t('biodata', 'mother_tongue')}
-                  value={data.mother_tongue ?? ''}
-                  onChange={v => setData('mother_tongue', v as never)}
-                  options={MOTHER_TONGUE_OPTIONS}
-                  error={errors.mother_tongue}
-                  allowFreeText
-                  placeholder="e.g. Bangla, Sylheti..."
-                />
-
-                <WizardTextarea
-                  label={t('biodata', 'about_me')}
-                  value={(data.about_me as string) ?? ''}
-                  onChange={v => setData('about_me', v as never)}
-                  error={errors.about_me}
-                  placeholder="Write a brief introduction — your personality, what you value, what you're looking for..."
-                  rows={5}
-                  maxLength={1000}
-                />
-                <p className="text-xs text-slate-400 -mt-1">{t('biodata', 'about_me_tip')}</p>
               </>
             )}
 
             {/* ── Step 2: Location ── */}
             {step === 2 && (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'residing_country')}
-                    value={data.residing_country ?? ''}
-                    onChange={v => setData('residing_country', v as never)}
-                    options={COUNTRY_OPTIONS}
-                    error={errors.residing_country}
-                    allowFreeText
-                    required
-                    placeholder="e.g. Bangladesh, UK..."
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'residing_city')}
-                    value={data.residing_city ?? ''}
-                    onChange={v => setData('residing_city', v as never)}
-                    options={cityOptions}
-                    error={errors.residing_city}
-                    allowFreeText
-                    required
-                    placeholder={isBangladesh ? 'e.g. Dhaka, Sylhet...' : 'Enter your city'}
-                    emptyText={isBangladesh ? 'Type to search or add city' : 'Type your city name'}
-                  />
-                </div>
-
-                <SectionLabel>Hometown (Bangladesh)</SectionLabel>
-                <BangladeshAddressPicker
-                  value={{
-                    division: (data.division as string) ?? undefined,
-                    district: (data.district as string) ?? undefined,
-                    upazila:  (data.upazila  as string) ?? undefined,
-                  }}
-                  onChange={val => setData({
-                    ...data,
-                    division: val.division ?? '',
-                    district: val.district ?? '',
-                    upazila:  val.upazila  ?? '',
-                  })}
-                  errors={{
-                    division: errors.division as string | undefined,
-                    district: errors.district as string | undefined,
-                    upazila:  errors.upazila  as string | undefined,
-                  }}
+                {/* Section 1 — Present Address */}
+                <AddressBlock
+                  title={t('biodata', 'present_address')}
+                  helper={t('biodata', 'present_address_help')}
+                  country={data.residing_country ?? ''}
+                  onCountry={v => setData('residing_country', v as never)}
+                  bd={{ division: data.current_division, district: data.current_district, upazila: data.current_upazila }}
+                  onBd={val => setData({ ...data, current_division: val.division ?? '', current_district: val.district ?? '', current_upazila: val.upazila ?? '' } as never)}
+                  area={data.current_area ?? ''}
+                  onArea={v => setData('current_area', v as never)}
+                  areaLabel={t('biodata', 'addr_area')}
+                  areaPh={t('biodata', 'addr_area_ph')}
+                  city={data.residing_city ?? ''}
+                  onCity={v => setData('residing_city', v as never)}
+                  state={data.current_division ?? ''}
+                  onState={v => setData('current_division', v as never)}
+                  errors={{ country: errors.residing_country, division: errors.current_division, district: errors.current_district, city: errors.residing_city }}
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label={`${t('biodata', 'permanent_area')} (${t('common', 'optional')})`}
-                    value={data.village_area ?? ''}
-                    onChange={e => setData('village_area', e.target.value as never)}
-                    error={errors.village_area}
-                    placeholder={t('biodata', 'permanent_area_ph')}
-                  />
-                  <Input
-                    label={`${t('biodata', 'grew_up_in')} (${t('common', 'optional')})`}
-                    value={data.grew_up_in ?? ''}
-                    onChange={e => setData('grew_up_in', e.target.value as never)}
-                    error={errors.grew_up_in}
-                    placeholder={t('biodata', 'grew_up_in_ph')}
-                  />
-                </div>
-
-                {/* Current / present address */}
-                <SectionLabel>{t('biodata', 'current_address_section')}</SectionLabel>
+                {/* Permanent same as present */}
                 <WizardToggle
-                  value={!!data.same_as_permanent}
-                  label={t('biodata', 'same_as_permanent')}
-                  onChange={v => setData('same_as_permanent', v as never)}
+                  value={sameAddr}
+                  label={t('biodata', 'permanent_same_as_present')}
+                  onChange={toggleSamePermanent}
                 />
-                {!data.same_as_permanent && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
-                    <BangladeshAddressPicker
-                      value={{
-                        division: (data.current_division as string) ?? undefined,
-                        district: (data.current_district as string) ?? undefined,
-                        upazila:  (data.current_upazila  as string) ?? undefined,
-                      }}
-                      onChange={val => setData({
-                        ...data,
-                        current_division: val.division ?? '',
-                        current_district: val.district ?? '',
-                        current_upazila:  val.upazila  ?? '',
-                      })}
-                      errors={{
-                        division: errors.current_division as string | undefined,
-                        district: errors.current_district as string | undefined,
-                        upazila:  errors.current_upazila  as string | undefined,
-                      }}
-                    />
-                    <Input
-                      label={`${t('biodata', 'current_area')} (${t('common', 'optional')})`}
-                      value={data.current_area ?? ''}
-                      onChange={e => setData('current_area', e.target.value as never)}
-                      error={errors.current_area}
-                      placeholder={t('biodata', 'current_area_ph')}
-                    />
+
+                {/* Section 2 — Permanent Address */}
+                {sameAddr ? (
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm text-slate-500">
+                    {t('biodata', 'permanent_same_summary')}
                   </div>
-                )}
-
-                <WizardToggle
-                  value={!!data.is_nrb}
-                  label={t('biodata', 'is_nrb')}
-                  onChange={v => setData('is_nrb', v as never)}
-                />
-
-                {data.is_nrb && (
-                  <SearchableSelect
-                    label={t('biodata', 'visa_status')}
-                    value={data.visa_status ?? ''}
-                    onChange={v => setData('visa_status', v as never)}
-                    options={visaOpts}
-                    error={errors.visa_status}
+                ) : (
+                  <AddressBlock
+                    title={t('biodata', 'permanent_address')}
+                    helper={t('biodata', 'permanent_address_help')}
+                    country={data.permanent_country ?? ''}
+                    onCountry={v => setData('permanent_country', v as never)}
+                    bd={{ division: data.division, district: data.district, upazila: data.upazila }}
+                    onBd={val => setData({ ...data, division: val.division ?? '', district: val.district ?? '', upazila: val.upazila ?? '' } as never)}
+                    area={data.village_area ?? ''}
+                    onArea={v => setData('village_area', v as never)}
+                    areaLabel={t('biodata', 'addr_area')}
+                    areaPh={t('biodata', 'addr_area_ph')}
+                    city={data.district ?? ''}
+                    onCity={v => setData('district', v as never)}
+                    state={data.division ?? ''}
+                    onState={v => setData('division', v as never)}
+                    errors={{ country: errors.permanent_country, division: errors.division, district: errors.district, city: errors.district }}
                   />
                 )}
               </>
@@ -1820,53 +1940,11 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
               </>
             )}
 
-            {/* ── Step 5: Physical & Lifestyle ── */}
+            {/* ── Step 5: Lifestyle ── */}
             {step === 5 && (
               <>
-                <SectionLabel>{t('biodata', 'section_physical')}</SectionLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <HeightSelect
-                    label={t('biodata', 'height')}
-                    value={data.height_cm ?? ''}
-                    onChange={v => setData('height_cm', v as never)}
-                    error={errors.height_cm}
-                    required
-                  />
-                  <WeightSelect
-                    label={t('biodata', 'weight')}
-                    value={data.weight_kg ?? ''}
-                    onChange={v => setData('weight_kg', v as never)}
-                    error={errors.weight_kg}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'complexion')}
-                    value={data.complexion ?? ''}
-                    onChange={v => setData('complexion', v as never)}
-                    options={complexionOpts}
-                    error={errors.complexion}
-                    required
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'blood_group')}
-                    value={data.blood_group ?? ''}
-                    onChange={v => setData('blood_group', v as never)}
-                    options={bloodGroupOpts}
-                    error={errors.blood_group}
-                  />
-                </div>
-
                 <SectionLabel>{t('biodata', 'section_lifestyle')}</SectionLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'health_status')}
-                    value={data.health_status ?? ''}
-                    onChange={v => setData('health_status', v as never)}
-                    options={healthOpts}
-                    error={errors.health_status}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SearchableSelect
                     label={t('biodata', 'diet')}
                     value={data.diet ?? ''}
@@ -1896,6 +1974,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {/* ── Step 7: Marriage & Guardian ── */}
             {step === 7 && (
               <>
+                {maritalSubstatusOpts.length > 0 && (
+                  <SearchableSelect
+                    label={t('biodata', 'marital_substatus')}
+                    value={data.marital_substatus ?? ''}
+                    onChange={v => setData('marital_substatus', v as never)}
+                    options={maritalSubstatusOpts}
+                    error={errors.marital_substatus}
+                  />
+                )}
+
                 <SectionLabel>{t('biodata', 'marriage_thoughts_section')}</SectionLabel>
                 <WizardTextarea
                   label={`${t('biodata', 'why_getting_married')} (${t('common', 'optional')})`}

@@ -81,9 +81,34 @@ class BiodataFieldSeeder extends Seeder
                         ['value' => 'widowed', 'label' => 'Widowed'],
                     ]],
                     ['field_key' => 'birth_date', 'model_column' => 'birth_date', 'label_en' => 'Date of Birth', 'label_bn' => 'জন্ম তারিখ', 'input_type' => 'date', 'is_required' => true, 'is_private' => true, 'profile_display_format' => 'age'],
-                    ['field_key' => 'mother_tongue', 'model_column' => 'mother_tongue', 'label_en' => 'Mother Tongue', 'label_bn' => 'মাতৃভাষা'],
-                    ['field_key' => 'profile_headline', 'model_column' => 'profile_headline', 'label_en' => 'Profile Headline', 'label_bn' => 'প্রোফাইল শিরোনাম'],
-                    ['field_key' => 'about_me', 'model_column' => 'about_me', 'label_en' => 'About Me', 'label_bn' => 'আমার সম্পর্কে', 'input_type' => 'textarea'],
+                    // Physical summary lives in Basic Information (moved from Lifestyle).
+                    ['field_key' => 'height_cm', 'model_column' => 'height_cm', 'label_en' => 'Height (cm)', 'label_bn' => 'উচ্চতা (সেমি)', 'input_type' => 'number', 'is_required' => true, 'is_filterable' => true, 'profile_display_format' => 'height'],
+                    ['field_key' => 'weight_kg', 'model_column' => 'weight_kg', 'label_en' => 'Weight (kg)', 'label_bn' => 'ওজন (কেজি)', 'input_type' => 'number', 'is_required' => true],
+                    ['field_key' => 'complexion', 'model_column' => 'complexion', 'label_en' => 'Complexion', 'label_bn' => 'গায়ের রং', 'input_type' => 'select', 'is_required' => true, 'options_en' => [
+                        ['value' => 'very_fair', 'label' => 'Very Fair'],
+                        ['value' => 'fair', 'label' => 'Fair'],
+                        ['value' => 'wheatish', 'label' => 'Wheatish'],
+                        ['value' => 'medium', 'label' => 'Medium'],
+                        ['value' => 'dark', 'label' => 'Dark'],
+                    ]],
+                    ['field_key' => 'blood_group', 'model_column' => 'blood_group', 'label_en' => 'Blood Group', 'label_bn' => 'রক্তের গ্রুপ', 'input_type' => 'select', 'options_en' => [
+                        ['value' => 'A+', 'label' => 'A+'], ['value' => 'A-', 'label' => 'A-'],
+                        ['value' => 'B+', 'label' => 'B+'], ['value' => 'B-', 'label' => 'B-'],
+                        ['value' => 'AB+', 'label' => 'AB+'], ['value' => 'AB-', 'label' => 'AB-'],
+                        ['value' => 'O+', 'label' => 'O+'], ['value' => 'O-', 'label' => 'O-'],
+                    ]],
+                    ['field_key' => 'health_status', 'model_column' => 'health_status', 'label_en' => 'Physical Status', 'label_bn' => 'শারীরিক অবস্থা', 'input_type' => 'select', 'options_en' => [
+                        ['value' => 'healthy', 'label' => 'Healthy'],
+                        ['value' => 'minor_condition', 'label' => 'Minor Condition'],
+                        ['value' => 'disability', 'label' => 'Disability'],
+                        ['value' => 'prefer_not_say', 'label' => 'Prefer not to say'],
+                    ]],
+                    ['field_key' => 'health_details', 'model_column' => 'health_details', 'label_en' => 'Health / Disability Details', 'label_bn' => 'স্বাস্থ্য / প্রতিবন্ধকতার বিবরণ', 'input_type' => 'textarea'],
+                    // Deactivated by default — removed from the Basic Information form
+                    // (columns retained; admin can re-enable).
+                    ['field_key' => 'mother_tongue', 'model_column' => 'mother_tongue', 'label_en' => 'Mother Tongue', 'label_bn' => 'মাতৃভাষা', 'is_active' => false, 'show_in_form' => false, 'show_in_profile' => false],
+                    ['field_key' => 'profile_headline', 'model_column' => 'profile_headline', 'label_en' => 'Profile Headline', 'label_bn' => 'প্রোফাইল শিরোনাম', 'is_active' => false, 'show_in_form' => false, 'show_in_profile' => false],
+                    ['field_key' => 'about_me', 'model_column' => 'about_me', 'label_en' => 'About Me', 'label_bn' => 'আমার সম্পর্কে', 'input_type' => 'textarea', 'is_active' => false, 'show_in_form' => false, 'show_in_profile' => false],
                 ],
             ],
             [
@@ -92,15 +117,20 @@ class BiodataFieldSeeder extends Seeder
                     'title_en' => 'Address & Location', 'title_bn' => 'ঠিকানা ও অবস্থান',
                     'icon' => 'map-pin', 'step' => 2, 'completion_weight' => 10,
                 ],
+                // Present address (residing_* / current_*) then Permanent address.
                 'fields' => [
-                    ['field_key' => 'residing_country', 'model_column' => 'residing_country', 'label_en' => 'Residing Country', 'label_bn' => 'বসবাসের দেশ', 'is_required' => true, 'is_filterable' => true],
-                    ['field_key' => 'residing_city', 'model_column' => 'residing_city', 'label_en' => 'Residing City', 'label_bn' => 'বসবাসের শহর', 'is_required' => true],
-                    ['field_key' => 'division', 'model_column' => 'division', 'label_en' => 'Division', 'label_bn' => 'বিভাগ', 'is_required' => true, 'is_filterable' => true],
-                    ['field_key' => 'district', 'model_column' => 'district', 'label_en' => 'District', 'label_bn' => 'জেলা', 'is_required' => true, 'is_filterable' => true],
-                    ['field_key' => 'upazila', 'model_column' => 'upazila', 'label_en' => 'Upazila', 'label_bn' => 'উপজেলা'],
-                    ['field_key' => 'permanent_address', 'model_column' => 'permanent_address', 'label_en' => 'Permanent Address', 'label_bn' => 'স্থায়ী ঠিকানা', 'input_type' => 'textarea', 'is_private' => true],
-                    ['field_key' => 'current_division', 'model_column' => 'current_division', 'label_en' => 'Current Division', 'label_bn' => 'বর্তমান বিভাগ'],
-                    ['field_key' => 'current_district', 'model_column' => 'current_district', 'label_en' => 'Current District', 'label_bn' => 'বর্তমান জেলা'],
+                    ['field_key' => 'residing_country', 'model_column' => 'residing_country', 'label_en' => 'Present Country', 'label_bn' => 'বর্তমান দেশ', 'is_required' => true, 'is_filterable' => true],
+                    ['field_key' => 'current_division', 'model_column' => 'current_division', 'label_en' => 'Present Division', 'label_bn' => 'বর্তমান বিভাগ'],
+                    ['field_key' => 'current_district', 'model_column' => 'current_district', 'label_en' => 'Present District', 'label_bn' => 'বর্তমান জেলা'],
+                    ['field_key' => 'current_upazila', 'model_column' => 'current_upazila', 'label_en' => 'Present Upazila / Thana', 'label_bn' => 'বর্তমান উপজেলা / থানা'],
+                    ['field_key' => 'current_area', 'model_column' => 'current_area', 'label_en' => 'Present Area / Village / City', 'label_bn' => 'বর্তমান এলাকা / গ্রাম / শহর'],
+                    ['field_key' => 'residing_city', 'model_column' => 'residing_city', 'label_en' => 'Present City (abroad)', 'label_bn' => 'বর্তমান শহর (বিদেশে)'],
+                    ['field_key' => 'permanent_country', 'model_column' => 'permanent_country', 'label_en' => 'Permanent Country', 'label_bn' => 'স্থায়ী দেশ'],
+                    ['field_key' => 'division', 'model_column' => 'division', 'label_en' => 'Permanent Division', 'label_bn' => 'স্থায়ী বিভাগ', 'is_filterable' => true],
+                    ['field_key' => 'district', 'model_column' => 'district', 'label_en' => 'Permanent District', 'label_bn' => 'স্থায়ী জেলা', 'is_filterable' => true],
+                    ['field_key' => 'upazila', 'model_column' => 'upazila', 'label_en' => 'Permanent Upazila / Thana', 'label_bn' => 'স্থায়ী উপজেলা / থানা'],
+                    ['field_key' => 'village_area', 'model_column' => 'village_area', 'label_en' => 'Permanent Area / Village / City', 'label_bn' => 'স্থায়ী এলাকা / গ্রাম / শহর'],
+                    ['field_key' => 'same_as_permanent', 'model_column' => 'same_as_permanent', 'label_en' => 'Permanent same as present', 'label_bn' => 'স্থায়ী ঠিকানা বর্তমানের মতোই', 'input_type' => 'yes_no', 'show_in_profile' => false],
                     ['field_key' => 'is_nrb', 'model_column' => 'is_nrb', 'label_en' => 'Non-Resident Bangladeshi', 'label_bn' => 'প্রবাসী বাংলাদেশি', 'input_type' => 'yes_no'],
                 ],
             ],
@@ -177,31 +207,12 @@ class BiodataFieldSeeder extends Seeder
             [
                 'key' => 'lifestyle',
                 'attributes' => [
-                    'title_en' => 'Lifestyle & Health', 'title_bn' => 'জীবনধারা ও স্বাস্থ্য',
+                    'title_en' => 'Lifestyle', 'title_bn' => 'জীবনধারা',
                     'icon' => 'heart-pulse', 'step' => 5, 'completion_weight' => 10,
                 ],
+                // Physical fields (height/weight/complexion/blood_group/health) moved
+                // to the general (Basic Information) section.
                 'fields' => [
-                    ['field_key' => 'height_cm', 'model_column' => 'height_cm', 'label_en' => 'Height (cm)', 'label_bn' => 'উচ্চতা (সেমি)', 'input_type' => 'number', 'is_required' => true, 'is_filterable' => true, 'profile_display_format' => 'height'],
-                    ['field_key' => 'weight_kg', 'model_column' => 'weight_kg', 'label_en' => 'Weight (kg)', 'label_bn' => 'ওজন (কেজি)', 'input_type' => 'number', 'is_required' => true],
-                    ['field_key' => 'complexion', 'model_column' => 'complexion', 'label_en' => 'Complexion', 'label_bn' => 'গায়ের রং', 'input_type' => 'select', 'is_required' => true, 'options_en' => [
-                        ['value' => 'very_fair', 'label' => 'Very Fair'],
-                        ['value' => 'fair', 'label' => 'Fair'],
-                        ['value' => 'wheatish', 'label' => 'Wheatish'],
-                        ['value' => 'medium', 'label' => 'Medium'],
-                        ['value' => 'dark', 'label' => 'Dark'],
-                    ]],
-                    ['field_key' => 'blood_group', 'model_column' => 'blood_group', 'label_en' => 'Blood Group', 'label_bn' => 'রক্তের গ্রুপ', 'input_type' => 'select', 'options_en' => [
-                        ['value' => 'A+', 'label' => 'A+'], ['value' => 'A-', 'label' => 'A-'],
-                        ['value' => 'B+', 'label' => 'B+'], ['value' => 'B-', 'label' => 'B-'],
-                        ['value' => 'AB+', 'label' => 'AB+'], ['value' => 'AB-', 'label' => 'AB-'],
-                        ['value' => 'O+', 'label' => 'O+'], ['value' => 'O-', 'label' => 'O-'],
-                    ]],
-                    ['field_key' => 'health_status', 'model_column' => 'health_status', 'label_en' => 'Health Status', 'label_bn' => 'স্বাস্থ্য অবস্থা', 'input_type' => 'select', 'options_en' => [
-                        ['value' => 'healthy', 'label' => 'Healthy'],
-                        ['value' => 'minor_condition', 'label' => 'Minor Condition'],
-                        ['value' => 'disability', 'label' => 'Disability'],
-                        ['value' => 'prefer_not_say', 'label' => 'Prefer not to say'],
-                    ]],
                     ['field_key' => 'hobbies', 'model_column' => 'hobbies', 'label_en' => 'Hobbies', 'label_bn' => 'শখ', 'input_type' => 'textarea'],
                 ],
             ],

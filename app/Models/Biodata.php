@@ -33,6 +33,7 @@ class Biodata extends Model
         'grew_up_in',
         'residing_country',
         'residing_city',
+        'permanent_country',
         'visa_status',
         'is_nrb',
         'mother_tongue',

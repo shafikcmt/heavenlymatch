@@ -104,6 +104,31 @@ class BiodataWizardController extends Controller
                 }
             }
 
+            // Location: required fields depend on the chosen country, and the
+            // permanent block is skipped when "same as present" is checked.
+            if ($step === 2) {
+                $isBd = fn (?string $c) => $c === null || strtolower(trim($c)) === '' || strtolower(trim($c)) === 'bangladesh';
+
+                // Present address.
+                if ($isBd($request->input('residing_country'))) {
+                    $required[] = 'current_division';
+                    $required[] = 'current_district';
+                } else {
+                    $required[] = 'residing_city';
+                }
+
+                // Permanent address (unless mirrored from present).
+                if (! $request->boolean('same_as_permanent')) {
+                    $required[] = 'permanent_country';
+                    if ($isBd($request->input('permanent_country'))) {
+                        $required[] = 'division';
+                        $required[] = 'district';
+                    } else {
+                        $required[] = 'district'; // abroad: district column holds the city
+                    }
+                }
+            }
+
             foreach ($required as $field) {
                 $existing = $rules[$field] ?? ['nullable'];
                 $existing = array_values(array_filter($existing, fn ($r) => $r !== 'nullable'));
@@ -144,14 +169,15 @@ class BiodataWizardController extends Controller
             }
         }
 
-        // "Same as permanent address": mirror the permanent fields into the current
+        // "Permanent same as present": mirror the present fields into the permanent
         // ones so the data stays consistent even if the client didn't copy them.
         if ($step === 2 && $request->boolean('same_as_permanent')) {
-            $validated['current_division'] = $validated['division'] ?? null;
-            $validated['current_district'] = $validated['district'] ?? null;
-            $validated['current_upazila']  = $validated['upazila'] ?? null;
-            $validated['current_area']     = $validated['village_area'] ?? null;
-            $validated['present_address']  = $validated['permanent_address'] ?? null;
+            $validated['permanent_country'] = $validated['residing_country'] ?? null;
+            $validated['division']          = $validated['current_division'] ?? null;
+            $validated['district']          = $validated['current_district'] ?? null;
+            $validated['upazila']           = $validated['current_upazila'] ?? null;
+            $validated['village_area']      = $validated['current_area'] ?? null;
+            $validated['permanent_address'] = $validated['present_address'] ?? null;
         }
 
         $biodata = Biodata::firstOrNew(['registration_id' => $user->registration_id]);
@@ -305,11 +331,13 @@ class BiodataWizardController extends Controller
     private function requiredForStep(int $step): array
     {
         return match ($step) {
-            1  => ['marital_status', 'birth_date'],
-            2  => ['residing_country', 'residing_city', 'division', 'district'],
+            1  => ['marital_status', 'birth_date', 'height_cm', 'weight_kg', 'complexion'],
+            // Present country always required; the rest is country-conditional (see save()).
+            2  => ['residing_country'],
             3  => ['religion'], // prayers_info added conditionally (Muslims only) in save()
             4  => ['highest_qualification', 'occupation'],
-            5  => ['height_cm', 'weight_kg', 'complexion'],
+            5  => [], // physical fields enforced in step 1 now; lifestyle is optional
+
             6  => ['father_profession', 'mother_profession', 'family_type'],
             7  => ['residence_after_marriage'],
             8  => ['partner_age_min', 'partner_age_max', 'partner_education', 'partner_division'],
@@ -326,20 +354,30 @@ class BiodataWizardController extends Controller
                 'marital_status'    => ['nullable', 'in:never_married,married,divorced,widowed'],
                 // Free-form nuance under the 4-value enum: separated/widow/widower/second_marriage.
                 'marital_substatus' => ['nullable', 'string', 'max:30'],
+                // DOB is collected as month + year on the client and composed into
+                // birth_date (day = 01) — birth_date stays the single source of truth.
                 'birth_date'        => ['nullable', 'date', 'before:-18 years'],
-                'about_me'          => ['nullable', 'string', 'max:1000'],
-                'profile_headline'  => ['nullable', 'string', 'max:200'],
-                'mother_tongue'     => ['nullable', 'string', 'max:50'],
+                // Physical summary — moved here from step 5 (Basic Information cleanup).
+                'height_cm'         => ['nullable', 'integer', 'min:100', 'max:250'],
+                'weight_kg'         => ['nullable', 'integer', 'min:20', 'max:200'],
+                'complexion'        => ['nullable', 'in:very_fair,fair,wheatish,medium,dark'],
+                'blood_group'       => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+                'health_status'     => ['nullable', 'in:healthy,minor_condition,disability,prefer_not_say'],
+                'health_details'    => ['nullable', 'string', 'max:500'],
+                // about_me / profile_headline / mother_tongue removed from this step
+                // (columns retained; data preserved; no longer collected here).
             ],
             2 => [
                 'nationality'       => ['nullable', 'string', 'max:60'],
+                // Permanent address (Bangladesh cascade or abroad free text).
+                'permanent_country' => ['nullable', 'string', 'max:60'],
                 'division'          => ['nullable', 'string', 'max:60'],
                 'district'          => ['nullable', 'string', 'max:60'],
                 'upazila'           => ['nullable', 'string', 'max:60'],
                 'permanent_address' => ['nullable', 'string', 'max:500'],
                 'village_area'      => ['nullable', 'string', 'max:100'],
                 'grew_up_in'        => ['nullable', 'string', 'max:60'],
-                // Granular current address + "same as permanent" toggle (Phase A/B).
+                // Present address + "permanent same as present" toggle.
                 'same_as_permanent' => ['nullable', 'boolean'],
                 'current_division'  => ['nullable', 'string', 'max:60'],
                 'current_district'  => ['nullable', 'string', 'max:60'],
@@ -415,12 +453,8 @@ class BiodataWizardController extends Controller
                 'future_career_plan'    => ['nullable', 'string', 'max:500'],
             ],
             5 => [
-                'height_cm'           => ['nullable', 'integer', 'min:100', 'max:250'],
-                'weight_kg'           => ['nullable', 'integer', 'min:20', 'max:200'],
-                'complexion'          => ['nullable', 'in:very_fair,fair,wheatish,medium,dark'],
-                'blood_group'         => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-                'health_status'       => ['nullable', 'in:healthy,minor_condition,disability,prefer_not_say'],
-                'health_details'      => ['nullable', 'string', 'max:500'],
+                // Physical fields (height/weight/complexion/blood_group/health) now
+                // live in step 1; step 5 keeps lifestyle only.
                 'diet'                => ['nullable', 'in:halal_only,vegetarian,no_restriction'],
                 'smoking'             => ['nullable', 'in:never,occasionally,regularly'],
                 'hobbies'             => ['nullable', 'string', 'max:500'],

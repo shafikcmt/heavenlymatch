@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -21,6 +22,14 @@ interface Props {
   emptyText?: string
 }
 
+interface MenuPos {
+  left: number
+  width: number
+  top?: number
+  bottom?: number
+  maxHeight: number
+}
+
 export function SearchableSelect({
   label,
   value,
@@ -37,7 +46,10 @@ export function SearchableSelect({
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [highlighted, setHighlighted] = useState(0)
+  const [pos, setPos] = useState<MenuPos | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const selected = options.find(o => o.value === value)
@@ -49,12 +61,44 @@ export function SearchableSelect({
 
   useEffect(() => { setHighlighted(0) }, [query])
 
+  // Position the portalled menu under (or above) the trigger using fixed coords,
+  // so the card's overflow-hidden / stacking context can never clip it.
+  const updatePos = useCallback(() => {
+    const el = triggerRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - r.bottom
+    const spaceAbove = r.top
+    const openUp = spaceBelow < 260 && spaceAbove > spaceBelow
+    const maxHeight = Math.min(288, Math.max(140, (openUp ? spaceAbove : spaceBelow) - 16))
+    setPos({
+      left: r.left,
+      width: r.width,
+      top: openUp ? undefined : r.bottom + 4,
+      bottom: openUp ? window.innerHeight - r.top + 4 : undefined,
+      maxHeight,
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    updatePos()
+    const handler = () => updatePos()
+    // capture:true so we react to scrolls on any ancestor container too.
+    window.addEventListener('scroll', handler, true)
+    window.addEventListener('resize', handler)
+    return () => {
+      window.removeEventListener('scroll', handler, true)
+      window.removeEventListener('resize', handler)
+    }
+  }, [open, updatePos])
+
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-        setQuery('')
-      }
+      const t = e.target as Node
+      if (containerRef.current?.contains(t) || menuRef.current?.contains(t)) return
+      setOpen(false)
+      setQuery('')
     }
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
@@ -62,6 +106,7 @@ export function SearchableSelect({
 
   const handleOpen = () => {
     if (disabled) return
+    updatePos()
     setOpen(true)
     setQuery('')
     setTimeout(() => inputRef.current?.focus(), 10)
@@ -114,8 +159,9 @@ export function SearchableSelect({
 
       <div className="relative">
         <button
+          ref={triggerRef}
           type="button"
-          onClick={handleOpen}
+          onClick={() => (open ? setOpen(false) : handleOpen())}
           disabled={disabled}
           className={cn(
             'w-full flex items-center gap-2 rounded-xl border bg-white px-4 py-2.5 text-sm text-left shadow-sm transition-colors',
@@ -143,8 +189,19 @@ export function SearchableSelect({
           />
         </button>
 
-        {open && (
-          <div className="absolute z-50 top-full left-0 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+        {open && pos && createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              left: pos.left,
+              width: pos.width,
+              top: pos.top,
+              bottom: pos.bottom,
+              zIndex: 9999,
+            }}
+            className="rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
+          >
             <div className="p-2 border-b border-slate-100">
               <input
                 ref={inputRef}
@@ -156,7 +213,7 @@ export function SearchableSelect({
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
-            <ul className="max-h-48 overflow-y-auto py-1">
+            <ul className="overflow-y-auto py-1" style={{ maxHeight: pos.maxHeight }}>
               {filtered.length > 0 ? (
                 filtered.map((opt, idx) => (
                   <li
@@ -183,7 +240,8 @@ export function SearchableSelect({
                 </li>
               )}
             </ul>
-          </div>
+          </div>,
+          document.body,
         )}
       </div>
 

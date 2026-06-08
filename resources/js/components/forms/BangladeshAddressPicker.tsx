@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
@@ -49,7 +50,10 @@ function LevelSelect({
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [pos, setPos] = useState<{ left: number; width: number; top?: number; bottom?: number; maxHeight: number } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const displayName = (o: AnyItem) => locale === 'bn' ? o.bn_name : o.name
@@ -64,12 +68,43 @@ function LevelSelect({
       )
     : options
 
+  // Position the portalled menu from the trigger rect so the parent card's
+  // overflow-hidden / stacking context can never clip it.
+  const updatePos = useCallback(() => {
+    const el = triggerRef.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - r.bottom
+    const spaceAbove = r.top
+    const openUp = spaceBelow < 240 && spaceAbove > spaceBelow
+    const maxHeight = Math.min(256, Math.max(140, (openUp ? spaceAbove : spaceBelow) - 16))
+    setPos({
+      left: r.left,
+      width: r.width,
+      top: openUp ? undefined : r.bottom + 4,
+      bottom: openUp ? window.innerHeight - r.top + 4 : undefined,
+      maxHeight,
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    updatePos()
+    const handler = () => updatePos()
+    window.addEventListener('scroll', handler, true)
+    window.addEventListener('resize', handler)
+    return () => {
+      window.removeEventListener('scroll', handler, true)
+      window.removeEventListener('resize', handler)
+    }
+  }, [open, updatePos])
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
-        setQuery('')
-      }
+      const t = e.target as Node
+      if (containerRef.current?.contains(t) || menuRef.current?.contains(t)) return
+      setOpen(false)
+      setQuery('')
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -77,6 +112,7 @@ function LevelSelect({
 
   const handleOpen = () => {
     if (disabled || loading) return
+    updatePos()
     setOpen(true)
     setQuery('')
     setTimeout(() => inputRef.current?.focus(), 50)
@@ -107,8 +143,9 @@ function LevelSelect({
       )}
 
       <button
+        ref={triggerRef}
         type="button"
-        onClick={handleOpen}
+        onClick={() => (open ? setOpen(false) : handleOpen())}
         disabled={disabled || loading}
         className={cn(
           'w-full flex items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm text-left transition-colors',
@@ -135,8 +172,19 @@ function LevelSelect({
         />
       </button>
 
-      {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+      {open && pos && createPortal(
+        <div
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            left: pos.left,
+            width: pos.width,
+            top: pos.top,
+            bottom: pos.bottom,
+            zIndex: 9999,
+          }}
+          className="rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
+        >
           <div className="p-2 border-b border-slate-100">
             <input
               ref={inputRef}
@@ -148,12 +196,12 @@ function LevelSelect({
               className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
-          <ul className="max-h-48 overflow-y-auto py-1">
+          <ul className="overflow-y-auto py-1" style={{ maxHeight: pos.maxHeight }}>
             {filtered.length > 0 ? (
               filtered.map(item => (
                 <li
                   key={item.id}
-                  onClick={() => handleSelect(item)}
+                  onMouseDown={e => { e.preventDefault(); handleSelect(item) }}
                   className={cn(
                     'px-3 py-2 text-sm cursor-pointer transition-colors flex items-center justify-between',
                     item.name === value
@@ -173,7 +221,8 @@ function LevelSelect({
               </li>
             )}
           </ul>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
