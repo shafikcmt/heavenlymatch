@@ -247,4 +247,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/settings',                     [\App\Http\Controllers\Admin\AdminSettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/media/{key}',        [\App\Http\Controllers\Admin\AdminSettingsController::class, 'uploadMedia'])->name('settings.media.upload');
     Route::delete('/settings/media/{key}',      [\App\Http\Controllers\Admin\AdminSettingsController::class, 'removeMedia'])->name('settings.media.remove');
+
+    // Biodata Field Control (Phase E2) — manage sections, fields, custom fields.
+    Route::get('/biodata-fields',                    [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'index'])->name('biodata-fields.index');
+    Route::post('/biodata-fields/sections',          [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'storeSection'])->name('biodata-fields.sections.store');
+    Route::put('/biodata-fields/sections/{section}', [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'updateSection'])->name('biodata-fields.sections.update');
+    Route::delete('/biodata-fields/sections/{section}', [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'destroySection'])->name('biodata-fields.sections.destroy');
+    Route::post('/biodata-fields/sections/reorder',  [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'reorderSections'])->name('biodata-fields.sections.reorder');
+    Route::post('/biodata-fields/fields',            [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'storeField'])->name('biodata-fields.fields.store');
+    Route::put('/biodata-fields/fields/{field}',     [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'updateField'])->name('biodata-fields.fields.update');
+    Route::delete('/biodata-fields/fields/{field}',  [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'destroyField'])->name('biodata-fields.fields.destroy');
+    Route::post('/biodata-fields/fields/reorder',    [\App\Http\Controllers\Admin\AdminBiodataFieldController::class, 'reorderFields'])->name('biodata-fields.fields.reorder');
 });

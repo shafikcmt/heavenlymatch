@@ -4,7 +4,7 @@ import { useState } from 'react'
 import type { PageProps } from '@/types'
 import {
   LayoutDashboard, Users, FileText, CreditCard,
-  Flag, Settings, Menu, X, Crown, LogOut, ExternalLink,
+  Flag, Settings, Menu, X, Crown, LogOut, ExternalLink, SlidersHorizontal,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
@@ -21,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: t('admin', 'nav_dashboard'), href: route('admin.dashboard'), match: '/admin',         icon: LayoutDashboard },
     { label: t('admin', 'nav_users'),     href: route('admin.users.index'),    match: '/admin/users',    icon: Users },
     { label: t('admin', 'nav_biodatas'),  href: route('admin.biodatas.index'), match: '/admin/biodatas', icon: FileText },
+    { label: t('admin', 'nav_field_control'), href: route('admin.biodata-fields.index'), match: '/admin/biodata-fields', icon: SlidersHorizontal },
     { label: t('admin', 'nav_payments'),  href: route('admin.payments.index'), match: '/admin/payments', icon: CreditCard },
     { label: t('admin', 'nav_reports'),   href: route('admin.reports.index'),  match: '/admin/reports',  icon: Flag },
     { label: t('admin', 'nav_settings'),  href: route('admin.settings.index'), match: '/admin/settings', icon: Settings },

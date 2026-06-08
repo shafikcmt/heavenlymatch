@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Biodata;
 use App\Models\Registration;
 use App\Models\SystemSetting;
+use App\Services\BiodataFieldService;
 use App\Services\PhoneOtpService;
 use App\Services\PhotoPrivacyService;
 use App\Services\ProfileCompletionService;
@@ -21,6 +22,7 @@ class BiodataWizardController extends Controller
     public function __construct(
         private PhotoPrivacyService $photoPrivacy,
         private PhoneOtpService $phone,
+        private BiodataFieldService $fields,
     ) {}
 
     /** 10-step wizard. Each step counts as 10% of completion. */
@@ -77,6 +79,8 @@ class BiodataWizardController extends Controller
                 'gender' => $user->gender,
                 'mode'   => $user->platform_mode,
             ],
+            // Admin-defined custom fields (Phase E3) — appended to their section's step.
+            'customFields' => $this->fields->customWizardFields(),
             ...$photoData,
         ]);
     }
@@ -106,26 +110,48 @@ class BiodataWizardController extends Controller
                 $rules[$field] = array_values(array_unique([...['required'], ...$existing]));
             }
             if ($step === self::PHOTO_STEP) {
-                $rules['confirm_correct'] = ['accepted'];
+                // Declaration / commitment gate — all three must be accepted to submit.
+                $rules['guardian_knows_biodata']  = ['accepted'];
+                $rules['info_truthful_confirmed'] = ['accepted'];
+                $rules['accept_liability_terms']  = ['accepted'];
             }
         }
 
         $validated = $request->validate($rules);
-        unset($validated['confirm_correct']); // transient — not a biodata column
+        unset($validated['confirm_correct']); // legacy transient — not a biodata column
 
-        // Normalise + validate the optional WhatsApp number (Bangladesh format).
-        if ($step === 9 && ! empty($validated['whatsapp_number'])) {
-            $normalized = $this->phone->normalizePhone($validated['whatsapp_number']);
-            if ($normalized === null) {
-                throw ValidationException::withMessages([
-                    'whatsapp_number' => __('biodata.whatsapp_invalid'),
-                ]);
+        // Normalise + validate the optional contact numbers (Bangladesh format).
+        // guardian_mobile / guardian_whatsapp / whatsapp_number all share one rule.
+        if ($step === 9) {
+            foreach (['whatsapp_number', 'guardian_mobile', 'guardian_whatsapp'] as $phoneField) {
+                if (empty($validated[$phoneField])) {
+                    continue;
+                }
+                $normalized = $this->phone->normalizePhone($validated[$phoneField]);
+                if ($normalized === null) {
+                    throw ValidationException::withMessages([
+                        $phoneField => __('biodata.whatsapp_invalid'),
+                    ]);
+                }
+                $validated[$phoneField] = $normalized;
             }
-            $validated['whatsapp_number'] = $normalized;
+        }
+
+        // "Same as permanent address": mirror the permanent fields into the current
+        // ones so the data stays consistent even if the client didn't copy them.
+        if ($step === 2 && $request->boolean('same_as_permanent')) {
+            $validated['current_division'] = $validated['division'] ?? null;
+            $validated['current_district'] = $validated['district'] ?? null;
+            $validated['current_upazila']  = $validated['upazila'] ?? null;
+            $validated['current_area']     = $validated['village_area'] ?? null;
+            $validated['present_address']  = $validated['permanent_address'] ?? null;
         }
 
         $biodata = Biodata::firstOrNew(['registration_id' => $user->registration_id]);
         $biodata->fill($validated);
+
+        // Persist admin-defined custom fields for this step into custom_fields JSON.
+        $this->persistCustomFields($request, $biodata, $step, $isDraft);
 
         // Final submit: enforce that every required content section is complete.
         if ($step === self::PHOTO_STEP && ! $isDraft) {
@@ -162,6 +188,44 @@ class BiodataWizardController extends Controller
         return redirect()->route('biodata.wizard', ['step' => $nextStep]);
     }
 
+    /**
+     * Validate + merge admin-defined custom fields (Phase E3) for this step into
+     * biodatas.custom_fields. Only keys belonging to this step are touched, so a
+     * draft on one step never wipes another step's custom values.
+     */
+    private function persistCustomFields(Request $request, Biodata $biodata, int $step, bool $isDraft): void
+    {
+        $fields = $this->fields->customFieldsForStep($step);
+        if ($fields->isEmpty()) {
+            return;
+        }
+
+        $rules = [];
+        foreach ($fields as $field) {
+            $key   = "custom_fields.{$field->field_key}";
+            $parts = [($field->is_required && ! $isDraft) ? 'required' : 'nullable'];
+            if (in_array($field->input_type, ['multi_select'], true)) {
+                $parts[] = 'array';
+            }
+            if ($field->validation_rules) {
+                $parts[] = $field->validation_rules;
+            }
+            $rules[$key] = implode('|', $parts);
+        }
+
+        $validated = $request->validate($rules);
+        $incoming  = $validated['custom_fields'] ?? [];
+        $existing  = $biodata->custom_fields ?? [];
+
+        foreach ($fields as $field) {
+            if (array_key_exists($field->field_key, $incoming)) {
+                $existing[$field->field_key] = $incoming[$field->field_key];
+            }
+        }
+
+        $biodata->custom_fields = $existing !== [] ? $existing : null;
+    }
+
     /** Required field names per step (enforced on Continue / Submit, skipped for drafts). */
     private function requiredForStep(int $step): array
     {
@@ -184,11 +248,13 @@ class BiodataWizardController extends Controller
     {
         return match ($step) {
             1 => [
-                'marital_status'   => ['nullable', 'in:never_married,married,divorced,widowed'],
-                'birth_date'       => ['nullable', 'date', 'before:-18 years'],
-                'about_me'         => ['nullable', 'string', 'max:1000'],
-                'profile_headline' => ['nullable', 'string', 'max:200'],
-                'mother_tongue'    => ['nullable', 'string', 'max:50'],
+                'marital_status'    => ['nullable', 'in:never_married,married,divorced,widowed'],
+                // Free-form nuance under the 4-value enum: separated/widow/widower/second_marriage.
+                'marital_substatus' => ['nullable', 'string', 'max:30'],
+                'birth_date'        => ['nullable', 'date', 'before:-18 years'],
+                'about_me'          => ['nullable', 'string', 'max:1000'],
+                'profile_headline'  => ['nullable', 'string', 'max:200'],
+                'mother_tongue'     => ['nullable', 'string', 'max:50'],
             ],
             2 => [
                 'nationality'       => ['nullable', 'string', 'max:60'],
@@ -196,7 +262,15 @@ class BiodataWizardController extends Controller
                 'district'          => ['nullable', 'string', 'max:60'],
                 'upazila'           => ['nullable', 'string', 'max:60'],
                 'permanent_address' => ['nullable', 'string', 'max:500'],
+                'village_area'      => ['nullable', 'string', 'max:100'],
                 'grew_up_in'        => ['nullable', 'string', 'max:60'],
+                // Granular current address + "same as permanent" toggle (Phase A/B).
+                'same_as_permanent' => ['nullable', 'boolean'],
+                'current_division'  => ['nullable', 'string', 'max:60'],
+                'current_district'  => ['nullable', 'string', 'max:60'],
+                'current_upazila'   => ['nullable', 'string', 'max:60'],
+                'current_area'      => ['nullable', 'string', 'max:100'],
+                'present_address'   => ['nullable', 'string', 'max:500'],
                 'residing_country'  => ['nullable', 'string', 'max:60'],
                 'residing_city'     => ['nullable', 'string', 'max:80'],
                 'is_nrb'            => ['boolean'],
@@ -210,9 +284,25 @@ class BiodataWizardController extends Controller
                 'quran_recitation'         => ['nullable', 'in:fluent,basic,learning,no'],
                 'fiqh'                     => ['nullable', 'string', 'max:50'],
                 'clothing_style'           => ['nullable', 'string', 'max:100'],
+                // Deeper deen practice detail (Phase B).
+                'prayer_start_age'      => ['nullable', 'string', 'max:50'],
+                'weekly_missed_prayers' => ['nullable', 'string', 'max:50'],
+                'mahram_practice'       => ['nullable', 'string', 'max:500'],
+                'islamic_books_read'    => ['nullable', 'string', 'max:500'],
+                'deen_work_details'     => ['nullable', 'string', 'max:500'],
+                'social_media_usage'    => ['nullable', 'string', 'max:150'],
+                // Gender-specific appearance/sunnah fields.
                 ...$gender === 'male'
-                    ? ['beard_info' => ['nullable', 'string', 'max:50']]
-                    : ['hijab_info'  => ['nullable', 'string', 'max:50']],
+                    ? [
+                        'beard_info'        => ['nullable', 'string', 'max:50'],
+                        'beard_since'       => ['nullable', 'string', 'max:50'],
+                        'pants_above_ankle' => ['nullable', 'boolean'],
+                    ]
+                    : [
+                        'hijab_info'     => ['nullable', 'string', 'max:50'],
+                        'niqab_since'    => ['nullable', 'string', 'max:50'],
+                        'purdah_details' => ['nullable', 'string', 'max:500'],
+                    ],
                 'is_islamically_educated' => ['boolean'],
                 'beliefs_on_mazar'        => ['nullable', 'string', 'max:500'],
                 'favorite_scholars'       => ['nullable', 'string', 'max:300'],
@@ -221,6 +311,8 @@ class BiodataWizardController extends Controller
             ],
             4 => [
                 'education_method'                        => ['nullable', 'in:general,islamic,both'],
+                // Wider medium beside legacy education_method (Phase B).
+                'education_medium'                        => ['nullable', 'in:general,qawmi,alia,english_medium,vocational,other'],
                 'highest_qualification'                   => ['nullable', 'in:below_ssc,ssc,hsc,diploma,graduation,post_graduation,phd,hafez,alim,fazil,kamil,other'],
                 'education_details'                       => ['nullable', 'array'],
                 'education_details.*'                     => ['nullable', 'array'],
@@ -238,6 +330,12 @@ class BiodataWizardController extends Controller
                 'occupation_category'   => ['nullable', 'in:business,service_govt,service_private,education,medical,engineering,agriculture,student,housewife,ngo,it,abroad_job,other'],
                 'profession_details'    => ['nullable', 'string', 'max:500'],
                 'monthly_income'        => ['nullable', 'integer', 'min:0'],
+                'profession_halal_status' => ['nullable', 'in:halal,not_sure,halal_alternative'],
+                // Income framing + privacy + career (Phase B).
+                'income_type'           => ['nullable', 'in:monthly,yearly,variable,private'],
+                'income_privacy'        => ['nullable', 'in:public,private,members_only'],
+                'workplace_type'        => ['nullable', 'string', 'max:100'],
+                'future_career_plan'    => ['nullable', 'string', 'max:500'],
             ],
             5 => [
                 'height_cm'           => ['nullable', 'integer', 'min:100', 'max:250'],
@@ -275,24 +373,52 @@ class BiodataWizardController extends Controller
                 'sisters_details.*.profession'            => ['nullable', 'string', 'max:100'],
                 'sisters_details.*.location'              => ['nullable', 'string', 'max:100'],
                 'sisters_details.*.note'                  => ['nullable', 'string', 'max:300'],
+                'uncle_profession'         => ['nullable', 'string', 'max:150'],
                 'family_type'              => ['nullable', 'in:joint,nuclear,flexible'],
                 'family_financial_status'  => ['nullable', 'in:lower,lower_middle,middle,upper_middle,upper'],
                 'home_ownership'           => ['nullable', 'in:own_house,rented,family_house,other'],
+                'family_assets_details'    => ['nullable', 'string', 'max:1000'],
                 'family_details'           => ['nullable', 'string', 'max:1000'],
                 'family_religious_condition' => ['nullable', 'string', 'max:100'],
             ],
             7 => [
                 'guardian_agree'           => ['nullable', 'boolean'],
+                'why_getting_married'      => ['nullable', 'string', 'max:1000'],
+                'marriage_thoughts'        => ['nullable', 'string', 'max:1000'],
+                'marriage_timeline'        => ['nullable', 'string', 'max:60'],
+                // Male-oriented expectations.
                 'wife_in_veil'             => ['nullable', 'boolean'],
                 'wife_study_allowed'       => ['nullable', 'boolean'],
                 'wife_job_allowed'         => ['nullable', 'boolean'],
                 'residence_after_marriage' => ['nullable', 'string', 'max:100'],
                 'post_marriage_plan'       => ['nullable', 'string', 'max:100'],
+                'expect_gift_from_bride'   => ['nullable', 'string', 'max:50'],
+                'gift_expectation_details' => ['nullable', 'string', 'max:500'],
                 'polygamy_open'            => ['boolean'],
+                // Female-oriented intentions.
+                'wants_to_work'            => ['nullable', 'boolean'],
+                'continue_study'           => ['nullable', 'boolean'],
+                'continue_job'             => ['nullable', 'boolean'],
+                'preferred_living'         => ['nullable', 'string', 'max:100'],
+                // Children (any previously-married status).
                 'has_children'             => ['nullable', 'boolean'],
                 'children_count'           => ['nullable', 'integer', 'min:0', 'max:30'],
                 'children_live_with'       => ['nullable', 'string', 'max:100'],
                 'children_notes'           => ['nullable', 'string', 'max:500'],
+                // Divorced-specific.
+                'previous_marriage_date'   => ['nullable', 'date'],
+                'divorce_date'             => ['nullable', 'date'],
+                'divorce_reason'           => ['nullable', 'string', 'max:1000'],
+                // Widowed-specific.
+                'spouse_death_date'        => ['nullable', 'date'],
+                'spouse_death_reason'      => ['nullable', 'string', 'max:1000'],
+                'child_acceptance_expectation' => ['nullable', 'string', 'max:1000'],
+                // Married / second-marriage-specific.
+                'reason_for_second_marriage' => ['nullable', 'string', 'max:1000'],
+                'current_wife_count'       => ['nullable', 'integer', 'min:0', 'max:4'],
+                'current_family_consent'   => ['nullable', 'boolean'],
+                'first_wife_knows'         => ['nullable', 'boolean'],
+                'second_marriage_living'   => ['nullable', 'string', 'max:150'],
             ],
             8 => [
                 'partner_age_min'           => ['nullable', 'integer', 'min:18', 'max:80'],
@@ -307,18 +433,36 @@ class BiodataWizardController extends Controller
                 'partner_income_max'        => ['nullable', 'integer', 'min:0'],
                 'partner_division'          => ['nullable', 'string', 'max:60'],
                 'partner_district'          => ['nullable', 'string', 'max:60'],
+                // Multi-select districts beside legacy single partner_district (Phase B).
+                'partner_districts'         => ['nullable', 'array'],
+                'partner_districts.*'       => ['nullable', 'string', 'max:60'],
                 'partner_family_type'       => ['nullable', 'string', 'max:20'],
+                'partner_economic_status'   => ['nullable', 'string', 'max:60'],
+                'partner_deen_practice'     => ['nullable', 'string', 'max:100'],
+                'partner_special_qualities' => ['nullable', 'string', 'max:1000'],
+                'partner_deal_breakers'     => ['nullable', 'string', 'max:1000'],
                 'partner_expectations'      => ['nullable', 'string', 'max:1000'],
             ],
             9 => [
+                'contact_person_name'   => ['nullable', 'string', 'max:100'],
+                'guardian_name'         => ['nullable', 'string', 'max:100'],
                 'guardian_mobile'       => ['nullable', 'string', 'max:20'],
                 'guardian_relationship' => ['nullable', 'string', 'max:50'],
                 'guardian_email'        => ['nullable', 'email', 'max:100'],
+                'guardian_whatsapp'     => ['nullable', 'string', 'max:20'],
                 'whatsapp_number'       => ['nullable', 'string', 'max:20'],
                 'contact_privacy'       => ['nullable', 'in:private,request_only,matches_only'],
+                'biodata_visibility'    => ['nullable', 'in:public,private,admin_approved_only'],
+                'allow_shortlist'       => ['nullable', 'boolean'],
+                'allow_contact_request' => ['nullable', 'boolean'],
             ],
             10 => [
-                // Review step — only a confirmation checkbox (added in save()).
+                // Review step — persisted declaration flags (Phase B). The blocking
+                // gate is still `confirm_correct` (added in save()) until the Phase C
+                // UI sends these three checkboxes; they are stored when present.
+                'guardian_knows_biodata'  => ['nullable', 'boolean'],
+                'info_truthful_confirmed' => ['nullable', 'boolean'],
+                'accept_liability_terms'  => ['nullable', 'boolean'],
             ],
             default => [],
         };

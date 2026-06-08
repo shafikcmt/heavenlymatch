@@ -17,6 +17,7 @@ import type { PageProps } from '@/types'
 
 interface BiodataDetail {
   marital_status?: string
+  marital_substatus?: string
   birth_date?: string
   height_cm?: number
   weight_kg?: number
@@ -27,6 +28,11 @@ interface BiodataDetail {
   nationality?: string
   division?: string
   district?: string
+  village_area?: string
+  current_division?: string
+  current_district?: string
+  current_upazila?: string
+  current_area?: string
   residing_country?: string
   residing_city?: string
   grew_up_in?: string
@@ -40,17 +46,33 @@ interface BiodataDetail {
   quran_recitation?: string
   clothing_style?: string
   beard_info?: string
+  beard_since?: string
+  pants_above_ankle?: boolean
   hijab_info?: string
+  niqab_since?: string
+  purdah_details?: string
+  prayer_start_age?: string
+  weekly_missed_prayers?: string
+  mahram_practice?: string
+  islamic_books_read?: string
+  deen_work_details?: string
+  social_media_usage?: string
   is_islamically_educated?: boolean
   wali_approval?: boolean
   sunni_scale?: number
   beliefs_on_mazar?: string
   favorite_scholars?: string
   education_method?: string
+  education_medium?: string
   highest_qualification?: string
   occupation?: string
   occupation_category?: string
   monthly_income?: number
+  income_type?: string
+  income_privacy?: string
+  workplace_type?: string
+  future_career_plan?: string
+  profession_halal_status?: string
   profession_details?: string
   father_name?: string
   father_alive?: boolean
@@ -58,27 +80,68 @@ interface BiodataDetail {
   mother_name?: string
   mother_alive?: boolean
   mother_profession?: string
+  uncle_profession?: string
   family_type?: string
   brothers?: number
   sisters?: number
   family_financial_status?: string
   family_religious_condition?: string
+  family_assets_details?: string
   family_details?: string
   health_status?: string
   diet?: string
   smoking?: string
   hobbies?: string
   watch_entertainment?: string
+  guardian_agree?: boolean
+  why_getting_married?: string
+  marriage_thoughts?: string
+  marriage_timeline?: string
+  residence_after_marriage?: string
+  post_marriage_plan?: string
+  wife_in_veil?: boolean
+  wife_study_allowed?: boolean
+  wife_job_allowed?: boolean
+  polygamy_open?: boolean
+  expect_gift_from_bride?: string
+  gift_expectation_details?: string
+  wants_to_work?: boolean
+  continue_study?: boolean
+  continue_job?: boolean
+  preferred_living?: string
+  has_children?: boolean
+  children_count?: number
+  children_live_with?: string
+  children_notes?: string
+  previous_marriage_date?: string
+  divorce_date?: string
+  divorce_reason?: string
+  spouse_death_date?: string
+  spouse_death_reason?: string
+  child_acceptance_expectation?: string
+  reason_for_second_marriage?: string
+  current_wife_count?: number
+  current_family_consent?: boolean
+  first_wife_knows?: boolean
+  second_marriage_living?: string
   partner_age_min?: number
   partner_age_max?: number
   partner_height_cm_min?: number
   partner_height_cm_max?: number
+  partner_income_min?: number
+  partner_income_max?: number
   partner_complexion?: string
   partner_marital_status?: string
   partner_education?: string
+  partner_economic_status?: string
+  partner_deen_practice?: string
+  partner_special_qualities?: string
+  partner_deal_breakers?: string
   partner_expectations?: string
   partner_division?: string
   partner_district?: string
+  partner_districts?: string[]
+  partner_family_type?: string
   completeness_score?: number
 }
 
@@ -110,6 +173,15 @@ interface Props {
   isAlreadyReported: boolean
   photoAccessStatus?: 'pending' | 'granted' | 'denied' | null
   profileTrust: ProfileTrust
+  customFields?: CustomFieldValue[]
+}
+
+// Admin-defined custom field value shown on a profile (Phase E3).
+interface CustomFieldValue {
+  key: string
+  label: string
+  value: unknown
+  input_type: string
 }
 
 // ── Desktop section card + row ────────────────────────────────────────────────
@@ -123,10 +195,19 @@ const SECTION = ({ title, children }: { title: string; children: React.ReactNode
 )
 
 const ROW = ({ label, value }: { label: string; value?: string | number | null }) =>
-  value != null ? (
+  value != null && value !== '' ? (
     <div className="flex items-baseline gap-3 py-2 border-b border-slate-50 last:border-0">
       <span className="text-[11px] text-slate-400 font-medium w-32 flex-shrink-0 uppercase tracking-wide">{label}</span>
       <span className="text-sm text-slate-800 font-medium flex-1">{value}</span>
+    </div>
+  ) : null
+
+// Long-text block (multi-line, preserves line breaks).
+const PARA = ({ label, value }: { label: string; value?: string | null }) =>
+  value ? (
+    <div className="py-2 border-b border-slate-50 last:border-0">
+      <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{value}</p>
     </div>
   ) : null
 
@@ -216,10 +297,18 @@ function MatchScoreCircle({ score }: { score: number }) {
 export default function ProfileShow({
   profile, biodata, photos,
   interestSent, interestReceived, isConnected, conversationId, isShortlisted, isOwnProfile,
-  isAlreadyReported, photoAccessStatus, profileTrust,
+  isAlreadyReported, photoAccessStatus, profileTrust, customFields = [],
 }: Props) {
   const { completion } = usePage<PageProps>().props
   const { t } = useTranslation()
+
+  // Format an admin-defined custom field value for display (Phase E3).
+  const fmtCustomValue = (cf: CustomFieldValue): string => {
+    const v = cf.value
+    if (Array.isArray(v)) return v.join(', ')
+    if (typeof v === 'boolean') return v ? t('common', 'yes') : t('common', 'no')
+    return v == null ? '' : String(v)
+  }
 
   const [shortlisted, setShortlisted]           = useState(isShortlisted)
   const [sent, setSent]                         = useState(interestSent)
@@ -569,6 +658,30 @@ export default function ProfileShow({
                   {biodata.sunni_scale != null && (
                     <MobileRow label={t('biodata', 'sunni_scale')} value={`${biodata.sunni_scale} / 10`} />
                   )}
+                  {profile.gender === 'male' ? (
+                    <>
+                      <MobileRow label={t('biodata', 'beard_info')} value={biodata.beard_info} />
+                      <MobileRow label={t('biodata', 'beard_since')} value={biodata.beard_since} />
+                      {biodata.pants_above_ankle && <MobileRow label={t('biodata', 'pants_above_ankle')} value={t('common', 'yes')} />}
+                    </>
+                  ) : (
+                    <>
+                      <MobileRow label={t('biodata', 'hijab_info')} value={biodata.hijab_info} />
+                      <MobileRow label={t('biodata', 'niqab_since')} value={biodata.niqab_since} />
+                    </>
+                  )}
+                  <MobileRow label={t('biodata', 'prayer_start_age')} value={biodata.prayer_start_age} />
+                  <MobileRow label={t('biodata', 'weekly_missed_prayers')} value={biodata.weekly_missed_prayers} />
+                  <MobileRow label={t('biodata', 'mahram_practice')} value={biodata.mahram_practice} />
+                  <MobileRow label={t('biodata', 'islamic_books_read')} value={biodata.islamic_books_read} />
+                  <MobileRow label={t('biodata', 'deen_work_details')} value={biodata.deen_work_details} />
+                  <MobileRow label={t('biodata', 'social_media_usage')} value={biodata.social_media_usage} />
+                  {biodata.purdah_details && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'purdah_details')}</p>
+                      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{biodata.purdah_details}</p>
+                    </div>
+                  )}
                   {biodata.beliefs_on_mazar && (
                     <div className="px-4 py-3 border-b border-slate-50">
                       <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'beliefs_on_mazar')}</p>
@@ -582,14 +695,23 @@ export default function ProfileShow({
               {activeMobileTab === 'contact' && (
                 <div className="space-y-0 bg-white rounded-2xl overflow-hidden shadow-sm">
                   <MobileRow label={t('biodata', 'education_method')} value={biodata.education_method} />
+                  <MobileRow label={t('biodata', 'education_medium')} value={biodata.education_medium ? t('biodata', `edu_medium_${biodata.education_medium === 'english_medium' ? 'english' : biodata.education_medium}`) : null} />
                   <MobileRow label={t('dashboard', 'profile_label_qual')} value={biodata.highest_qualification?.replace(/_/g, ' ')} />
                   <MobileRow label={t('dashboard', 'profile_label_occupation')} value={biodata.occupation} />
                   <MobileRow label={t('biodata', 'occupation_category')} value={biodata.occupation_category?.replace(/_/g, ' ')} />
-                  <MobileRow label={t('dashboard', 'profile_label_income')} value={biodata.monthly_income ? `৳${biodata.monthly_income.toLocaleString()}` : null} />
+                  <MobileRow label={t('biodata', 'workplace_type')} value={biodata.workplace_type} />
+                  <MobileRow label={t('dashboard', 'profile_label_income')} value={biodata.monthly_income != null ? `৳${biodata.monthly_income.toLocaleString()}` : null} />
+                  <MobileRow label={t('biodata', 'profession_halal_status')} value={biodata.profession_halal_status ? t('biodata', `halal_status_${biodata.profession_halal_status === 'halal_alternative' ? 'alternative' : biodata.profession_halal_status}`) : null} />
                   {biodata.profession_details && (
                     <div className="px-4 py-3 border-b border-slate-50">
                       <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'profession_details')}</p>
                       <p className="text-sm text-slate-800">{biodata.profession_details}</p>
+                    </div>
+                  )}
+                  {biodata.future_career_plan && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'future_career_plan')}</p>
+                      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{biodata.future_career_plan}</p>
                     </div>
                   )}
                   {/* Safety notice */}
@@ -613,19 +735,68 @@ export default function ProfileShow({
                   <MobileRow label={t('biodata', 'father_profession')} value={biodata.father_profession} />
                   <MobileRow label={t('biodata', 'mother_name')} value={biodata.mother_name} />
                   <MobileRow label={t('biodata', 'mother_profession')} value={biodata.mother_profession} />
+                  <MobileRow label={t('biodata', 'uncle_profession')} value={biodata.uncle_profession} />
                   <MobileRow label={t('dashboard', 'profile_label_family_type')} value={biodata.family_type} />
                   <MobileRow label={t('dashboard', 'profile_label_brothers')} value={biodata.brothers ?? null} />
                   <MobileRow label={t('dashboard', 'profile_label_sisters')} value={biodata.sisters ?? null} />
                   <MobileRow label={t('biodata', 'family_financial_status')} value={biodata.family_financial_status} />
                   <MobileRow label={t('biodata', 'family_religious_condition')} value={biodata.family_religious_condition} />
+                  {biodata.family_assets_details && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'family_assets_details')}</p>
+                      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{biodata.family_assets_details}</p>
+                    </div>
+                  )}
                   <MobileRow label={t('dashboard', 'profile_label_health')} value={biodata.health_status?.replace(/_/g, ' ')} />
                   <MobileRow label={t('biodata', 'diet')} value={biodata.diet?.replace(/_/g, ' ')} />
                   <MobileRow label={t('biodata', 'smoking')} value={biodata.smoking} />
                   {biodata.hobbies && (
-                    <div className="px-4 py-3">
+                    <div className="px-4 py-3 border-b border-slate-50">
                       <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'hobbies')}</p>
                       <p className="text-sm text-slate-800">{biodata.hobbies}</p>
                     </div>
+                  )}
+
+                  {/* Marriage info (no dedicated mobile tab — shown here) */}
+                  {(biodata.why_getting_married || biodata.residence_after_marriage || biodata.has_children
+                    || biodata.divorce_date || biodata.spouse_death_date || biodata.reason_for_second_marriage) && (
+                    <>
+                      <div className="px-4 pt-3 pb-1">
+                        <p className="text-[11px] font-semibold text-rose-500 uppercase tracking-wider">{t('biodata', 'step_labels.7')}</p>
+                      </div>
+                      <MobileRow label={t('biodata', 'guardian_agree')} value={biodata.guardian_agree ? t('common', 'yes') : null} />
+                      <MobileRow label={t('biodata', 'residence_after_marriage')} value={biodata.residence_after_marriage} />
+                      <MobileRow label={t('biodata', 'marriage_timeline')} value={biodata.marriage_timeline} />
+                      {profile.gender === 'male' && (
+                        <>
+                          <MobileRow label={t('biodata', 'wife_in_veil')} value={biodata.wife_in_veil ? t('common', 'yes') : null} />
+                          <MobileRow label={t('biodata', 'wife_job_allowed')} value={biodata.wife_job_allowed ? t('common', 'yes') : null} />
+                          <MobileRow label={t('biodata', 'polygamy_open')} value={biodata.polygamy_open ? t('common', 'yes') : null} />
+                        </>
+                      )}
+                      {profile.gender === 'female' && (
+                        <>
+                          <MobileRow label={t('biodata', 'wants_to_work')} value={biodata.wants_to_work ? t('common', 'yes') : null} />
+                          <MobileRow label={t('biodata', 'continue_job')} value={biodata.continue_job ? t('common', 'yes') : null} />
+                          <MobileRow label={t('biodata', 'preferred_living')} value={biodata.preferred_living} />
+                        </>
+                      )}
+                      {biodata.has_children && (
+                        <>
+                          <MobileRow label={t('biodata', 'children_count')} value={biodata.children_count ?? null} />
+                          <MobileRow label={t('biodata', 'children_live_with')} value={biodata.children_live_with} />
+                        </>
+                      )}
+                      {biodata.marital_status === 'divorced' && (
+                        <MobileRow label={t('biodata', 'divorce_date')} value={biodata.divorce_date?.slice(0, 10)} />
+                      )}
+                      {biodata.marital_status === 'widowed' && (
+                        <MobileRow label={t('biodata', 'spouse_death_date')} value={biodata.spouse_death_date?.slice(0, 10)} />
+                      )}
+                      {biodata.marital_status === 'married' && (
+                        <MobileRow label={t('biodata', 'current_wife_count')} value={biodata.current_wife_count ?? null} />
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -648,8 +819,26 @@ export default function ProfileShow({
                   <MobileRow label={t('biodata', 'partner_complexion')} value={biodata.partner_complexion} />
                   <MobileRow label={t('biodata', 'partner_marital_status')} value={biodata.partner_marital_status} />
                   <MobileRow label={t('biodata', 'partner_education')} value={biodata.partner_education} />
+                  <MobileRow label={t('biodata', 'partner_economic_status')} value={biodata.partner_economic_status} />
+                  <MobileRow label={t('biodata', 'partner_deen_practice')} value={biodata.partner_deen_practice} />
+                  <MobileRow label={t('biodata', 'partner_family_type')} value={biodata.partner_family_type} />
                   <MobileRow label={t('biodata', 'partner_division')} value={biodata.partner_division} />
                   <MobileRow label={t('biodata', 'partner_district')} value={biodata.partner_district} />
+                  {Array.isArray(biodata.partner_districts) && biodata.partner_districts.length > 0 && (
+                    <MobileRow label={t('biodata', 'partner_districts')} value={biodata.partner_districts.join(', ')} />
+                  )}
+                  {biodata.partner_special_qualities && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'partner_special_qualities')}</p>
+                      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{biodata.partner_special_qualities}</p>
+                    </div>
+                  )}
+                  {biodata.partner_deal_breakers && (
+                    <div className="px-4 py-3 border-b border-slate-50">
+                      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'partner_deal_breakers')}</p>
+                      <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{biodata.partner_deal_breakers}</p>
+                    </div>
+                  )}
                   {biodata.partner_expectations && (
                     <div className="px-4 py-3">
                       <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{t('biodata', 'partner_expectations')}</p>
@@ -662,6 +851,18 @@ export default function ProfileShow({
           ) : (
             <div className="rounded-2xl bg-white p-6 text-center">
               <p className="text-sm text-slate-400">{t('dashboard', 'no_biodata_yet')}</p>
+            </div>
+          )}
+
+          {/* Admin-defined custom fields (Phase E3) — shown across mobile tabs */}
+          {customFields.length > 0 && (
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-100">
+                <h3 className="text-sm font-semibold text-slate-800">{t('biodata', 'additional_info')}</h3>
+              </div>
+              {customFields.map(cf => (
+                <MobileRow key={cf.key} label={cf.label} value={fmtCustomValue(cf)} />
+              ))}
             </div>
           )}
 
@@ -929,6 +1130,13 @@ export default function ProfileShow({
                     <ROW label={t('biodata', 'nationality')} value={biodata.nationality} />
                     <ROW label={t('biodata', 'division')} value={biodata.division} />
                     <ROW label={t('biodata', 'district')} value={biodata.district} />
+                    <ROW label={t('biodata', 'permanent_area')} value={biodata.village_area} />
+                    {(biodata.current_district || biodata.current_area) && (
+                      <ROW
+                        label={t('biodata', 'current_address_section')}
+                        value={[biodata.current_area, biodata.current_district, biodata.current_division].filter(Boolean).join(', ') || null}
+                      />
+                    )}
                     <ROW label={t('biodata', 'residing_country')} value={biodata.residing_country} />
                     <ROW label={t('biodata', 'residing_city')} value={biodata.residing_city} />
                     <ROW label={t('biodata', 'grew_up_in')} value={biodata.grew_up_in} />
@@ -947,14 +1155,42 @@ export default function ProfileShow({
                   <ROW label={t('dashboard', 'profile_label_islam_edu')} value={biodata.is_islamically_educated ? t('common', 'yes') : null} />
                   <ROW label={t('dashboard', 'profile_label_wali')} value={biodata.wali_approval ? t('common', 'yes') : null} />
                   {biodata.sunni_scale != null && <ROW label={t('biodata', 'sunni_scale')} value={`${biodata.sunni_scale} / 10`} />}
+                  {profile.gender === 'male' ? (
+                    <>
+                      <ROW label={t('biodata', 'beard_info')} value={biodata.beard_info} />
+                      <ROW label={t('biodata', 'beard_since')} value={biodata.beard_since} />
+                      {biodata.pants_above_ankle && <ROW label={t('biodata', 'pants_above_ankle')} value={t('common', 'yes')} />}
+                    </>
+                  ) : (
+                    <>
+                      <ROW label={t('biodata', 'hijab_info')} value={biodata.hijab_info} />
+                      <ROW label={t('biodata', 'niqab_since')} value={biodata.niqab_since} />
+                    </>
+                  )}
+                  <ROW label={t('biodata', 'prayer_start_age')} value={biodata.prayer_start_age} />
+                  <ROW label={t('biodata', 'weekly_missed_prayers')} value={biodata.weekly_missed_prayers} />
+                  <ROW label={t('biodata', 'mahram_practice')} value={biodata.mahram_practice} />
+                  <ROW label={t('biodata', 'islamic_books_read')} value={biodata.islamic_books_read} />
+                  <ROW label={t('biodata', 'deen_work_details')} value={biodata.deen_work_details} />
+                  <ROW label={t('biodata', 'social_media_usage')} value={biodata.social_media_usage} />
+                  <PARA label={t('biodata', 'purdah_details')} value={biodata.purdah_details} />
                 </SECTION>
 
                 <SECTION title={t('dashboard', 'profile_section_education')}>
                   <ROW label={t('biodata', 'education_method')} value={biodata.education_method} />
+                  <ROW label={t('biodata', 'education_medium')} value={biodata.education_medium ? t('biodata', `edu_medium_${biodata.education_medium === 'english_medium' ? 'english' : biodata.education_medium}`) : null} />
                   <ROW label={t('dashboard', 'profile_label_qual')} value={biodata.highest_qualification?.replace(/_/g, ' ')} />
                   <ROW label={t('dashboard', 'profile_label_occupation')} value={biodata.occupation} />
                   <ROW label={t('biodata', 'occupation_category')} value={biodata.occupation_category?.replace(/_/g, ' ')} />
-                  <ROW label={t('dashboard', 'profile_label_income')} value={biodata.monthly_income ? `৳${biodata.monthly_income.toLocaleString()}` : null} />
+                  <ROW label={t('biodata', 'workplace_type')} value={biodata.workplace_type} />
+                  {biodata.monthly_income != null && (
+                    <ROW
+                      label={t('dashboard', 'profile_label_income')}
+                      value={`৳${biodata.monthly_income.toLocaleString()}${biodata.income_type && biodata.income_type !== 'private' ? ` / ${t('biodata', `income_type_${biodata.income_type}`)}` : ''}`}
+                    />
+                  )}
+                  <ROW label={t('biodata', 'profession_halal_status')} value={biodata.profession_halal_status ? t('biodata', `halal_status_${biodata.profession_halal_status === 'halal_alternative' ? 'alternative' : biodata.profession_halal_status}`) : null} />
+                  <PARA label={t('biodata', 'future_career_plan')} value={biodata.future_career_plan} />
                 </SECTION>
 
                 <SECTION title={t('dashboard', 'profile_section_family')}>
@@ -963,10 +1199,13 @@ export default function ProfileShow({
                   <ROW label={t('biodata', 'mother_name')} value={biodata.mother_name} />
                   <ROW label={t('biodata', 'mother_profession')} value={biodata.mother_profession} />
                   <ROW label={t('dashboard', 'profile_label_family_type')} value={biodata.family_type} />
+                  <ROW label={t('biodata', 'uncle_profession')} value={biodata.uncle_profession} />
                   <ROW label={t('dashboard', 'profile_label_brothers')} value={biodata.brothers ?? null} />
                   <ROW label={t('dashboard', 'profile_label_sisters')} value={biodata.sisters ?? null} />
                   <ROW label={t('biodata', 'family_financial_status')} value={biodata.family_financial_status} />
                   <ROW label={t('biodata', 'family_religious_condition')} value={biodata.family_religious_condition} />
+                  <PARA label={t('biodata', 'family_assets_details')} value={biodata.family_assets_details} />
+                  <PARA label={t('dashboard', 'profile_section_family')} value={biodata.family_details} />
                 </SECTION>
 
                 {(biodata.health_status || biodata.diet || biodata.smoking || biodata.hobbies) && (
@@ -978,19 +1217,110 @@ export default function ProfileShow({
                   </SECTION>
                 )}
 
-                {(biodata.partner_expectations || biodata.partner_age_min != null || biodata.partner_age_max != null) && (
+                {(biodata.why_getting_married || biodata.marriage_thoughts || biodata.residence_after_marriage
+                  || biodata.guardian_agree != null || biodata.has_children
+                  || biodata.divorce_date || biodata.spouse_death_date || biodata.reason_for_second_marriage) && (
+                  <SECTION title={t('biodata', 'step_labels.7')}>
+                    <PARA label={t('biodata', 'why_getting_married')} value={biodata.why_getting_married} />
+                    <PARA label={t('biodata', 'marriage_thoughts')} value={biodata.marriage_thoughts} />
+                    <ROW label={t('biodata', 'marriage_timeline')} value={biodata.marriage_timeline} />
+                    <ROW label={t('biodata', 'guardian_agree')} value={biodata.guardian_agree ? t('common', 'yes') : null} />
+                    <ROW label={t('biodata', 'residence_after_marriage')} value={biodata.residence_after_marriage} />
+                    <ROW label={t('biodata', 'post_marriage_plan')} value={biodata.post_marriage_plan} />
+
+                    {profile.gender === 'male' && (
+                      <>
+                        <ROW label={t('biodata', 'wife_in_veil')} value={biodata.wife_in_veil ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'wife_study_allowed')} value={biodata.wife_study_allowed ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'wife_job_allowed')} value={biodata.wife_job_allowed ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'polygamy_open')} value={biodata.polygamy_open ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'expect_gift_from_bride')} value={biodata.expect_gift_from_bride} />
+                        <PARA label={t('biodata', 'gift_expectation_details')} value={biodata.gift_expectation_details} />
+                      </>
+                    )}
+
+                    {profile.gender === 'female' && (
+                      <>
+                        <ROW label={t('biodata', 'wants_to_work')} value={biodata.wants_to_work ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'continue_study')} value={biodata.continue_study ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'continue_job')} value={biodata.continue_job ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'preferred_living')} value={biodata.preferred_living} />
+                      </>
+                    )}
+
+                    {biodata.has_children && (
+                      <>
+                        <ROW label={t('biodata', 'children_count')} value={biodata.children_count ?? null} />
+                        <ROW label={t('biodata', 'children_live_with')} value={biodata.children_live_with} />
+                        <PARA label="" value={biodata.children_notes} />
+                      </>
+                    )}
+
+                    {/* Marital-status conditionals */}
+                    {biodata.marital_status === 'divorced' && (
+                      <>
+                        <ROW label={t('biodata', 'previous_marriage_date')} value={biodata.previous_marriage_date?.slice(0, 10)} />
+                        <ROW label={t('biodata', 'divorce_date')} value={biodata.divorce_date?.slice(0, 10)} />
+                        <PARA label={t('biodata', 'divorce_reason')} value={biodata.divorce_reason} />
+                      </>
+                    )}
+                    {biodata.marital_status === 'widowed' && (
+                      <>
+                        <ROW label={t('biodata', 'spouse_death_date')} value={biodata.spouse_death_date?.slice(0, 10)} />
+                        <PARA label={t('biodata', 'spouse_death_reason')} value={biodata.spouse_death_reason} />
+                        <PARA label={t('biodata', 'child_acceptance_expectation')} value={biodata.child_acceptance_expectation} />
+                      </>
+                    )}
+                    {biodata.marital_status === 'married' && (
+                      <>
+                        <PARA label={t('biodata', 'reason_for_second_marriage')} value={biodata.reason_for_second_marriage} />
+                        <ROW label={t('biodata', 'current_wife_count')} value={biodata.current_wife_count ?? null} />
+                        <ROW label={t('biodata', 'second_marriage_living')} value={biodata.second_marriage_living} />
+                        <ROW label={t('biodata', 'current_family_consent')} value={biodata.current_family_consent ? t('common', 'yes') : null} />
+                        <ROW label={t('biodata', 'first_wife_knows')} value={biodata.first_wife_knows ? t('common', 'yes') : null} />
+                      </>
+                    )}
+                  </SECTION>
+                )}
+
+                {(biodata.partner_expectations || biodata.partner_age_min != null || biodata.partner_age_max != null
+                  || biodata.partner_special_qualities || biodata.partner_deal_breakers) && (
                   <SECTION title={t('dashboard', 'profile_section_partner')}>
                     {(biodata.partner_age_min != null || biodata.partner_age_max != null) && (
                       <ROW label={t('dashboard', 'profile_label_age_range')} value={`${biodata.partner_age_min ?? '?'}–${biodata.partner_age_max ?? '?'} yrs`} />
                     )}
+                    {(biodata.partner_height_cm_min != null || biodata.partner_height_cm_max != null) && (
+                      <ROW
+                        label={t('biodata', 'partner_height_range')}
+                        value={`${biodata.partner_height_cm_min ? cmToFeetInches(biodata.partner_height_cm_min) : '?'} – ${biodata.partner_height_cm_max ? cmToFeetInches(biodata.partner_height_cm_max) : '?'}`}
+                      />
+                    )}
                     <ROW label={t('biodata', 'partner_complexion')} value={biodata.partner_complexion} />
                     <ROW label={t('biodata', 'partner_marital_status')} value={biodata.partner_marital_status} />
                     <ROW label={t('biodata', 'partner_education')} value={biodata.partner_education} />
+                    <ROW label={t('biodata', 'partner_economic_status')} value={biodata.partner_economic_status} />
+                    <ROW label={t('biodata', 'partner_deen_practice')} value={biodata.partner_deen_practice} />
+                    <ROW label={t('biodata', 'partner_family_type')} value={biodata.partner_family_type} />
                     <ROW label={t('biodata', 'partner_division')} value={biodata.partner_division} />
                     <ROW label={t('biodata', 'partner_district')} value={biodata.partner_district} />
+                    {Array.isArray(biodata.partner_districts) && biodata.partner_districts.length > 0 && (
+                      <ROW label={t('biodata', 'partner_districts')} value={biodata.partner_districts.join(', ')} />
+                    )}
+                    <PARA label={t('biodata', 'partner_special_qualities')} value={biodata.partner_special_qualities} />
+                    <PARA label={t('biodata', 'partner_deal_breakers')} value={biodata.partner_deal_breakers} />
+                    <PARA label={t('biodata', 'partner_expectations')} value={biodata.partner_expectations} />
                   </SECTION>
                 )}
               </>
+            )}
+
+            {/* Admin-defined custom fields (Phase E3) */}
+            {customFields.length > 0 && (
+              <SECTION title={t('biodata', 'additional_info')}>
+                {customFields.map(cf => (
+                  <ROW key={cf.key} label={cf.label} value={fmtCustomValue(cf)} />
+                ))}
+              </SECTION>
             )}
           </div>
         </div>

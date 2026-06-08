@@ -45,6 +45,7 @@ interface SiblingDetail {
 
 interface BiodataData {
   marital_status?: string
+  marital_substatus?: string
   birth_date?: string
   height_cm?: number | ''
   weight_kg?: number | ''
@@ -56,6 +57,15 @@ interface BiodataData {
   division?: string
   district?: string
   upazila?: string
+  village_area?: string
+  permanent_address?: string
+  grew_up_in?: string
+  same_as_permanent?: boolean
+  current_division?: string
+  current_district?: string
+  current_upazila?: string
+  current_area?: string
+  present_address?: string
   residing_country?: string
   residing_city?: string
   is_nrb?: boolean
@@ -67,23 +77,40 @@ interface BiodataData {
   quran_recitation?: string
   clothing_style?: string
   beard_info?: string
+  beard_since?: string
+  pants_above_ankle?: boolean
   hijab_info?: string
+  niqab_since?: string
+  purdah_details?: string
+  prayer_start_age?: string
+  weekly_missed_prayers?: string
+  mahram_practice?: string
+  islamic_books_read?: string
+  deen_work_details?: string
+  social_media_usage?: string
   is_islamically_educated?: boolean
   wali_approval?: boolean
   sunni_scale?: number | ''
   education_method?: string
+  education_medium?: string
   highest_qualification?: string
   education_details?: EducationRecord[]
   occupation?: string
   occupation_category?: string
   profession_details?: string
   monthly_income?: number | ''
+  income_type?: string
+  income_privacy?: string
+  workplace_type?: string
+  future_career_plan?: string
+  profession_halal_status?: string
   father_name?: string
   father_alive?: boolean
   father_profession?: string
   mother_name?: string
   mother_alive?: boolean
   mother_profession?: string
+  uncle_profession?: string
   brothers?: number | ''
   sisters?: number | ''
   brothers_details?: SiblingDetail[]
@@ -91,27 +118,57 @@ interface BiodataData {
   family_type?: string
   family_financial_status?: string
   home_ownership?: string
+  family_assets_details?: string
   family_details?: string
   health_status?: string
   diet?: string
   smoking?: string
   hobbies?: string
   guardian_agree?: boolean
+  why_getting_married?: string
+  marriage_thoughts?: string
+  marriage_timeline?: string
   wife_in_veil?: boolean
   wife_study_allowed?: boolean
   wife_job_allowed?: boolean
+  expect_gift_from_bride?: string
+  gift_expectation_details?: string
   polygamy_open?: boolean
+  wants_to_work?: boolean
+  continue_study?: boolean
+  continue_job?: boolean
+  preferred_living?: string
   has_children?: boolean
   children_count?: number | ''
   children_live_with?: string
   children_notes?: string
+  previous_marriage_date?: string
+  divorce_date?: string
+  divorce_reason?: string
+  spouse_death_date?: string
+  spouse_death_reason?: string
+  child_acceptance_expectation?: string
+  reason_for_second_marriage?: string
+  current_wife_count?: number | ''
+  current_family_consent?: boolean
+  first_wife_knows?: boolean
+  second_marriage_living?: string
   residence_after_marriage?: string
   post_marriage_plan?: string
+  contact_person_name?: string
+  guardian_name?: string
   guardian_mobile?: string
   guardian_relationship?: string
   guardian_email?: string
+  guardian_whatsapp?: string
   whatsapp_number?: string
   contact_privacy?: string
+  biodata_visibility?: string
+  allow_shortlist?: boolean
+  allow_contact_request?: boolean
+  guardian_knows_biodata?: boolean
+  info_truthful_confirmed?: boolean
+  accept_liability_terms?: boolean
   confirm_correct?: boolean
   partner_age_min?: number | ''
   partner_age_max?: number | ''
@@ -124,8 +181,28 @@ interface BiodataData {
   partner_education?: string
   partner_division?: string
   partner_district?: string
+  partner_districts?: string[]
   partner_family_type?: string
+  partner_economic_status?: string
+  partner_deen_practice?: string
+  partner_special_qualities?: string
+  partner_deal_breakers?: string
   partner_expectations?: string
+  // Admin-defined custom fields (Phase E3) — stored as a JSON bag.
+  custom_fields?: Record<string, string | number | boolean | string[] | null>
+}
+
+// Admin-defined custom field definition (from BiodataFieldService).
+interface CustomFieldDef {
+  key: string
+  label: string
+  placeholder: string | null
+  helper: string | null
+  input_type: string
+  options: { value: string; label: string }[]
+  default: string | null
+  required: boolean
+  step: number
 }
 
 interface PhotoItem {
@@ -139,6 +216,7 @@ interface Props {
   steps: Record<number, string>
   biodata: BiodataData & { completeness_score?: number }
   user: { name: string; gender: string; mode: string }
+  customFields?: CustomFieldDef[]
   photos?: PhotoItem[]
   photoUrls?: string[]
   maxPhotos?: number
@@ -521,7 +599,7 @@ const STEP_ICONS: Record<number, any> = {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function BiodataWizard({ step, steps, biodata, user, photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
+export default function BiodataWizard({ step, steps, biodata, user, customFields = [], photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
   const totalSteps = Object.keys(steps).length
   const { t } = useTranslation()
   const completenessScore = biodata.completeness_score ?? 0
@@ -586,7 +664,15 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
     education_details: toEduList(biodata.education_details),
     brothers_details: toSiblingList(biodata.brothers_details),
     sisters_details: toSiblingList(biodata.sisters_details),
+    partner_districts: Array.isArray(biodata.partner_districts) ? biodata.partner_districts : [],
+    custom_fields: (biodata.custom_fields && typeof biodata.custom_fields === 'object' ? biodata.custom_fields : {}) as Record<string, string | number | boolean | string[] | null>,
     contact_privacy: biodata.contact_privacy ?? 'private',
+    allow_shortlist: biodata.allow_shortlist ?? true,
+    allow_contact_request: biodata.allow_contact_request ?? true,
+    // Declaration checkboxes always start unchecked — must be re-affirmed on submit.
+    guardian_knows_biodata: false,
+    info_truthful_confirmed: false,
+    accept_liability_terms: false,
     confirm_correct: false,
   })
 
@@ -612,6 +698,12 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
       { onFinish: () => setSavingDraft(false) },
     )
   }
+
+  // ── Custom field helpers (Phase E3) ──────────────────────────────────────────
+  const customFieldsForStep = customFields.filter(f => f.step === step)
+  const cfValue = (key: string): unknown => (data.custom_fields ?? {})[key]
+  const setCustomField = (key: string, value: unknown) =>
+    setData('custom_fields', { ...(data.custom_fields ?? {}), [key]: value } as never)
 
   // ── Education record helpers ─────────────────────────────────────────────────
   const eduRecords: EducationRecord[] = toEduList(data.education_details)
@@ -801,6 +893,67 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
   ]
   const ageOpts = Array.from({ length: 63 }, (_, i) => ({ value: String(i + 18), label: `${i + 18}` }))
 
+  // ── Phase C option builders ──────────────────────────────────────────────────
+  const eduMediumOpts = [
+    { value: 'general',        label: t('biodata', 'edu_medium_general') },
+    { value: 'qawmi',          label: t('biodata', 'edu_medium_qawmi') },
+    { value: 'alia',           label: t('biodata', 'edu_medium_alia') },
+    { value: 'english_medium', label: t('biodata', 'edu_medium_english') },
+    { value: 'vocational',     label: t('biodata', 'edu_medium_vocational') },
+    { value: 'other',          label: t('biodata', 'edu_medium_other') },
+  ]
+  const incomeTypeOpts = [
+    { value: 'monthly',  label: t('biodata', 'income_type_monthly') },
+    { value: 'yearly',   label: t('biodata', 'income_type_yearly') },
+    { value: 'variable', label: t('biodata', 'income_type_variable') },
+    { value: 'private',  label: t('biodata', 'income_type_private') },
+  ]
+  const incomePrivacyOpts = [
+    { value: 'public',       label: t('biodata', 'income_privacy_public') },
+    { value: 'members_only', label: t('biodata', 'income_privacy_members') },
+    { value: 'private',      label: t('biodata', 'income_privacy_private') },
+  ]
+  const halalStatusOpts = [
+    { value: 'halal',             label: t('biodata', 'halal_status_halal') },
+    { value: 'halal_alternative', label: t('biodata', 'halal_status_alternative') },
+    { value: 'not_sure',          label: t('biodata', 'halal_status_not_sure') },
+  ]
+  const biodataVisibilityOpts = [
+    { value: 'public',              label: t('biodata', 'visibility_public') },
+    { value: 'admin_approved_only', label: t('biodata', 'visibility_approved_only') },
+    { value: 'private',             label: t('biodata', 'visibility_private') },
+  ]
+  // marital_substatus options depend on the chosen 4-value enum + gender.
+  const maritalSubstatusOpts = (() => {
+    const m = data.marital_status
+    if (m === 'divorced') {
+      return [
+        { value: 'divorced',  label: t('biodata', 'sub_divorced') },
+        { value: 'separated', label: t('biodata', 'sub_separated') },
+      ]
+    }
+    if (m === 'widowed') {
+      return user.gender === 'female'
+        ? [{ value: 'widow', label: t('biodata', 'sub_widow') }]
+        : [{ value: 'widower', label: t('biodata', 'sub_widower') }]
+    }
+    if (m === 'married') {
+      return [{ value: 'second_marriage', label: t('biodata', 'sub_second_marriage') }]
+    }
+    return []
+  })()
+
+  // ── Partner districts (multi-select chips) ───────────────────────────────────
+  const partnerDistricts: string[] = Array.isArray(data.partner_districts) ? data.partner_districts : []
+  const addPartnerDistrict = (d: string) => {
+    const v = d.trim()
+    if (!v || partnerDistricts.includes(v)) return
+    setData('partner_districts', [...partnerDistricts, v] as never)
+  }
+  const removePartnerDistrict = (d: string) => {
+    setData('partner_districts', partnerDistricts.filter(x => x !== d) as never)
+  }
+
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -916,6 +1069,16 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   required
                 />
 
+                {maritalSubstatusOpts.length > 0 && (
+                  <SearchableSelect
+                    label={t('biodata', 'marital_substatus')}
+                    value={data.marital_substatus ?? ''}
+                    onChange={v => setData('marital_substatus', v as never)}
+                    options={maritalSubstatusOpts}
+                    error={errors.marital_substatus}
+                  />
+                )}
+
                 <DateOfBirthSelect
                   label={t('biodata', 'birth_date')}
                   value={(data.birth_date as string) ?? ''}
@@ -994,6 +1157,60 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   }}
                 />
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={`${t('biodata', 'permanent_area')} (${t('common', 'optional')})`}
+                    value={data.village_area ?? ''}
+                    onChange={e => setData('village_area', e.target.value as never)}
+                    error={errors.village_area}
+                    placeholder={t('biodata', 'permanent_area_ph')}
+                  />
+                  <Input
+                    label={`${t('biodata', 'grew_up_in')} (${t('common', 'optional')})`}
+                    value={data.grew_up_in ?? ''}
+                    onChange={e => setData('grew_up_in', e.target.value as never)}
+                    error={errors.grew_up_in}
+                    placeholder={t('biodata', 'grew_up_in_ph')}
+                  />
+                </div>
+
+                {/* Current / present address */}
+                <SectionLabel>{t('biodata', 'current_address_section')}</SectionLabel>
+                <WizardToggle
+                  value={!!data.same_as_permanent}
+                  label={t('biodata', 'same_as_permanent')}
+                  onChange={v => setData('same_as_permanent', v as never)}
+                />
+                {!data.same_as_permanent && (
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
+                    <BangladeshAddressPicker
+                      value={{
+                        division: (data.current_division as string) ?? undefined,
+                        district: (data.current_district as string) ?? undefined,
+                        upazila:  (data.current_upazila  as string) ?? undefined,
+                      }}
+                      onChange={val => setData({
+                        ...data,
+                        current_division: val.division ?? '',
+                        current_district: val.district ?? '',
+                        current_upazila:  val.upazila  ?? '',
+                      })}
+                      errors={{
+                        division: errors.current_division as string | undefined,
+                        district: errors.current_district as string | undefined,
+                        upazila:  errors.current_upazila  as string | undefined,
+                      }}
+                    />
+                    <Input
+                      label={`${t('biodata', 'current_area')} (${t('common', 'optional')})`}
+                      value={data.current_area ?? ''}
+                      onChange={e => setData('current_area', e.target.value as never)}
+                      error={errors.current_area}
+                      placeholder={t('biodata', 'current_area_ph')}
+                    />
+                  </div>
+                )}
+
                 <WizardToggle
                   value={!!data.is_nrb}
                   label={t('biodata', 'is_nrb')}
@@ -1068,33 +1285,120 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     <div className="space-y-4">
                       <SectionLabel>Appearance & Dress</SectionLabel>
                       {user.gender === 'female' ? (
-                        <SearchableSelect
-                          label={t('biodata', 'hijab_info')}
-                          value={data.hijab_info ?? ''}
-                          onChange={v => setData('hijab_info', v as never)}
-                          options={hijabOpts}
-                          error={errors.hijab_info}
-                        />
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <SearchableSelect
+                              label={t('biodata', 'hijab_info')}
+                              value={data.hijab_info ?? ''}
+                              onChange={v => setData('hijab_info', v as never)}
+                              options={hijabOpts}
+                              error={errors.hijab_info}
+                            />
+                            <Input
+                              label={`${t('biodata', 'niqab_since')} (${t('common', 'optional')})`}
+                              value={data.niqab_since ?? ''}
+                              onChange={e => setData('niqab_since', e.target.value as never)}
+                              error={errors.niqab_since}
+                              placeholder={t('biodata', 'since_ph')}
+                            />
+                          </div>
+                          <WizardTextarea
+                            label={`${t('biodata', 'purdah_details')} (${t('common', 'optional')})`}
+                            value={(data.purdah_details as string) ?? ''}
+                            onChange={v => setData('purdah_details', v as never)}
+                            error={errors.purdah_details}
+                            placeholder={t('biodata', 'purdah_details_ph')}
+                            rows={2}
+                            maxLength={500}
+                          />
+                        </>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <SearchableSelect
-                            label={t('biodata', 'beard_info')}
-                            value={data.beard_info ?? ''}
-                            onChange={v => setData('beard_info', v as never)}
-                            options={BEARD_OPTIONS}
-                            error={errors.beard_info}
-                            allowFreeText
-                          />
-                          <SearchableSelect
-                            label={t('biodata', 'clothing_style') || 'Clothing Style'}
-                            value={data.clothing_style ?? ''}
-                            onChange={v => setData('clothing_style', v as never)}
-                            options={CLOTHING_OPTIONS}
-                            error={errors.clothing_style}
-                            allowFreeText
-                          />
-                        </div>
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <SearchableSelect
+                              label={t('biodata', 'beard_info')}
+                              value={data.beard_info ?? ''}
+                              onChange={v => setData('beard_info', v as never)}
+                              options={BEARD_OPTIONS}
+                              error={errors.beard_info}
+                              allowFreeText
+                            />
+                            <SearchableSelect
+                              label={t('biodata', 'clothing_style') || 'Clothing Style'}
+                              value={data.clothing_style ?? ''}
+                              onChange={v => setData('clothing_style', v as never)}
+                              options={CLOTHING_OPTIONS}
+                              error={errors.clothing_style}
+                              allowFreeText
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                            <Input
+                              label={`${t('biodata', 'beard_since')} (${t('common', 'optional')})`}
+                              value={data.beard_since ?? ''}
+                              onChange={e => setData('beard_since', e.target.value as never)}
+                              error={errors.beard_since}
+                              placeholder={t('biodata', 'since_ph')}
+                            />
+                            <div className="pb-1">
+                              <WizardToggle
+                                value={!!data.pants_above_ankle}
+                                label={t('biodata', 'pants_above_ankle')}
+                                onChange={v => setData('pants_above_ankle', v as never)}
+                              />
+                            </div>
+                          </div>
+                        </>
                       )}
+                    </div>
+
+                    {/* Deeper deen practice detail (all optional) */}
+                    <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
+                      <SectionLabel>{t('biodata', 'deen_detail_section')}</SectionLabel>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input
+                          label={`${t('biodata', 'prayer_start_age')} (${t('common', 'optional')})`}
+                          value={data.prayer_start_age ?? ''}
+                          onChange={e => setData('prayer_start_age', e.target.value as never)}
+                          error={errors.prayer_start_age}
+                          placeholder={t('biodata', 'prayer_start_age_ph')}
+                        />
+                        <Input
+                          label={`${t('biodata', 'weekly_missed_prayers')} (${t('common', 'optional')})`}
+                          value={data.weekly_missed_prayers ?? ''}
+                          onChange={e => setData('weekly_missed_prayers', e.target.value as never)}
+                          error={errors.weekly_missed_prayers}
+                          placeholder={t('biodata', 'weekly_missed_prayers_ph')}
+                        />
+                      </div>
+                      <Input
+                        label={`${t('biodata', 'mahram_practice')} (${t('common', 'optional')})`}
+                        value={data.mahram_practice ?? ''}
+                        onChange={e => setData('mahram_practice', e.target.value as never)}
+                        error={errors.mahram_practice}
+                        placeholder={t('biodata', 'mahram_practice_ph')}
+                      />
+                      <Input
+                        label={`${t('biodata', 'islamic_books_read')} (${t('common', 'optional')})`}
+                        value={data.islamic_books_read ?? ''}
+                        onChange={e => setData('islamic_books_read', e.target.value as never)}
+                        error={errors.islamic_books_read}
+                        placeholder={t('biodata', 'islamic_books_read_ph')}
+                      />
+                      <Input
+                        label={`${t('biodata', 'deen_work_details')} (${t('common', 'optional')})`}
+                        value={data.deen_work_details ?? ''}
+                        onChange={e => setData('deen_work_details', e.target.value as never)}
+                        error={errors.deen_work_details}
+                        placeholder={t('biodata', 'deen_work_details_ph')}
+                      />
+                      <Input
+                        label={`${t('biodata', 'social_media_usage')} (${t('common', 'optional')})`}
+                        value={data.social_media_usage ?? ''}
+                        onChange={e => setData('social_media_usage', e.target.value as never)}
+                        error={errors.social_media_usage}
+                        placeholder={t('biodata', 'social_media_usage_ph')}
+                      />
                     </div>
 
                     <WizardToggle
@@ -1156,6 +1460,14 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   />
                 </div>
 
+                <SearchableSelect
+                  label={t('biodata', 'education_medium')}
+                  value={data.education_medium ?? ''}
+                  onChange={v => setData('education_medium', v as never)}
+                  options={eduMediumOpts}
+                  error={errors.education_medium}
+                />
+
                 {/* Multiple education records */}
                 <div className="space-y-3">
                   <SectionLabel>Education Records</SectionLabel>
@@ -1212,13 +1524,47 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   />
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={t('biodata', 'monthly_income')}
+                    type="number"
+                    value={data.monthly_income !== '' && data.monthly_income !== undefined ? String(data.monthly_income) : ''}
+                    onChange={e => setData('monthly_income', (e.target.value ? parseInt(e.target.value, 10) : '') as never)}
+                    error={errors.monthly_income}
+                    placeholder="Monthly income in BDT (e.g. 50000)"
+                  />
+                  <SearchableSelect
+                    label={t('biodata', 'income_type')}
+                    value={data.income_type ?? ''}
+                    onChange={v => setData('income_type', v as never)}
+                    options={incomeTypeOpts}
+                    error={errors.income_type}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SearchableSelect
+                    label={t('biodata', 'income_privacy')}
+                    value={data.income_privacy ?? ''}
+                    onChange={v => setData('income_privacy', v as never)}
+                    options={incomePrivacyOpts}
+                    error={errors.income_privacy}
+                  />
+                  <SearchableSelect
+                    label={t('biodata', 'profession_halal_status')}
+                    value={data.profession_halal_status ?? ''}
+                    onChange={v => setData('profession_halal_status', v as never)}
+                    options={halalStatusOpts}
+                    error={errors.profession_halal_status}
+                  />
+                </div>
+
                 <Input
-                  label={t('biodata', 'monthly_income')}
-                  type="number"
-                  value={data.monthly_income !== '' && data.monthly_income !== undefined ? String(data.monthly_income) : ''}
-                  onChange={e => setData('monthly_income', (e.target.value ? parseInt(e.target.value, 10) : '') as never)}
-                  error={errors.monthly_income}
-                  placeholder="Monthly income in BDT (e.g. 50000)"
+                  label={`${t('biodata', 'workplace_type')} (${t('common', 'optional')})`}
+                  value={data.workplace_type ?? ''}
+                  onChange={e => setData('workplace_type', e.target.value as never)}
+                  error={errors.workplace_type}
+                  placeholder={t('biodata', 'workplace_type_ph')}
                 />
 
                 <WizardTextarea
@@ -1228,6 +1574,16 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   error={errors.profession_details}
                   placeholder="Brief description of your work, company, or studies..."
                   rows={3}
+                />
+
+                <WizardTextarea
+                  label={`${t('biodata', 'future_career_plan')} (${t('common', 'optional')})`}
+                  value={(data.future_career_plan as string) ?? ''}
+                  onChange={v => setData('future_career_plan', v as never)}
+                  error={errors.future_career_plan}
+                  placeholder={t('biodata', 'future_career_plan_ph')}
+                  rows={2}
+                  maxLength={500}
                 />
               </>
             )}
@@ -1380,6 +1736,14 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   />
                 </div>
 
+                <Input
+                  label={`${t('biodata', 'uncle_profession')} (${t('common', 'optional')})`}
+                  value={data.uncle_profession ?? ''}
+                  onChange={e => setData('uncle_profession', e.target.value as never)}
+                  error={errors.uncle_profession}
+                  placeholder={t('biodata', 'uncle_profession_ph')}
+                />
+
                 <WizardTextarea
                   label={t('biodata', 'family_details')}
                   value={(data.family_details as string) ?? ''}
@@ -1387,6 +1751,16 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   error={errors.family_details}
                   placeholder="Brief description of your family background..."
                   rows={3}
+                />
+
+                <WizardTextarea
+                  label={`${t('biodata', 'family_assets_details')} (${t('common', 'optional')})`}
+                  value={(data.family_assets_details as string) ?? ''}
+                  onChange={v => setData('family_assets_details', v as never)}
+                  error={errors.family_assets_details}
+                  placeholder={t('biodata', 'family_assets_details_ph')}
+                  rows={2}
+                  maxLength={1000}
                 />
               </>
             )}
@@ -1467,6 +1841,33 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
             {/* ── Step 7: Marriage & Guardian ── */}
             {step === 7 && (
               <>
+                <SectionLabel>{t('biodata', 'marriage_thoughts_section')}</SectionLabel>
+                <WizardTextarea
+                  label={`${t('biodata', 'why_getting_married')} (${t('common', 'optional')})`}
+                  value={(data.why_getting_married as string) ?? ''}
+                  onChange={v => setData('why_getting_married', v as never)}
+                  error={errors.why_getting_married}
+                  placeholder={t('biodata', 'why_getting_married_ph')}
+                  rows={3}
+                  maxLength={1000}
+                />
+                <WizardTextarea
+                  label={`${t('biodata', 'marriage_thoughts')} (${t('common', 'optional')})`}
+                  value={(data.marriage_thoughts as string) ?? ''}
+                  onChange={v => setData('marriage_thoughts', v as never)}
+                  error={errors.marriage_thoughts}
+                  placeholder={t('biodata', 'marriage_thoughts_ph')}
+                  rows={3}
+                  maxLength={1000}
+                />
+                <Input
+                  label={`${t('biodata', 'marriage_timeline')} (${t('common', 'optional')})`}
+                  value={data.marriage_timeline ?? ''}
+                  onChange={e => setData('marriage_timeline', e.target.value as never)}
+                  error={errors.marriage_timeline}
+                  placeholder={t('biodata', 'marriage_timeline_ph')}
+                />
+
                 {user.gender === 'male' && (
                   <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
                     <SectionLabel>{t('biodata', 'after_marriage_section')}</SectionLabel>
@@ -1478,6 +1879,41 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                       onChange={v => setData('wife_job_allowed', v as never)} />
                     <WizardToggle value={!!data.polygamy_open} label={t('biodata', 'polygamy_open')}
                       onChange={v => setData('polygamy_open', v as never)} />
+                    <Input
+                      label={`${t('biodata', 'expect_gift_from_bride')} (${t('common', 'optional')})`}
+                      value={data.expect_gift_from_bride ?? ''}
+                      onChange={e => setData('expect_gift_from_bride', e.target.value as never)}
+                      error={errors.expect_gift_from_bride}
+                      placeholder={t('biodata', 'expect_gift_ph')}
+                    />
+                    {!!data.expect_gift_from_bride && (
+                      <Input
+                        label={t('biodata', 'gift_expectation_details')}
+                        value={data.gift_expectation_details ?? ''}
+                        onChange={e => setData('gift_expectation_details', e.target.value as never)}
+                        error={errors.gift_expectation_details}
+                        placeholder={t('biodata', 'gift_expectation_details_ph')}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {user.gender === 'female' && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-100 p-4 space-y-3">
+                    <SectionLabel>{t('biodata', 'female_intentions_section')}</SectionLabel>
+                    <WizardToggle value={!!data.wants_to_work} label={t('biodata', 'wants_to_work')}
+                      onChange={v => setData('wants_to_work', v as never)} />
+                    <WizardToggle value={!!data.continue_study} label={t('biodata', 'continue_study')}
+                      onChange={v => setData('continue_study', v as never)} />
+                    <WizardToggle value={!!data.continue_job} label={t('biodata', 'continue_job')}
+                      onChange={v => setData('continue_job', v as never)} />
+                    <Input
+                      label={`${t('biodata', 'preferred_living')} (${t('common', 'optional')})`}
+                      value={data.preferred_living ?? ''}
+                      onChange={e => setData('preferred_living', e.target.value as never)}
+                      error={errors.preferred_living}
+                      placeholder={t('biodata', 'preferred_living_ph')}
+                    />
                   </div>
                 )}
 
@@ -1547,6 +1983,110 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   </div>
                 )}
 
+                {/* Divorced-specific */}
+                {data.marital_status === 'divorced' && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+                    <SectionLabel>{t('biodata', 'divorce_section')}</SectionLabel>
+                    <p className="text-xs text-amber-700">{t('biodata', 'sensitive_note')}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label={`${t('biodata', 'previous_marriage_date')} (${t('common', 'optional')})`}
+                        type="date"
+                        value={data.previous_marriage_date ?? ''}
+                        onChange={e => setData('previous_marriage_date', e.target.value as never)}
+                        error={errors.previous_marriage_date}
+                      />
+                      <Input
+                        label={`${t('biodata', 'divorce_date')} (${t('common', 'optional')})`}
+                        type="date"
+                        value={data.divorce_date ?? ''}
+                        onChange={e => setData('divorce_date', e.target.value as never)}
+                        error={errors.divorce_date}
+                      />
+                    </div>
+                    <WizardTextarea
+                      label={`${t('biodata', 'divorce_reason')} (${t('common', 'optional')})`}
+                      value={(data.divorce_reason as string) ?? ''}
+                      onChange={v => setData('divorce_reason', v as never)}
+                      error={errors.divorce_reason}
+                      placeholder={t('biodata', 'divorce_reason_ph')}
+                      rows={2}
+                      maxLength={1000}
+                    />
+                  </div>
+                )}
+
+                {/* Widowed-specific */}
+                {data.marital_status === 'widowed' && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                    <SectionLabel>{t('biodata', 'widowed_section')}</SectionLabel>
+                    <p className="text-xs text-slate-500">{t('biodata', 'sensitive_note')}</p>
+                    <Input
+                      label={`${t('biodata', 'spouse_death_date')} (${t('common', 'optional')})`}
+                      type="date"
+                      value={data.spouse_death_date ?? ''}
+                      onChange={e => setData('spouse_death_date', e.target.value as never)}
+                      error={errors.spouse_death_date}
+                    />
+                    <WizardTextarea
+                      label={`${t('biodata', 'spouse_death_reason')} (${t('common', 'optional')})`}
+                      value={(data.spouse_death_reason as string) ?? ''}
+                      onChange={v => setData('spouse_death_reason', v as never)}
+                      error={errors.spouse_death_reason}
+                      placeholder={t('biodata', 'spouse_death_reason_ph')}
+                      rows={2}
+                      maxLength={1000}
+                    />
+                    <WizardTextarea
+                      label={`${t('biodata', 'child_acceptance_expectation')} (${t('common', 'optional')})`}
+                      value={(data.child_acceptance_expectation as string) ?? ''}
+                      onChange={v => setData('child_acceptance_expectation', v as never)}
+                      error={errors.child_acceptance_expectation}
+                      placeholder={t('biodata', 'child_acceptance_expectation_ph')}
+                      rows={2}
+                      maxLength={1000}
+                    />
+                  </div>
+                )}
+
+                {/* Married / second-marriage-specific */}
+                {data.marital_status === 'married' && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                    <SectionLabel>{t('biodata', 'second_marriage_section')}</SectionLabel>
+                    <p className="text-xs text-slate-500">{t('biodata', 'sensitive_note')}</p>
+                    <WizardTextarea
+                      label={`${t('biodata', 'reason_for_second_marriage')} (${t('common', 'optional')})`}
+                      value={(data.reason_for_second_marriage as string) ?? ''}
+                      onChange={v => setData('reason_for_second_marriage', v as never)}
+                      error={errors.reason_for_second_marriage}
+                      placeholder={t('biodata', 'reason_for_second_marriage_ph')}
+                      rows={2}
+                      maxLength={1000}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label={`${t('biodata', 'current_wife_count')} (${t('common', 'optional')})`}
+                        type="number"
+                        value={data.current_wife_count !== '' && data.current_wife_count !== undefined ? String(data.current_wife_count) : ''}
+                        onChange={e => setData('current_wife_count', (e.target.value ? parseInt(e.target.value, 10) : '') as never)}
+                        error={errors.current_wife_count}
+                        placeholder="e.g. 1"
+                      />
+                      <Input
+                        label={`${t('biodata', 'second_marriage_living')} (${t('common', 'optional')})`}
+                        value={data.second_marriage_living ?? ''}
+                        onChange={e => setData('second_marriage_living', e.target.value as never)}
+                        error={errors.second_marriage_living}
+                        placeholder={t('biodata', 'second_marriage_living_ph')}
+                      />
+                    </div>
+                    <WizardToggle value={!!data.current_family_consent} label={t('biodata', 'current_family_consent')}
+                      onChange={v => setData('current_family_consent', v as never)} />
+                    <WizardToggle value={!!data.first_wife_knows} label={t('biodata', 'first_wife_knows')}
+                      onChange={v => setData('first_wife_knows', v as never)} />
+                  </div>
+                )}
+
               </>
             )}
 
@@ -1558,6 +2098,22 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                 </div>
 
                 <SectionLabel>{t('biodata', 'guardian_contact_section')}</SectionLabel>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={`${t('biodata', 'contact_person_name')} (${t('common', 'optional')})`}
+                    value={data.contact_person_name ?? ''}
+                    onChange={e => setData('contact_person_name', e.target.value as never)}
+                    error={errors.contact_person_name}
+                    placeholder={t('biodata', 'contact_person_name_ph')}
+                  />
+                  <Input
+                    label={`${t('biodata', 'guardian_name')} (${t('common', 'optional')})`}
+                    value={data.guardian_name ?? ''}
+                    onChange={e => setData('guardian_name', e.target.value as never)}
+                    error={errors.guardian_name}
+                    placeholder={t('biodata', 'guardian_name_ph')}
+                  />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label={`${t('biodata', 'guardian_mobile')} (${t('common', 'optional')})`}
@@ -1576,14 +2132,23 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     placeholder="Father / Brother / Uncle"
                   />
                 </div>
-                <Input
-                  label={`${t('biodata', 'guardian_email')} (${t('common', 'optional')})`}
-                  type="email"
-                  value={data.guardian_email ?? ''}
-                  onChange={e => setData('guardian_email', e.target.value as never)}
-                  error={errors.guardian_email}
-                  placeholder="guardian@example.com"
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={`${t('biodata', 'guardian_email')} (${t('common', 'optional')})`}
+                    type="email"
+                    value={data.guardian_email ?? ''}
+                    onChange={e => setData('guardian_email', e.target.value as never)}
+                    error={errors.guardian_email}
+                    placeholder="guardian@example.com"
+                  />
+                  <Input
+                    label={`${t('biodata', 'guardian_whatsapp')} (${t('common', 'optional')})`}
+                    value={data.guardian_whatsapp ?? ''}
+                    onChange={e => setData('guardian_whatsapp', e.target.value as never)}
+                    error={errors.guardian_whatsapp}
+                    placeholder="01XXXXXXXXX"
+                  />
+                </div>
 
                 <Input
                   label={`${t('biodata', 'whatsapp_number')} (${t('common', 'optional')})`}
@@ -1595,15 +2160,37 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                 />
 
                 <SectionLabel>{t('biodata', 'contact_privacy_section')}</SectionLabel>
-                <SearchableSelect
-                  label={t('biodata', 'contact_privacy')}
-                  value={data.contact_privacy ?? 'private'}
-                  onChange={v => setData('contact_privacy', v as never)}
-                  options={contactPrivacyOpts}
-                  error={errors.contact_privacy}
-                  required
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SearchableSelect
+                    label={t('biodata', 'contact_privacy')}
+                    value={data.contact_privacy ?? 'private'}
+                    onChange={v => setData('contact_privacy', v as never)}
+                    options={contactPrivacyOpts}
+                    error={errors.contact_privacy}
+                    required
+                  />
+                  <SearchableSelect
+                    label={t('biodata', 'biodata_visibility')}
+                    value={data.biodata_visibility ?? ''}
+                    onChange={v => setData('biodata_visibility', v as never)}
+                    options={biodataVisibilityOpts}
+                    error={errors.biodata_visibility}
+                  />
+                </div>
                 <p className="text-xs text-slate-400 leading-relaxed">{t('biodata', 'contact_privacy_note')}</p>
+
+                <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
+                  <WizardToggle
+                    value={data.allow_shortlist !== false}
+                    label={t('biodata', 'allow_shortlist')}
+                    onChange={v => setData('allow_shortlist', v as never)}
+                  />
+                  <WizardToggle
+                    value={data.allow_contact_request !== false}
+                    label={t('biodata', 'allow_contact_request')}
+                    onChange={v => setData('allow_contact_request', v as never)}
+                  />
+                </div>
               </>
             )}
 
@@ -1703,6 +2290,22 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     error={errors.partner_family_type}
                   />
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SearchableSelect
+                    label={t('biodata', 'partner_economic_status')}
+                    value={data.partner_economic_status ?? ''}
+                    onChange={v => setData('partner_economic_status', v as never)}
+                    options={financeOpts}
+                    error={errors.partner_economic_status}
+                  />
+                  <Input
+                    label={`${t('biodata', 'partner_deen_practice')} (${t('common', 'optional')})`}
+                    value={data.partner_deen_practice ?? ''}
+                    onChange={e => setData('partner_deen_practice', e.target.value as never)}
+                    error={errors.partner_deen_practice}
+                    placeholder={t('biodata', 'partner_deen_practice_ph')}
+                  />
+                </div>
 
                 <SectionLabel>{t('biodata', 'partner_location_required')}</SectionLabel>
                 <BangladeshAddressPicker
@@ -1720,6 +2323,54 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                     district: errors.partner_district as string | undefined,
                   }}
                   showUpazila={false}
+                />
+
+                {/* Additional preferred districts (multi-select chips) */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    {t('biodata', 'partner_districts')} <span className="text-slate-400 font-normal">({t('common', 'optional')})</span>
+                  </label>
+                  <SearchableSelect
+                    label=""
+                    value=""
+                    onChange={v => { if (v) addPartnerDistrict(v) }}
+                    options={BD_CITY_OPTIONS}
+                    allowFreeText
+                    placeholder={t('biodata', 'partner_districts_ph')}
+                  />
+                  {partnerDistricts.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {partnerDistricts.map(d => (
+                        <span key={d} className="inline-flex items-center gap-1 rounded-full bg-primary-50 border border-primary-200 px-3 py-1 text-xs font-medium text-primary-700">
+                          {d}
+                          <button type="button" onClick={() => removePartnerDistrict(d)}
+                            className="text-primary-400 hover:text-red-600 transition-colors">
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <WizardTextarea
+                  label={`${t('biodata', 'partner_special_qualities')} (${t('common', 'optional')})`}
+                  value={(data.partner_special_qualities as string) ?? ''}
+                  onChange={v => setData('partner_special_qualities', v as never)}
+                  error={errors.partner_special_qualities}
+                  placeholder={t('biodata', 'partner_special_qualities_ph')}
+                  rows={3}
+                  maxLength={1000}
+                />
+
+                <WizardTextarea
+                  label={`${t('biodata', 'partner_deal_breakers')} (${t('common', 'optional')})`}
+                  value={(data.partner_deal_breakers as string) ?? ''}
+                  onChange={v => setData('partner_deal_breakers', v as never)}
+                  error={errors.partner_deal_breakers}
+                  placeholder={t('biodata', 'partner_deal_breakers_ph')}
+                  rows={2}
+                  maxLength={1000}
                 />
 
                 <WizardTextarea
@@ -1843,21 +2494,73 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
                   {t('biodata', 'step9_note')}
                 </p>
 
-                {/* Final confirmation */}
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <label className="flex items-start gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={!!data.confirm_correct}
-                      onChange={e => setData('confirm_correct', e.target.checked as never)}
-                      className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-slate-700">{t('biodata', 'confirm_correct')}</span>
-                  </label>
-                  {errors.confirm_correct && (
-                    <p className="mt-1.5 text-xs text-red-600">{errors.confirm_correct}</p>
-                  )}
+                {/* Declaration / commitment — all three required to submit */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    {t('biodata', 'declaration_section')}
+                  </p>
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={!!data.guardian_knows_biodata}
+                        onChange={e => setData('guardian_knows_biodata', e.target.checked as never)}
+                        className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-slate-700">{t('biodata', 'declare_guardian_knows')}</span>
+                    </label>
+                    {errors.guardian_knows_biodata && (
+                      <p className="mt-1 text-xs text-red-600">{errors.guardian_knows_biodata}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={!!data.info_truthful_confirmed}
+                        onChange={e => setData('info_truthful_confirmed', e.target.checked as never)}
+                        className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-slate-700">{t('biodata', 'declare_info_truthful')}</span>
+                    </label>
+                    {errors.info_truthful_confirmed && (
+                      <p className="mt-1 text-xs text-red-600">{errors.info_truthful_confirmed}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={!!data.accept_liability_terms}
+                        onChange={e => setData('accept_liability_terms', e.target.checked as never)}
+                        className="mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-slate-700">{t('biodata', 'declare_accept_terms')}</span>
+                    </label>
+                    {errors.accept_liability_terms && (
+                      <p className="mt-1 text-xs text-red-600">{errors.accept_liability_terms}</p>
+                    )}
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* ── Admin-defined custom fields for this step (Phase E3) ── */}
+            {customFieldsForStep.length > 0 && (
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-slate-100" />
+                  <span className="text-xs font-medium text-slate-400">{t('biodata', 'custom_fields_heading')}</span>
+                  <div className="h-px flex-1 bg-slate-100" />
+                </div>
+                {customFieldsForStep.map(def => (
+                  <CustomFieldInput
+                    key={def.key}
+                    def={def}
+                    value={cfValue(def.key)}
+                    onChange={v => setCustomField(def.key, v)}
+                  />
+                ))}
               </div>
             )}
 
@@ -1889,4 +2592,96 @@ export default function BiodataWizard({ step, steps, biodata, user, photos = [],
       </div>
     </AppLayout>
   )
+}
+
+/* ── Admin-defined custom field renderer (Phase E3) ───────────────────────── */
+
+function CustomFieldInput({ def, value, onChange }: {
+  def: CustomFieldDef
+  value: unknown
+  onChange: (v: unknown) => void
+}) {
+  const { t } = useTranslation()
+  const base = 'block w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+  const val = value ?? ''
+
+  const wrap = (input: React.ReactNode) => (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-medium text-slate-700">
+        {def.label}{def.required && <span className="ml-0.5 text-red-500">*</span>}
+      </label>
+      {input}
+      {def.helper && <p className="text-xs text-slate-500">{def.helper}</p>}
+    </div>
+  )
+
+  switch (def.input_type) {
+    case 'textarea':
+      return wrap(<textarea className={base} rows={3} placeholder={def.placeholder ?? ''}
+        value={String(val)} onChange={e => onChange(e.target.value)} />)
+
+    case 'select':
+    case 'radio':
+      return wrap(
+        <select className={base} value={String(val)} onChange={e => onChange(e.target.value)}>
+          <option value="">{def.placeholder ?? '—'}</option>
+          {def.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>,
+      )
+
+    case 'multi_select': {
+      const arr = Array.isArray(value) ? (value as string[]) : []
+      const toggle = (v: string) => onChange(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v])
+      return wrap(
+        <div className="flex flex-wrap gap-2">
+          {def.options.map(o => (
+            <button type="button" key={o.value} onClick={() => toggle(o.value)}
+              className={cn('rounded-full border px-3 py-1.5 text-sm transition-colors',
+                arr.includes(o.value) ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50')}>
+              {o.label}
+            </button>
+          ))}
+        </div>,
+      )
+    }
+
+    case 'yes_no':
+      return wrap(
+        <select className={base}
+          value={value === true ? '1' : value === false ? '0' : ''}
+          onChange={e => onChange(e.target.value === '' ? null : e.target.value === '1')}>
+          <option value="">—</option>
+          <option value="1">{t('common', 'yes')}</option>
+          <option value="0">{t('common', 'no')}</option>
+        </select>,
+      )
+
+    case 'checkbox':
+      return (
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 text-primary-600" />
+          {def.label}{def.required && <span className="text-red-500">*</span>}
+        </label>
+      )
+
+    case 'date':
+      return wrap(<input type="date" className={base} value={String(val)} onChange={e => onChange(e.target.value)} />)
+
+    case 'number':
+      return wrap(<input type="number" className={base} placeholder={def.placeholder ?? ''}
+        value={String(val)} onChange={e => onChange(e.target.value === '' ? '' : Number(e.target.value))} />)
+
+    case 'email':
+      return wrap(<input type="email" className={base} placeholder={def.placeholder ?? ''}
+        value={String(val)} onChange={e => onChange(e.target.value)} />)
+
+    case 'phone':
+      return wrap(<input type="tel" className={base} placeholder={def.placeholder ?? ''}
+        value={String(val)} onChange={e => onChange(e.target.value)} />)
+
+    default:
+      return wrap(<input type="text" className={base} placeholder={def.placeholder ?? ''}
+        value={String(val)} onChange={e => onChange(e.target.value)} />)
+  }
 }

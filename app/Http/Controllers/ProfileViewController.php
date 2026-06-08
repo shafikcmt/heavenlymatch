@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\PhotoAccessRequest;
 use App\Models\ProfileView;
 use App\Models\Registration;
+use App\Services\BiodataFieldService;
 use App\Services\PhotoPrivacyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,10 @@ use Inertia\Response;
 
 class ProfileViewController extends Controller
 {
-    public function __construct(private PhotoPrivacyService $photoPrivacy) {}
+    public function __construct(
+        private PhotoPrivacyService $photoPrivacy,
+        private BiodataFieldService $fields,
+    ) {}
 
     public function show(string $registrationId): Response
     {
@@ -92,8 +96,18 @@ class ProfileViewController extends Controller
                     $biodataData['guardian_mobile'],
                     $biodataData['guardian_email'],
                     $biodataData['guardian_relationship'],
+                    $biodataData['guardian_name'],
+                    $biodataData['guardian_whatsapp'],
+                    $biodataData['contact_person_name'],
+                    $biodataData['whatsapp_number'],
                     $biodataData['permanent_address'],
+                    $biodataData['present_address'],
                 );
+
+                // Honour the user's income-privacy choice for non-connected viewers.
+                if (($biodataData['income_privacy'] ?? null) === 'private') {
+                    unset($biodataData['monthly_income']);
+                }
             }
         }
 
@@ -126,6 +140,11 @@ class ProfileViewController extends Controller
                 'platform_mode'   => $profile->platform_mode,
             ],
             'biodata'            => $biodataData,
+            // Admin-defined custom fields (Phase E3), respecting privacy/visibility.
+            'customFields'       => $this->fields->customProfileFields(
+                $biodata,
+                viewerIsOwnerOrAdmin: ($viewerId === $registrationId) || $isConnected,
+            ),
             'photos'             => $photos,
             'interestSent'       => $interestSent,
             'interestReceived'   => $interestReceived,
