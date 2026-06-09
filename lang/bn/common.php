@@ -29,6 +29,16 @@ return [
     'my_profile'    => 'আমার প্রোফাইল',
     'edit_biodata'  => 'বায়োডাটা সম্পাদনা',
     'account_menu'  => 'অ্যাকাউন্ট',
+
+    // ── Account / profile menu ────────────────────────────────────────────────
+    'menu_preferences'   => 'পছন্দসমূহ',
+    'menu_plan_free'     => 'ফ্রি প্ল্যান',
+    'menu_plan_premium'  => 'প্রিমিয়াম সদস্য',
+    'menu_plan_expired'  => 'সদস্যপদ মেয়াদোত্তীর্ণ',
+    'menu_renews'        => 'এখনই নবায়ন করুন',
+    'menu_upgrade'       => 'প্রিমিয়ামে আপগ্রেড করুন',
+    'menu_upgrade_desc'  => 'সীমাহীন ম্যাচ ও চ্যাট আনলক করুন',
+    'menu_expires_on'    => 'নবায়ন :date',
     'pricing'       => 'মূল্য তালিকা',
     'blog'          => 'ব্লগ',
     'about'         => 'আমাদের সম্পর্কে',
@@ -104,6 +114,7 @@ return [
     'created_at'    => 'যোগদান করেছেন',
 
     // ── Platform mode ─────────────────────────────────────────────────────────
+    'mode'             => 'মোড',
     'mode_general'     => 'সাধারণ মোড',
     'mode_islamic'     => 'ইসলামিক / হালাল মোড',
     'mode_general_desc'=> 'সাধারণ বিবাহ অভিজ্ঞতা',

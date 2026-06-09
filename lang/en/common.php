@@ -33,6 +33,16 @@ return [
     'my_profile'    => 'My Profile',
     'edit_biodata'  => 'Edit Biodata',
     'account_menu'  => 'Account',
+
+    // ── Account / profile menu ────────────────────────────────────────────────
+    'menu_preferences'   => 'Preferences',
+    'menu_plan_free'     => 'Free plan',
+    'menu_plan_premium'  => 'Premium member',
+    'menu_plan_expired'  => 'Membership expired',
+    'menu_renews'        => 'Renew now',
+    'menu_upgrade'       => 'Upgrade to Premium',
+    'menu_upgrade_desc'  => 'Unlock unlimited matches & chat',
+    'menu_expires_on'    => 'Renews :date',
     'pricing'       => 'Pricing',
     'blog'          => 'Blog',
     'about'         => 'About',
@@ -108,6 +118,7 @@ return [
     'created_at'    => 'Joined',
 
     // ── Platform mode ─────────────────────────────────────────────────────────
+    'mode'             => 'Mode',
     'mode_general'     => 'General Mode',
     'mode_islamic'     => 'Islamic / Halal Mode',
     'mode_general_desc'=> 'Standard matrimony experience',

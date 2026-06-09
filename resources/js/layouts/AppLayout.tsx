@@ -4,11 +4,9 @@ import { useState } from 'react'
 import type { PageProps } from '@/types'
 import {
   Home, Search, Heart, MessageCircle, Star, Bell,
-  User, Settings, LogOut, Menu, X,
-  Shield, Sparkles, Crown, TrendingUp, Headphones, FileEdit,
+  Menu, X, Sparkles, Crown, TrendingUp, FileEdit,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
 import { MobileBottomNav } from '@/components/mobile/MobileBottomNav'
 import { MobileTabs, type MobileTab } from '@/components/mobile/MobileTabs'
@@ -50,25 +48,9 @@ function getPageTitleKey(path: string): string {
   return 'dashboard'
 }
 
-function MembershipBadge({ tier }: { tier: string | null }) {
-  if (!tier || tier === 'free') return null
-  const map: Record<string, { label: string; className: string }> = {
-    gold:    { label: '★ Gold',    className: 'bg-amber-100 text-amber-800' },
-    diamond: { label: '💎 Diamond', className: 'bg-blue-100 text-blue-800' },
-    silver:  { label: '◆ Silver',  className: 'bg-slate-100 text-slate-700' },
-  }
-  const badge = map[tier.toLowerCase()] ?? map['silver']!
-  return (
-    <span className={cn('rounded-full px-2 py-0.5 text-xs font-bold', badge.className)}>
-      {badge.label}
-    </span>
-  )
-}
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { auth, flash, completion, access, unread_notifications } = usePage<PageProps>().props
+  const { flash, completion, access, unread_notifications } = usePage<PageProps>().props
   const { t } = useTranslation()
-  const user = auth.user!
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
   const activeTab = getActiveTab(currentPath)
@@ -165,17 +147,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User section — sticky footer; Logout always stays in view (no scroll) */}
-        <div className="border-t border-slate-100 p-3 space-y-2">
-          {user.platform_mode === 'islamic' && (
-            <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 flex items-center gap-2">
-              <Shield size={13} />
-              {t('common', 'mode_islamic')}
-            </div>
-          )}
-
-          {/* Profile completion mini-bar */}
-          {completion && completion.percentage < 100 && (
+        {/* Sidebar footer — navigation-only. Profile / mode / language / settings /
+            logout now live in the top-right header UserMenu. The completion
+            nudge stays here as a lightweight progress prompt. */}
+        {completion && completion.percentage < 100 && (
+          <div className="border-t border-slate-100 p-3">
             <Link href={completion.next_step_url} className="block rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 hover:bg-amber-100 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
@@ -191,49 +167,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 />
               </div>
             </Link>
-          )}
-
-          {/* User identity */}
-          <Link
-            href={route('dashboard.profile')}
-            className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-100 transition-colors"
-          >
-            <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-              <User size={18} className="text-primary-700" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
-              <div className="flex items-center gap-1">
-                <p className="text-xs text-slate-400 truncate">{user.registration_id}</p>
-                <MembershipBadge tier={user.membership_plan} />
-              </div>
-            </div>
-          </Link>
-
-          <div className="px-1">
-            <LanguageSwitcher className="w-full justify-center" />
           </div>
-
-          {/* Settings + Logout — Logout is the last, always-visible action */}
-          <div className="grid grid-cols-2 gap-1.5 pt-1">
-            <Link
-              href={route('settings.index')}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
-            >
-              <Settings size={14} />
-              {t('common', 'settings')}
-            </Link>
-            <Link
-              href={route('logout')}
-              method="post"
-              as="button"
-              className="flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors"
-            >
-              <LogOut size={14} />
-              {t('common', 'logout')}
-            </Link>
-          </div>
-        </div>
+        )}
       </aside>
 
       {/* ── Main content ── */}
@@ -258,7 +193,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 )}
               </Link>
             )}
-            <LanguageSwitcher />
             <div className="h-6 w-px bg-slate-200" />
             <UserMenu />
           </div>
@@ -281,9 +215,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               HOME
             </span>
 
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher inverted />
-
+            <div className="flex items-center gap-2">
               {showBell && (
                 <Link
                   href="/notifications"
@@ -299,12 +231,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               )}
 
-              <button
-                aria-label="Support"
-                className="text-white/80 hover:text-white"
-              >
-                <Headphones size={22} />
-              </button>
+              {/* Profile dropdown — identity, mode, language, settings, logout */}
+              <UserMenu inverted />
             </div>
           </div>
 
