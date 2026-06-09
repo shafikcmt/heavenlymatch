@@ -1338,38 +1338,41 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   />
                 )}
 
-                {/* Date of birth — day + month + year (composed into birth_date) */}
-                <div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <SearchableSelect
-                      label={t('biodata', 'birth_day')}
-                      value={birthDay}
-                      onChange={v => setBirthPart('d', v)}
-                      options={birthDayOpts}
-                      placeholder={t('biodata', 'birth_day')}
-                      required
-                    />
-                    <SearchableSelect
-                      label={t('biodata', 'birth_month')}
-                      value={birthMonth}
-                      onChange={v => setBirthPart('m', v)}
-                      options={monthOpts}
-                      placeholder={t('biodata', 'birth_month')}
-                      required
-                    />
-                    <SearchableSelect
-                      label={t('biodata', 'birth_year')}
-                      value={birthYear}
-                      onChange={v => setBirthPart('y', v)}
-                      options={birthYearOpts}
-                      error={errors.birth_date}
-                      required
-                    />
+                {/* Date of birth — day + month + year (composed into birth_date).
+                    Admin can hide/require the whole DOB block via the registry. */}
+                {fcVisible('birth_date') && (
+                  <div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <SearchableSelect
+                        label={t('biodata', 'birth_day')}
+                        value={birthDay}
+                        onChange={v => setBirthPart('d', v)}
+                        options={birthDayOpts}
+                        placeholder={t('biodata', 'birth_day')}
+                        required={fcRequired('birth_date')}
+                      />
+                      <SearchableSelect
+                        label={t('biodata', 'birth_month')}
+                        value={birthMonth}
+                        onChange={v => setBirthPart('m', v)}
+                        options={monthOpts}
+                        placeholder={t('biodata', 'birth_month')}
+                        required={fcRequired('birth_date')}
+                      />
+                      <SearchableSelect
+                        label={t('biodata', 'birth_year')}
+                        value={birthYear}
+                        onChange={v => setBirthPart('y', v)}
+                        options={birthYearOpts}
+                        error={errors.birth_date}
+                        required={fcRequired('birth_date')}
+                      />
+                    </div>
+                    {dobInvalid && (
+                      <p className="mt-1.5 text-xs text-red-600">{t('biodata', 'dob_invalid')}</p>
+                    )}
                   </div>
-                  {dobInvalid && (
-                    <p className="mt-1.5 text-xs text-red-600">{t('biodata', 'dob_invalid')}</p>
-                  )}
-                </div>
+                )}
 
                 {/* Physical summary */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1721,30 +1724,34 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {/* ── Step 4: Education & Career ── */}
             {step === 4 && (
               <>
-                {/* ═══ EDUCATION ═══ */}
+                {/* ═══ EDUCATION ═══ — the whole education-system block (system,
+                    highest qualification + detailed records) can be hidden/required
+                    by the admin via the registry (education_medium). */}
+                {fcVisible('education_medium') && (
+                <>
                 <SectionLabel>{t('biodata', 'section_education')}</SectionLabel>
 
                 {/* Education System drives everything below. Highest Qualification
                     appears only for the laddered systems (not free-text `other`). */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SearchableSelect
-                    label={t('biodata', 'education_system')}
+                    label={fcLabel('education_medium', t('biodata', 'education_system'))}
                     value={data.education_medium ?? ''}
                     onChange={handleSystemChange}
                     options={eduMediumOpts}
                     error={errors.education_medium}
                     helperText={t('biodata', 'education_system_help')}
-                    required
+                    required={fcRequired('education_medium')}
                   />
-                  {isEduSystem(eduSystem) && !isOtherSystem && (
+                  {isEduSystem(eduSystem) && !isOtherSystem && fcVisible('highest_qualification') && (
                     <SearchableSelect
-                      label={t('biodata', 'highest_qualification')}
+                      label={fcLabel('highest_qualification', t('biodata', 'highest_qualification'))}
                       value={data.highest_qualification ?? ''}
                       onChange={handleHighestChange}
                       options={highestOpts}
                       error={errors.highest_qualification}
                       emptyText={t('biodata', 'edu_select_system_first')}
-                      required
+                      required={fcRequired('highest_qualification')}
                     />
                   )}
                 </div>
@@ -1816,8 +1823,9 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   </div>
                 )}
 
-                {/* (d) Detailed education records (SSC+ or free-text `other`) */}
-                {showDetailedRecords && (
+                {/* (d) Detailed education records (SSC+ or free-text `other`).
+                    Admin can hide the whole records repeater via education_details. */}
+                {showDetailedRecords && fcVisible('education_details') && (
                   <div className="space-y-3">
                     <p className="text-xs text-slate-400">{t('biodata', 'education_records_help')}</p>
 
@@ -1860,6 +1868,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                       </button>
                     )}
                   </div>
+                )}
+                </>
                 )}
 
                 {/* ═══ CAREER ═══ */}
@@ -2058,8 +2068,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   )}
                 </div>
 
-                {/* Brother details */}
-                {broDetails.length > 0 && (
+                {/* Brother details — admin can hide the sibling cards via the registry. */}
+                {broDetails.length > 0 && fcVisible('brothers_details') && (
                   <div className="space-y-3">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Brother Details <span className="text-slate-300 font-normal">(optional)</span>
@@ -2081,8 +2091,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   </div>
                 )}
 
-                {/* Sister details */}
-                {sisDetails.length > 0 && (
+                {/* Sister details — admin can hide the sibling cards via the registry. */}
+                {sisDetails.length > 0 && fcVisible('sisters_details') && (
                   <div className="space-y-3">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Sister Details <span className="text-slate-300 font-normal">(optional)</span>
@@ -2478,13 +2488,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
                 <SectionLabel>{t('biodata', 'guardian_contact_section')}</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label={`${t('biodata', 'contact_person_name')} (${t('common', 'optional')})`}
-                    value={data.contact_person_name ?? ''}
-                    onChange={e => setData('contact_person_name', e.target.value as never)}
-                    error={errors.contact_person_name}
-                    placeholder={t('biodata', 'contact_person_name_ph')}
-                  />
+                  {fcVisible('contact_person_name') && (
+                    <Input
+                      label={fcFieldLabel('contact_person_name', t('biodata', 'contact_person_name'))}
+                      required={fcRequired('contact_person_name')}
+                      value={data.contact_person_name ?? ''}
+                      onChange={e => setData('contact_person_name', e.target.value as never)}
+                      error={errors.contact_person_name}
+                      placeholder={fieldControl['contact_person_name']?.placeholder || t('biodata', 'contact_person_name_ph')}
+                    />
+                  )}
                   {fcVisible('guardian_name') && (
                     <Input
                       label={fcFieldLabel('guardian_name', t('biodata', 'guardian_name'))}
@@ -2521,21 +2534,27 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label={`${t('biodata', 'guardian_email')} (${t('common', 'optional')})`}
-                    type="email"
-                    value={data.guardian_email ?? ''}
-                    onChange={e => setData('guardian_email', e.target.value as never)}
-                    error={errors.guardian_email}
-                    placeholder="guardian@example.com"
-                  />
-                  <PhoneNumberInput
-                    label={t('biodata', 'guardian_whatsapp')}
-                    optional
-                    value={data.guardian_whatsapp ?? ''}
-                    onChange={v => setData('guardian_whatsapp', v as never)}
-                    error={errors.guardian_whatsapp}
-                  />
+                  {fcVisible('guardian_email') && (
+                    <Input
+                      label={fcFieldLabel('guardian_email', t('biodata', 'guardian_email'))}
+                      required={fcRequired('guardian_email')}
+                      type="email"
+                      value={data.guardian_email ?? ''}
+                      onChange={e => setData('guardian_email', e.target.value as never)}
+                      error={errors.guardian_email}
+                      placeholder={fieldControl['guardian_email']?.placeholder || 'guardian@example.com'}
+                    />
+                  )}
+                  {fcVisible('guardian_whatsapp') && (
+                    <PhoneNumberInput
+                      label={fcLabel('guardian_whatsapp', t('biodata', 'guardian_whatsapp'))}
+                      optional={!fcRequired('guardian_whatsapp')}
+                      required={fcRequired('guardian_whatsapp')}
+                      value={data.guardian_whatsapp ?? ''}
+                      onChange={v => setData('guardian_whatsapp', v as never)}
+                      error={errors.guardian_whatsapp}
+                    />
+                  )}
                 </div>
 
                 {fcVisible('whatsapp_number') && (
@@ -2574,18 +2593,24 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 </div>
                 <p className="text-xs text-slate-400 leading-relaxed">{t('biodata', 'contact_privacy_note')}</p>
 
-                <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
-                  <WizardToggle
-                    value={data.allow_shortlist !== false}
-                    label={t('biodata', 'allow_shortlist')}
-                    onChange={v => setData('allow_shortlist', v as never)}
-                  />
-                  <WizardToggle
-                    value={data.allow_contact_request !== false}
-                    label={t('biodata', 'allow_contact_request')}
-                    onChange={v => setData('allow_contact_request', v as never)}
-                  />
-                </div>
+                {(fcVisible('allow_shortlist') || fcVisible('allow_contact_request')) && (
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
+                    {fcVisible('allow_shortlist') && (
+                      <WizardToggle
+                        value={data.allow_shortlist !== false}
+                        label={fcLabel('allow_shortlist', t('biodata', 'allow_shortlist'))}
+                        onChange={v => setData('allow_shortlist', v as never)}
+                      />
+                    )}
+                    {fcVisible('allow_contact_request') && (
+                      <WizardToggle
+                        value={data.allow_contact_request !== false}
+                        label={fcLabel('allow_contact_request', t('biodata', 'allow_contact_request'))}
+                        onChange={v => setData('allow_contact_request', v as never)}
+                      />
+                    )}
+                  </div>
+                )}
               </>
             )}
 
@@ -2707,28 +2732,38 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   />
                 </div>
 
-                <SectionLabel>{t('biodata', 'partner_location_required')}</SectionLabel>
-                <BangladeshAddressPicker
-                  value={{
-                    division: (data.partner_division as string) ?? undefined,
-                    district: (data.partner_district as string) ?? undefined,
-                  }}
-                  onChange={val => setData({
-                    ...data,
-                    partner_division: val.division ?? '',
-                    partner_district: val.district ?? '',
-                  })}
-                  errors={{
-                    division: errors.partner_division as string | undefined,
-                    district: errors.partner_district as string | undefined,
-                  }}
-                  showUpazila={false}
-                />
+                {(fcVisible('partner_division') || fcVisible('partner_district')) && (
+                  <>
+                    <SectionLabel>
+                      {t('biodata', 'partner_location_required')}
+                      {(fcRequired('partner_division') || fcRequired('partner_district')) && (
+                        <span className="ml-0.5 text-red-500">*</span>
+                      )}
+                    </SectionLabel>
+                    <BangladeshAddressPicker
+                      value={{
+                        division: (data.partner_division as string) ?? undefined,
+                        district: (data.partner_district as string) ?? undefined,
+                      }}
+                      onChange={val => setData({
+                        ...data,
+                        partner_division: val.division ?? '',
+                        partner_district: val.district ?? '',
+                      })}
+                      errors={{
+                        division: errors.partner_division as string | undefined,
+                        district: errors.partner_district as string | undefined,
+                      }}
+                      showUpazila={false}
+                    />
+                  </>
+                )}
 
                 {/* Additional preferred districts (multi-select chips) */}
+                {fcVisible('partner_districts') && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    {t('biodata', 'partner_districts')} <span className="text-slate-400 font-normal">({t('common', 'optional')})</span>
+                    {fcLabel('partner_districts', t('biodata', 'partner_districts'))} {!fcRequired('partner_districts') && <span className="text-slate-400 font-normal">({t('common', 'optional')})</span>}
                   </label>
                   <SearchableSelect
                     label=""
@@ -2752,6 +2787,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     </div>
                   )}
                 </div>
+                )}
 
                 <WizardTextarea
                   label={`${t('biodata', 'partner_special_qualities')} (${t('common', 'optional')})`}

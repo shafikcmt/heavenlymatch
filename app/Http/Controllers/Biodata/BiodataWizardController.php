@@ -155,6 +155,13 @@ class BiodataWizardController extends Controller
                 }
             }
 
+            // Composite-block coupling: a child field that renders *inside* a parent
+            // block must not stay required once the admin hides that parent block,
+            // or the user could never satisfy it. Education system → highest qual.
+            if ($step === 4 && isset($control['education_medium']) && ! $control['education_medium']['visible']) {
+                $required = array_values(array_filter($required, fn ($f) => $f !== 'highest_qualification'));
+            }
+
             foreach ($required as $field) {
                 $existing = $rules[$field] ?? ['nullable'];
                 $existing = array_values(array_filter($existing, fn ($r) => $r !== 'nullable'));
