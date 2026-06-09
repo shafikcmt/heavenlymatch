@@ -306,9 +306,10 @@ function WizardToggle({ value, label, onChange }: {
   )
 }
 
-function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, onChange, error, assist }: {
+function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, onChange, error, assist, required }: {
   value: string; label: string; placeholder?: string
   rows?: number; maxLength?: number; onChange: (v: string) => void; error?: string
+  required?: boolean
   /** When set, shows a small AI writing-assistant button for this long-text field. */
   assist?: { field: string; mode?: string | null; gender?: string | null }
 }) {
@@ -316,7 +317,9 @@ function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, o
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <label className="block text-sm font-medium text-slate-700">{label}</label>
+        <label className="block text-sm font-medium text-slate-700">
+          {label}{required && <span className="ml-0.5 text-red-500">*</span>}
+        </label>
         <div className="flex items-center gap-2 shrink-0">
           {maxLength && (
             <span className={cn('text-xs tabular-nums', value.length > maxLength * 0.9 ? 'text-amber-600' : 'text-slate-400')}>
@@ -1324,14 +1327,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   {t('biodata', 'basic_info_subtitle')}
                 </div>
 
-                <SearchableSelect
-                  label={t('biodata', 'marital_status')}
-                  value={data.marital_status ?? ''}
-                  onChange={v => setData('marital_status', v as never)}
-                  options={maritalStatusOpts}
-                  error={errors.marital_status}
-                  required
-                />
+                {fcVisible('marital_status') && (
+                  <SearchableSelect
+                    label={fcLabel('marital_status', t('biodata', 'marital_status'))}
+                    value={data.marital_status ?? ''}
+                    onChange={v => setData('marital_status', v as never)}
+                    options={maritalStatusOpts}
+                    error={errors.marital_status}
+                    required={fcRequired('marital_status')}
+                  />
+                )}
 
                 {/* Date of birth — day + month + year (composed into birth_date) */}
                 <div>
@@ -1368,47 +1373,59 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
                 {/* Physical summary */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <HeightSelect
-                    label={t('biodata', 'height')}
-                    value={data.height_cm ?? ''}
-                    onChange={v => setData('height_cm', v as never)}
-                    error={errors.height_cm}
-                    required
-                  />
-                  <WeightSelect
-                    label={t('biodata', 'weight')}
-                    value={data.weight_kg ?? ''}
-                    onChange={v => setData('weight_kg', v as never)}
-                    error={errors.weight_kg}
-                    required
-                  />
+                  {fcVisible('height_cm') && (
+                    <HeightSelect
+                      label={fcLabel('height_cm', t('biodata', 'height'))}
+                      value={data.height_cm ?? ''}
+                      onChange={v => setData('height_cm', v as never)}
+                      error={errors.height_cm}
+                      required={fcRequired('height_cm')}
+                    />
+                  )}
+                  {fcVisible('weight_kg') && (
+                    <WeightSelect
+                      label={fcLabel('weight_kg', t('biodata', 'weight'))}
+                      value={data.weight_kg ?? ''}
+                      onChange={v => setData('weight_kg', v as never)}
+                      error={errors.weight_kg}
+                      required={fcRequired('weight_kg')}
+                    />
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'complexion')}
-                    value={data.complexion ?? ''}
-                    onChange={v => setData('complexion', v as never)}
-                    options={complexionOpts}
-                    error={errors.complexion}
-                    required
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'blood_group')}
-                    value={data.blood_group ?? ''}
-                    onChange={v => setData('blood_group', v as never)}
-                    options={bloodGroupOpts}
-                    error={errors.blood_group}
-                  />
+                  {fcVisible('complexion') && (
+                    <SearchableSelect
+                      label={fcLabel('complexion', t('biodata', 'complexion'))}
+                      value={data.complexion ?? ''}
+                      onChange={v => setData('complexion', v as never)}
+                      options={complexionOpts}
+                      error={errors.complexion}
+                      required={fcRequired('complexion')}
+                    />
+                  )}
+                  {fcVisible('blood_group') && (
+                    <SearchableSelect
+                      label={fcLabel('blood_group', t('biodata', 'blood_group'))}
+                      value={data.blood_group ?? ''}
+                      onChange={v => setData('blood_group', v as never)}
+                      options={bloodGroupOpts}
+                      error={errors.blood_group}
+                      required={fcRequired('blood_group')}
+                    />
+                  )}
                 </div>
 
                 {/* Physical / health status */}
-                <SearchableSelect
-                  label={t('biodata', 'physical_status')}
-                  value={data.health_status ?? ''}
-                  onChange={v => setData('health_status', v as never)}
-                  options={healthOpts}
-                  error={errors.health_status}
-                />
+                {fcVisible('health_status') && (
+                  <SearchableSelect
+                    label={fcLabel('health_status', t('biodata', 'physical_status'))}
+                    value={data.health_status ?? ''}
+                    onChange={v => setData('health_status', v as never)}
+                    options={healthOpts}
+                    error={errors.health_status}
+                    required={fcRequired('health_status')}
+                  />
+                )}
                 {showHealthDetails && (
                   <WizardTextarea
                     label={t('biodata', 'health_issue_details')}
@@ -1483,24 +1500,27 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {step === 3 && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'religion')}
-                    value={data.religion ?? ''}
-                    onChange={v => setData('religion', v as never)}
-                    options={RELIGION_OPTIONS}
-                    error={errors.religion}
-                    allowFreeText
-                    required
-                    placeholder="Select religion..."
-                  />
-                  {isIslam && (
+                  {fcVisible('religion') && (
                     <SearchableSelect
-                      label={t('biodata', 'sect')}
+                      label={fcLabel('religion', t('biodata', 'religion'))}
+                      value={data.religion ?? ''}
+                      onChange={v => setData('religion', v as never)}
+                      options={RELIGION_OPTIONS}
+                      error={errors.religion}
+                      allowFreeText
+                      required={fcRequired('religion')}
+                      placeholder="Select religion..."
+                    />
+                  )}
+                  {isIslam && fcVisible('sect') && (
+                    <SearchableSelect
+                      label={fcLabel('sect', t('biodata', 'sect'))}
                       value={data.sect ?? ''}
                       onChange={v => setData('sect', v as never)}
                       options={SECT_OPTIONS}
                       error={errors.sect}
                       allowFreeText
+                      required={fcRequired('sect')}
                       placeholder="e.g. Hanafi, Ahle Hadith"
                     />
                   )}
@@ -1510,26 +1530,33 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   <>
                     <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
                       <SectionLabel>Practice & Observance</SectionLabel>
-                      <WizardToggle
-                        value={!!data.is_practicing}
-                        label={t('biodata', 'is_practicing')}
-                        onChange={v => setData('is_practicing', v as never)}
-                      />
-                      <SearchableSelect
-                        label={t('biodata', 'prayers_info')}
-                        value={data.prayers_info ?? ''}
-                        onChange={v => setData('prayers_info', v as never)}
-                        options={prayersOpts}
-                        error={errors.prayers_info}
-                        required
-                      />
-                      <SearchableSelect
-                        label={t('biodata', 'quran_recitation')}
-                        value={data.quran_recitation ?? ''}
-                        onChange={v => setData('quran_recitation', v as never)}
-                        options={quranOpts}
-                        error={errors.quran_recitation}
-                      />
+                      {fcVisible('is_practicing') && (
+                        <WizardToggle
+                          value={!!data.is_practicing}
+                          label={fcLabel('is_practicing', t('biodata', 'is_practicing'))}
+                          onChange={v => setData('is_practicing', v as never)}
+                        />
+                      )}
+                      {fcVisible('prayers_info') && (
+                        <SearchableSelect
+                          label={fcLabel('prayers_info', t('biodata', 'prayers_info'))}
+                          value={data.prayers_info ?? ''}
+                          onChange={v => setData('prayers_info', v as never)}
+                          options={prayersOpts}
+                          error={errors.prayers_info}
+                          required={fcRequired('prayers_info')}
+                        />
+                      )}
+                      {fcVisible('quran_recitation') && (
+                        <SearchableSelect
+                          label={fcLabel('quran_recitation', t('biodata', 'quran_recitation'))}
+                          value={data.quran_recitation ?? ''}
+                          onChange={v => setData('quran_recitation', v as never)}
+                          options={quranOpts}
+                          error={errors.quran_recitation}
+                          required={fcRequired('quran_recitation')}
+                        />
+                      )}
                     </div>
 
                     <div className="space-y-4">
@@ -1538,11 +1565,12 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                         <>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <SearchableSelect
-                              label={t('biodata', 'hijab_info')}
+                              label={fcLabel('hijab_info', t('biodata', 'hijab_info'))}
                               value={data.hijab_info ?? ''}
                               onChange={v => setData('hijab_info', v as never)}
                               options={hijabOpts}
                               error={errors.hijab_info}
+                              required={fcRequired('hijab_info')}
                             />
                             <Input
                               label={`${t('biodata', 'niqab_since')} (${t('common', 'optional')})`}
@@ -1567,12 +1595,13 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                         <>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <SearchableSelect
-                              label={t('biodata', 'beard_info')}
+                              label={fcLabel('beard_info', t('biodata', 'beard_info'))}
                               value={data.beard_info ?? ''}
                               onChange={v => setData('beard_info', v as never)}
                               options={BEARD_OPTIONS}
                               error={errors.beard_info}
                               allowFreeText
+                              required={fcRequired('beard_info')}
                             />
                             <SearchableSelect
                               label={t('biodata', 'clothing_style') || 'Clothing Style'}
@@ -1837,23 +1866,28 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 <SectionLabel>{t('biodata', 'section_career')}</SectionLabel>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'occupation_category')}
-                    value={data.occupation_category ?? ''}
-                    onChange={v => setData('occupation_category', v as never)}
-                    options={occCatOpts}
-                    error={errors.occupation_category}
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'occupation')}
-                    value={data.occupation ?? ''}
-                    onChange={v => setData('occupation', v as never)}
-                    options={OCCUPATION_OPTIONS}
-                    error={errors.occupation}
-                    allowFreeText
-                    required
-                    placeholder={t('biodata', 'occupation_ph')}
-                  />
+                  {fcVisible('occupation_category') && (
+                    <SearchableSelect
+                      label={fcLabel('occupation_category', t('biodata', 'occupation_category'))}
+                      value={data.occupation_category ?? ''}
+                      onChange={v => setData('occupation_category', v as never)}
+                      options={occCatOpts}
+                      error={errors.occupation_category}
+                      required={fcRequired('occupation_category')}
+                    />
+                  )}
+                  {fcVisible('occupation') && (
+                    <SearchableSelect
+                      label={fcLabel('occupation', t('biodata', 'occupation'))}
+                      value={data.occupation ?? ''}
+                      onChange={v => setData('occupation', v as never)}
+                      options={OCCUPATION_OPTIONS}
+                      error={errors.occupation}
+                      allowFreeText
+                      required={fcRequired('occupation')}
+                      placeholder={t('biodata', 'occupation_ph')}
+                    />
+                  )}
                 </div>
 
                 <WizardTextarea
@@ -1901,15 +1935,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.income_privacy}
                     helperText={t('biodata', 'income_privacy_help')}
                   />
-                  <SearchableSelect
-                    label={`${t('biodata', 'profession_halal_status')} (${t('common', 'optional')})`}
-                    value={data.profession_halal_status ?? ''}
-                    onChange={v => setData('profession_halal_status', v as never)}
-                    options={halalStatusOpts}
-                    error={errors.profession_halal_status}
-                    helperText={t('biodata', 'profession_halal_help')}
-                    placeholder="— Select —"
-                  />
+                  {fcVisible('profession_halal_status') && (
+                    <SearchableSelect
+                      label={fcFieldLabel('profession_halal_status', t('biodata', 'profession_halal_status'))}
+                      value={data.profession_halal_status ?? ''}
+                      onChange={v => setData('profession_halal_status', v as never)}
+                      options={halalStatusOpts}
+                      error={errors.profession_halal_status}
+                      helperText={t('biodata', 'profession_halal_help')}
+                      placeholder="— Select —"
+                      required={fcRequired('profession_halal_status')}
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1947,16 +1984,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.father_name}
                     placeholder="Abdul Karim"
                   />
-                  <SearchableSelect
-                    label={t('biodata', 'father_profession')}
-                    value={data.father_profession ?? ''}
-                    onChange={v => setData('father_profession', v as never)}
-                    options={PROFESSION_OPTIONS}
-                    error={errors.father_profession}
-                    allowFreeText
-                    required
-                    placeholder="e.g. Retired, Business"
-                  />
+                  {fcVisible('father_profession') && (
+                    <SearchableSelect
+                      label={fcLabel('father_profession', t('biodata', 'father_profession'))}
+                      value={data.father_profession ?? ''}
+                      onChange={v => setData('father_profession', v as never)}
+                      options={PROFESSION_OPTIONS}
+                      error={errors.father_profession}
+                      allowFreeText
+                      required={fcRequired('father_profession')}
+                      placeholder="e.g. Retired, Business"
+                    />
+                  )}
                 </div>
                 <WizardToggle
                   value={!!data.father_alive}
@@ -1973,16 +2012,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.mother_name}
                     placeholder="Fatema Begum"
                   />
-                  <SearchableSelect
-                    label={t('biodata', 'mother_profession')}
-                    value={data.mother_profession ?? ''}
-                    onChange={v => setData('mother_profession', v as never)}
-                    options={PROFESSION_OPTIONS}
-                    error={errors.mother_profession}
-                    allowFreeText
-                    required
-                    placeholder="e.g. Homemaker, Teacher"
-                  />
+                  {fcVisible('mother_profession') && (
+                    <SearchableSelect
+                      label={fcLabel('mother_profession', t('biodata', 'mother_profession'))}
+                      value={data.mother_profession ?? ''}
+                      onChange={v => setData('mother_profession', v as never)}
+                      options={PROFESSION_OPTIONS}
+                      error={errors.mother_profession}
+                      allowFreeText
+                      required={fcRequired('mother_profession')}
+                      placeholder="e.g. Homemaker, Teacher"
+                    />
+                  )}
                 </div>
                 <WizardToggle
                   value={!!data.mother_alive}
@@ -1993,22 +2034,28 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 {/* Siblings */}
                 <SectionLabel>Siblings</SectionLabel>
                 <div className="grid grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'brothers')}
-                    value={data.brothers !== '' && data.brothers !== undefined ? String(data.brothers) : ''}
-                    onChange={handleBrotherCount}
-                    options={COUNT_OPTIONS}
-                    error={errors.brothers}
-                    placeholder="0"
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'sisters')}
-                    value={data.sisters !== '' && data.sisters !== undefined ? String(data.sisters) : ''}
-                    onChange={handleSisterCount}
-                    options={COUNT_OPTIONS}
-                    error={errors.sisters}
-                    placeholder="0"
-                  />
+                  {fcVisible('brothers') && (
+                    <SearchableSelect
+                      label={fcLabel('brothers', t('biodata', 'brothers'))}
+                      value={data.brothers !== '' && data.brothers !== undefined ? String(data.brothers) : ''}
+                      onChange={handleBrotherCount}
+                      options={COUNT_OPTIONS}
+                      error={errors.brothers}
+                      placeholder="0"
+                      required={fcRequired('brothers')}
+                    />
+                  )}
+                  {fcVisible('sisters') && (
+                    <SearchableSelect
+                      label={fcLabel('sisters', t('biodata', 'sisters'))}
+                      value={data.sisters !== '' && data.sisters !== undefined ? String(data.sisters) : ''}
+                      onChange={handleSisterCount}
+                      options={COUNT_OPTIONS}
+                      error={errors.sisters}
+                      placeholder="0"
+                      required={fcRequired('sisters')}
+                    />
+                  )}
                 </div>
 
                 {/* Brother details */}
@@ -2059,21 +2106,26 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
                 <SectionLabel>Family Background</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'family_type')}
-                    value={data.family_type ?? ''}
-                    onChange={v => setData('family_type', v as never)}
-                    options={familyTypeOpts}
-                    error={errors.family_type}
-                    required
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'family_financial_status')}
-                    value={data.family_financial_status ?? ''}
-                    onChange={v => setData('family_financial_status', v as never)}
-                    options={financeOpts}
-                    error={errors.family_financial_status}
-                  />
+                  {fcVisible('family_type') && (
+                    <SearchableSelect
+                      label={fcLabel('family_type', t('biodata', 'family_type'))}
+                      value={data.family_type ?? ''}
+                      onChange={v => setData('family_type', v as never)}
+                      options={familyTypeOpts}
+                      error={errors.family_type}
+                      required={fcRequired('family_type')}
+                    />
+                  )}
+                  {fcVisible('family_financial_status') && (
+                    <SearchableSelect
+                      label={fcLabel('family_financial_status', t('biodata', 'family_financial_status'))}
+                      value={data.family_financial_status ?? ''}
+                      onChange={v => setData('family_financial_status', v as never)}
+                      options={financeOpts}
+                      error={errors.family_financial_status}
+                      required={fcRequired('family_financial_status')}
+                    />
+                  )}
                   <SearchableSelect
                     label={t('biodata', 'home_ownership')}
                     value={data.home_ownership ?? ''}
@@ -2091,15 +2143,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'uncle_profession_ph')}
                 />
 
-                <WizardTextarea
-                  label={t('biodata', 'family_details')}
-                  value={(data.family_details as string) ?? ''}
-                  onChange={v => setData('family_details', v as never)}
-                  error={errors.family_details}
-                  placeholder="Brief description of your family background..."
-                  rows={3}
-                  assist={{ field: 'family_details', mode: user.mode, gender: user.gender }}
-                />
+                {fcVisible('family_details') && (
+                  <WizardTextarea
+                    label={fcLabel('family_details', t('biodata', 'family_details'))}
+                    required={fcRequired('family_details')}
+                    value={(data.family_details as string) ?? ''}
+                    onChange={v => setData('family_details', v as never)}
+                    error={errors.family_details}
+                    placeholder="Brief description of your family background..."
+                    rows={3}
+                    assist={{ field: 'family_details', mode: user.mode, gender: user.gender }}
+                  />
+                )}
 
                 <WizardTextarea
                   label={`${t('biodata', 'family_assets_details')} (${t('common', 'optional')})`}
@@ -2119,15 +2174,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 <SectionLabel>{t('biodata', 'section_lifestyle')}</SectionLabel>
                 {/* Diet & Smoking removed from the form — columns kept in the DB so
                     existing values are preserved and re-saved untouched. */}
-                <WizardTextarea
-                  label={t('biodata', 'hobbies')}
-                  value={(data.hobbies as string) ?? ''}
-                  onChange={v => setData('hobbies', v as never)}
-                  error={errors.hobbies}
-                  placeholder="Reading, cooking, traveling, gardening..."
-                  rows={3}
-                  assist={{ field: 'hobbies', mode: user.mode, gender: user.gender }}
-                />
+                {fcVisible('hobbies') && (
+                  <WizardTextarea
+                    label={fcLabel('hobbies', t('biodata', 'hobbies'))}
+                    required={fcRequired('hobbies')}
+                    value={(data.hobbies as string) ?? ''}
+                    onChange={v => setData('hobbies', v as never)}
+                    error={errors.hobbies}
+                    placeholder="Reading, cooking, traveling, gardening..."
+                    rows={3}
+                    assist={{ field: 'hobbies', mode: user.mode, gender: user.gender }}
+                  />
+                )}
               </>
             )}
 
@@ -2145,26 +2203,32 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 )}
 
                 <SectionLabel>{t('biodata', 'marriage_thoughts_section')}</SectionLabel>
-                <WizardTextarea
-                  label={`${t('biodata', 'why_getting_married')} (${t('common', 'optional')})`}
-                  value={(data.why_getting_married as string) ?? ''}
-                  onChange={v => setData('why_getting_married', v as never)}
-                  error={errors.why_getting_married}
-                  placeholder={t('biodata', 'why_getting_married_ph')}
-                  rows={3}
-                  maxLength={1000}
-                  assist={{ field: 'why_getting_married', mode: user.mode, gender: user.gender }}
-                />
-                <WizardTextarea
-                  label={`${t('biodata', 'marriage_thoughts')} (${t('common', 'optional')})`}
-                  value={(data.marriage_thoughts as string) ?? ''}
-                  onChange={v => setData('marriage_thoughts', v as never)}
-                  error={errors.marriage_thoughts}
-                  placeholder={t('biodata', 'marriage_thoughts_ph')}
-                  rows={3}
-                  maxLength={1000}
-                  assist={{ field: 'marriage_thoughts', mode: user.mode, gender: user.gender }}
-                />
+                {fcVisible('why_getting_married') && (
+                  <WizardTextarea
+                    label={fcFieldLabel('why_getting_married', t('biodata', 'why_getting_married'))}
+                    required={fcRequired('why_getting_married')}
+                    value={(data.why_getting_married as string) ?? ''}
+                    onChange={v => setData('why_getting_married', v as never)}
+                    error={errors.why_getting_married}
+                    placeholder={t('biodata', 'why_getting_married_ph')}
+                    rows={3}
+                    maxLength={1000}
+                    assist={{ field: 'why_getting_married', mode: user.mode, gender: user.gender }}
+                  />
+                )}
+                {fcVisible('marriage_thoughts') && (
+                  <WizardTextarea
+                    label={fcFieldLabel('marriage_thoughts', t('biodata', 'marriage_thoughts'))}
+                    required={fcRequired('marriage_thoughts')}
+                    value={(data.marriage_thoughts as string) ?? ''}
+                    onChange={v => setData('marriage_thoughts', v as never)}
+                    error={errors.marriage_thoughts}
+                    placeholder={t('biodata', 'marriage_thoughts_ph')}
+                    rows={3}
+                    maxLength={1000}
+                    assist={{ field: 'marriage_thoughts', mode: user.mode, gender: user.gender }}
+                  />
+                )}
                 <Input
                   label={`${t('biodata', 'marriage_timeline')} (${t('common', 'optional')})`}
                   value={data.marriage_timeline ?? ''}
@@ -2176,14 +2240,18 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 {user.gender === 'male' && (
                   <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-3">
                     <SectionLabel>{t('biodata', 'after_marriage_section')}</SectionLabel>
-                    <WizardToggle value={!!data.wife_in_veil} label={t('biodata', 'wife_in_veil')}
-                      onChange={v => setData('wife_in_veil', v as never)} />
+                    {fcVisible('wife_in_veil') && (
+                      <WizardToggle value={!!data.wife_in_veil} label={fcLabel('wife_in_veil', t('biodata', 'wife_in_veil'))}
+                        onChange={v => setData('wife_in_veil', v as never)} />
+                    )}
                     <WizardToggle value={!!data.wife_study_allowed} label={t('biodata', 'wife_study_allowed')}
                       onChange={v => setData('wife_study_allowed', v as never)} />
                     <WizardToggle value={!!data.wife_job_allowed} label={t('biodata', 'wife_job_allowed')}
                       onChange={v => setData('wife_job_allowed', v as never)} />
-                    <WizardToggle value={!!data.polygamy_open} label={t('biodata', 'polygamy_open')}
-                      onChange={v => setData('polygamy_open', v as never)} />
+                    {fcVisible('polygamy_open') && (
+                      <WizardToggle value={!!data.polygamy_open} label={fcLabel('polygamy_open', t('biodata', 'polygamy_open'))}
+                        onChange={v => setData('polygamy_open', v as never)} />
+                    )}
                     <Input
                       label={`${t('biodata', 'expect_gift_from_bride')} (${t('common', 'optional')})`}
                       value={data.expect_gift_from_bride ?? ''}
@@ -2206,8 +2274,10 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                 {user.gender === 'female' && (
                   <div className="rounded-xl bg-rose-50 border border-rose-100 p-4 space-y-3">
                     <SectionLabel>{t('biodata', 'female_intentions_section')}</SectionLabel>
-                    <WizardToggle value={!!data.wants_to_work} label={t('biodata', 'wants_to_work')}
-                      onChange={v => setData('wants_to_work', v as never)} />
+                    {fcVisible('wants_to_work') && (
+                      <WizardToggle value={!!data.wants_to_work} label={fcLabel('wants_to_work', t('biodata', 'wants_to_work'))}
+                        onChange={v => setData('wants_to_work', v as never)} />
+                    )}
                     <WizardToggle value={!!data.continue_study} label={t('biodata', 'continue_study')}
                       onChange={v => setData('continue_study', v as never)} />
                     <WizardToggle value={!!data.continue_job} label={t('biodata', 'continue_job')}
@@ -2222,20 +2292,24 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   </div>
                 )}
 
-                <WizardToggle value={!!data.guardian_agree} label={t('biodata', 'guardian_agree')}
-                  onChange={v => setData('guardian_agree', v as never)} />
+                {fcVisible('guardian_agree') && (
+                  <WizardToggle value={!!data.guardian_agree} label={fcLabel('guardian_agree', t('biodata', 'guardian_agree'))}
+                    onChange={v => setData('guardian_agree', v as never)} />
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'residence_after_marriage')}
-                    value={data.residence_after_marriage ?? ''}
-                    onChange={v => setData('residence_after_marriage', v as never)}
-                    options={RESIDENCE_OPTIONS}
-                    error={errors.residence_after_marriage}
-                    allowFreeText
-                    required
-                    placeholder="Dhaka / Abroad / Flexible"
-                  />
+                  {fcVisible('residence_after_marriage') && (
+                    <SearchableSelect
+                      label={fcLabel('residence_after_marriage', t('biodata', 'residence_after_marriage'))}
+                      value={data.residence_after_marriage ?? ''}
+                      onChange={v => setData('residence_after_marriage', v as never)}
+                      options={RESIDENCE_OPTIONS}
+                      error={errors.residence_after_marriage}
+                      allowFreeText
+                      required={fcRequired('residence_after_marriage')}
+                      placeholder="Dhaka / Abroad / Flexible"
+                    />
+                  )}
                   <SearchableSelect
                     label={t('biodata', 'post_marriage_plan')}
                     value={data.post_marriage_plan ?? ''}
@@ -2579,13 +2653,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
                 <SectionLabel>Partner Profile</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'partner_marital_status')}
-                    value={data.partner_marital_status ?? ''}
-                    onChange={v => setData('partner_marital_status', v as never)}
-                    options={partnerMaritalOpts}
-                    error={errors.partner_marital_status}
-                  />
+                  {fcVisible('partner_marital_status') && (
+                    <SearchableSelect
+                      label={fcLabel('partner_marital_status', t('biodata', 'partner_marital_status'))}
+                      value={data.partner_marital_status ?? ''}
+                      onChange={v => setData('partner_marital_status', v as never)}
+                      options={partnerMaritalOpts}
+                      error={errors.partner_marital_status}
+                      required={fcRequired('partner_marital_status')}
+                    />
+                  )}
                   <SearchableSelect
                     label={t('biodata', 'partner_complexion') || 'Partner Complexion'}
                     value={data.partner_complexion ?? ''}
@@ -2595,14 +2672,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'partner_education')}
-                    value={data.partner_education ?? ''}
-                    onChange={v => setData('partner_education', v as never)}
-                    options={partnerEduOpts}
-                    error={errors.partner_education}
-                    required
-                  />
+                  {fcVisible('partner_education') && (
+                    <SearchableSelect
+                      label={fcLabel('partner_education', t('biodata', 'partner_education'))}
+                      value={data.partner_education ?? ''}
+                      onChange={v => setData('partner_education', v as never)}
+                      options={partnerEduOpts}
+                      error={errors.partner_education}
+                      required={fcRequired('partner_education')}
+                    />
+                  )}
                   <SearchableSelect
                     label={t('biodata', 'partner_family_type')}
                     value={data.partner_family_type ?? ''}
@@ -2696,16 +2775,19 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   assist={{ field: 'partner_deal_breakers', mode: user.mode, gender: user.gender }}
                 />
 
-                <WizardTextarea
-                  label={t('biodata', 'partner_expectations')}
-                  value={(data.partner_expectations as string) ?? ''}
-                  onChange={v => setData('partner_expectations', v as never)}
-                  error={errors.partner_expectations}
-                  placeholder="Describe the qualities you're looking for in a life partner..."
-                  rows={5}
-                  maxLength={1000}
-                  assist={{ field: 'partner_expectations', mode: user.mode, gender: user.gender }}
-                />
+                {fcVisible('partner_expectations') && (
+                  <WizardTextarea
+                    label={fcLabel('partner_expectations', t('biodata', 'partner_expectations'))}
+                    required={fcRequired('partner_expectations')}
+                    value={(data.partner_expectations as string) ?? ''}
+                    onChange={v => setData('partner_expectations', v as never)}
+                    error={errors.partner_expectations}
+                    placeholder="Describe the qualities you're looking for in a life partner..."
+                    rows={5}
+                    maxLength={1000}
+                    assist={{ field: 'partner_expectations', mode: user.mode, gender: user.gender }}
+                  />
+                )}
               </>
             )}
 
