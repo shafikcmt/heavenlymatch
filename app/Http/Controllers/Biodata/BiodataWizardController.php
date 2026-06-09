@@ -81,6 +81,12 @@ class BiodataWizardController extends Controller
             ],
             // Admin-defined custom fields (Phase E3) — appended to their section's step.
             'customFields' => $this->fields->customWizardFields(),
+            // Admin field-control overlay for built-in fields on THIS step (active /
+            // required / label / placeholder / helper). Empty when registry unseeded.
+            'fieldControl' => $this->fields->controlMapForStep($step, [
+                'gender'        => $user->gender,
+                'platform_mode' => $user->platform_mode,
+            ]),
             ...$photoData,
         ]);
     }
@@ -126,6 +132,26 @@ class BiodataWizardController extends Controller
                     } else {
                         $required[] = 'district'; // abroad: district column holds the city
                     }
+                }
+            }
+
+            // Admin field-control overlay: the biodata field registry decides the
+            // final required/active state for THIS step's core fields. A field the
+            // admin deactivated/hid is dropped from required (and never blocks save);
+            // a field the admin marked required is enforced. Only touches fields this
+            // step already handles, and is a no-op when the registry is unseeded.
+            $control = $this->fields->controlMapForStep($step, [
+                'gender'        => $user->gender ?? null,
+                'platform_mode' => $user->platform_mode ?? null,
+            ]);
+            foreach ($control as $column => $c) {
+                if (! array_key_exists($column, $rules)) {
+                    continue; // not a field this step renders/validates — leave alone
+                }
+                if (! $c['visible']) {
+                    $required = array_values(array_filter($required, fn ($f) => $f !== $column));
+                } elseif ($c['required'] && ! in_array($column, $required, true)) {
+                    $required[] = $column;
                 }
             }
 

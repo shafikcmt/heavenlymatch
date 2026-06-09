@@ -272,6 +272,44 @@ class BiodataFieldService
             ->values();
     }
 
+    /**
+     * Admin field-control overlay for ONE wizard step, keyed by model_column.
+     * Covers core (column-backed) fields in this step's active section — including
+     * deactivated ones, so callers can both hide them and drop them from required.
+     * Empty (no-op) when the registry isn't seeded.
+     *
+     * @param  array<string,mixed>  $context  for conditional logic (gender, platform_mode…)
+     * @return array<string, array{active:bool, required:bool, visible:bool, label:string, placeholder:?string, helper:?string}>
+     */
+    public function controlMapForStep(int $step, array $context = [], ?string $locale = null): array
+    {
+        if (! $this->registryReady()) {
+            return [];
+        }
+
+        $locale ??= app()->getLocale();
+
+        $fields = BiodataField::query()
+            ->whereNotNull('model_column')
+            ->whereHas('section', fn ($q) => $q->where('step', $step)->where('is_active', true)->where('show_in_form', true))
+            ->with('section')
+            ->get();
+
+        $map = [];
+        foreach ($fields as $field) {
+            $map[$field->model_column] = [
+                'active'      => (bool) $field->is_active,
+                'required'    => (bool) $field->is_required,
+                'visible'     => $field->is_active && $field->show_in_form && $this->passesConditional($field, $context),
+                'label'       => $field->label($locale),
+                'placeholder' => $field->placeholder($locale),
+                'helper'      => $field->helperText($locale),
+            ];
+        }
+
+        return $map;
+    }
+
     /** Wizard step a custom field lands on: its section's step, clamped to 1..9. */
     public function effectiveStep(BiodataField $field): int
     {

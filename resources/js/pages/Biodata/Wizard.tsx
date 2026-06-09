@@ -226,12 +226,23 @@ interface PhotoItem {
   uploaded_at: string
 }
 
+// Admin field-control overlay for built-in fields (keyed by model column).
+interface FieldControl {
+  active: boolean
+  required: boolean
+  visible: boolean
+  label?: string | null
+  placeholder?: string | null
+  helper?: string | null
+}
+
 interface Props {
   step: number
   steps: Record<number, string>
   biodata: BiodataData & { completeness_score?: number }
   user: { name: string; gender: string; mode: string }
   customFields?: CustomFieldDef[]
+  fieldControl?: Record<string, FieldControl>
   photos?: PhotoItem[]
   photoUrls?: string[]
   maxPhotos?: number
@@ -730,10 +741,19 @@ function AddressBlock({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function BiodataWizard({ step, steps, biodata, user, customFields = [], photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
+export default function BiodataWizard({ step, steps, biodata, user, customFields = [], fieldControl = {}, photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
   const totalSteps = Object.keys(steps).length
   const { t } = useTranslation()
   const completenessScore = biodata.completeness_score ?? 0
+
+  // ── Admin field-control overlay (built-in fields) ────────────────────────────
+  // Safe fallbacks: a field absent from the map keeps its hardcoded behaviour.
+  const fcVisible  = (col: string) => fieldControl[col]?.visible !== false
+  const fcRequired = (col: string) => fieldControl[col]?.required === true
+  const fcLabel    = (col: string, fallback: string) => fieldControl[col]?.label || fallback
+  // Label with an "(Optional)" suffix unless the admin marked it required.
+  const fcFieldLabel = (col: string, fallback: string) =>
+    fcRequired(col) ? fcLabel(col, fallback) : `${fcLabel(col, fallback)} (${t('common', 'optional')})`
 
   // ── Photo upload state (Step 9) ──────────────────────────────────────────────
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -2391,31 +2411,40 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.contact_person_name}
                     placeholder={t('biodata', 'contact_person_name_ph')}
                   />
-                  <Input
-                    label={`${t('biodata', 'guardian_name')} (${t('common', 'optional')})`}
-                    value={data.guardian_name ?? ''}
-                    onChange={e => setData('guardian_name', e.target.value as never)}
-                    error={errors.guardian_name}
-                    placeholder={t('biodata', 'guardian_name_ph')}
-                  />
+                  {fcVisible('guardian_name') && (
+                    <Input
+                      label={fcFieldLabel('guardian_name', t('biodata', 'guardian_name'))}
+                      required={fcRequired('guardian_name')}
+                      value={data.guardian_name ?? ''}
+                      onChange={e => setData('guardian_name', e.target.value as never)}
+                      error={errors.guardian_name}
+                      placeholder={fieldControl['guardian_name']?.placeholder || t('biodata', 'guardian_name_ph')}
+                    />
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <PhoneNumberInput
-                    label={t('biodata', 'guardian_mobile')}
-                    optional
-                    value={data.guardian_mobile ?? ''}
-                    onChange={v => setData('guardian_mobile', v as never)}
-                    error={errors.guardian_mobile}
-                  />
-                  <SearchableSelect
-                    label={`${t('biodata', 'guardian_relationship')} (${t('common', 'optional')})`}
-                    value={data.guardian_relationship ?? ''}
-                    onChange={v => setData('guardian_relationship', v as never)}
-                    options={GUARDIAN_REL_OPTIONS}
-                    error={errors.guardian_relationship}
-                    allowFreeText
-                    placeholder="Father / Brother / Uncle"
-                  />
+                  {fcVisible('guardian_mobile') && (
+                    <PhoneNumberInput
+                      label={fcLabel('guardian_mobile', t('biodata', 'guardian_mobile'))}
+                      optional={!fcRequired('guardian_mobile')}
+                      required={fcRequired('guardian_mobile')}
+                      value={data.guardian_mobile ?? ''}
+                      onChange={v => setData('guardian_mobile', v as never)}
+                      error={errors.guardian_mobile}
+                    />
+                  )}
+                  {fcVisible('guardian_relationship') && (
+                    <SearchableSelect
+                      label={fcFieldLabel('guardian_relationship', t('biodata', 'guardian_relationship'))}
+                      required={fcRequired('guardian_relationship')}
+                      value={data.guardian_relationship ?? ''}
+                      onChange={v => setData('guardian_relationship', v as never)}
+                      options={GUARDIAN_REL_OPTIONS}
+                      error={errors.guardian_relationship}
+                      allowFreeText
+                      placeholder="Father / Brother / Uncle"
+                    />
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
@@ -2435,31 +2464,39 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   />
                 </div>
 
-                <PhoneNumberInput
-                  label={t('biodata', 'whatsapp_number')}
-                  optional
-                  value={data.whatsapp_number ?? ''}
-                  onChange={v => setData('whatsapp_number', v as never)}
-                  error={errors.whatsapp_number}
-                />
+                {fcVisible('whatsapp_number') && (
+                  <PhoneNumberInput
+                    label={fcLabel('whatsapp_number', t('biodata', 'whatsapp_number'))}
+                    optional={!fcRequired('whatsapp_number')}
+                    required={fcRequired('whatsapp_number')}
+                    value={data.whatsapp_number ?? ''}
+                    onChange={v => setData('whatsapp_number', v as never)}
+                    error={errors.whatsapp_number}
+                  />
+                )}
 
                 <SectionLabel>{t('biodata', 'contact_privacy_section')}</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'contact_privacy')}
-                    value={data.contact_privacy ?? 'private'}
-                    onChange={v => setData('contact_privacy', v as never)}
-                    options={contactPrivacyOpts}
-                    error={errors.contact_privacy}
-                    required
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'biodata_visibility')}
-                    value={data.biodata_visibility ?? ''}
-                    onChange={v => setData('biodata_visibility', v as never)}
-                    options={biodataVisibilityOpts}
-                    error={errors.biodata_visibility}
-                  />
+                  {fcVisible('contact_privacy') && (
+                    <SearchableSelect
+                      label={fcLabel('contact_privacy', t('biodata', 'contact_privacy'))}
+                      value={data.contact_privacy ?? 'private'}
+                      onChange={v => setData('contact_privacy', v as never)}
+                      options={contactPrivacyOpts}
+                      error={errors.contact_privacy}
+                      required={fcRequired('contact_privacy')}
+                    />
+                  )}
+                  {fcVisible('biodata_visibility') && (
+                    <SearchableSelect
+                      label={fcLabel('biodata_visibility', t('biodata', 'biodata_visibility'))}
+                      value={data.biodata_visibility ?? ''}
+                      onChange={v => setData('biodata_visibility', v as never)}
+                      options={biodataVisibilityOpts}
+                      error={errors.biodata_visibility}
+                      required={fcRequired('biodata_visibility')}
+                    />
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 leading-relaxed">{t('biodata', 'contact_privacy_note')}</p>
 
