@@ -119,6 +119,8 @@ return [
 
     // ── Platform mode ─────────────────────────────────────────────────────────
     'mode'             => 'Mode',
+    'mode_islamic_short' => 'Islamic',
+    'mode_general_short' => 'General',
     'mode_general'     => 'General Mode',
     'mode_islamic'     => 'Islamic / Halal Mode',
     'mode_general_desc'=> 'Standard matrimony experience',

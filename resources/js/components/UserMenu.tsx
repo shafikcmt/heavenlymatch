@@ -8,7 +8,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n'
 import type { PageProps } from '@/types'
-import ModeBadge from '@/components/ModeBadge'
+import ModeBadge, { ModeAvatarDot } from '@/components/ModeBadge'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 interface Props {
@@ -70,13 +70,17 @@ export default function UserMenu({ inverted = false }: Props) {
           open && (inverted ? 'bg-white/10' : 'bg-slate-100'),
         )}
       >
-        <span
-          className={cn(
-            'h-8 w-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 ring-2',
-            inverted ? 'ring-white/30 bg-white/20' : 'ring-primary-100 bg-primary-50',
-          )}
-        >
-          <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
+        {/* Avatar + mode dot (dot lives outside the clipping container) */}
+        <span className="relative shrink-0">
+          <span
+            className={cn(
+              'h-8 w-8 rounded-full overflow-hidden flex items-center justify-center ring-2',
+              inverted ? 'ring-white/30 bg-white/20' : 'ring-primary-100 bg-primary-50',
+            )}
+          >
+            <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
+          </span>
+          <ModeAvatarDot mode={user.platform_mode} />
         </span>
         {/* Name + ID + mode (desktop / wider trigger only) */}
         <span className="hidden sm:flex items-center gap-2">
@@ -88,7 +92,7 @@ export default function UserMenu({ inverted = false }: Props) {
               {user.registration_id}
             </span>
           </span>
-          {!inverted && <ModeBadge mode={user.platform_mode} />}
+          {!inverted && <ModeBadge mode={user.platform_mode} compact />}
         </span>
         <ChevronDown
           size={16}
@@ -104,8 +108,11 @@ export default function UserMenu({ inverted = false }: Props) {
           {/* ── Identity header (branded gradient) ── */}
           <div className="relative px-4 pt-4 pb-3.5 bg-gradient-to-br from-primary-600 to-primary-700 text-white">
             <div className="flex items-center gap-3">
-              <span className="h-11 w-11 rounded-full overflow-hidden ring-2 ring-white/40 bg-white/15 shrink-0">
-                <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
+              <span className="relative shrink-0">
+                <span className="h-11 w-11 rounded-full overflow-hidden ring-2 ring-white/40 bg-white/15 flex items-center justify-center">
+                  <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
+                </span>
+                <ModeAvatarDot mode={user.platform_mode} size="md" />
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate">{user.name}</p>

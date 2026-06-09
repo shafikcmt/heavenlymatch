@@ -115,6 +115,8 @@ return [
 
     // ── Platform mode ─────────────────────────────────────────────────────────
     'mode'             => 'মোড',
+    'mode_islamic_short' => 'ইসলামিক',
+    'mode_general_short' => 'সাধারণ',
     'mode_general'     => 'সাধারণ মোড',
     'mode_islamic'     => 'ইসলামিক / হালাল মোড',
     'mode_general_desc'=> 'সাধারণ বিবাহ অভিজ্ঞতা',
