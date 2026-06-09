@@ -332,7 +332,24 @@ function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, o
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       {assist && !error && (
-        <p className="mt-1 text-xs text-slate-400">{t('common', 'ai_help_hint')}</p>
+        value.trim().length > 0 ? (
+          // Has content → offer to improve the user's own text.
+          <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-slate-400">{t('common', 'ai_rewrite_hint')}</p>
+            <WritingAssistant
+              variant="rewrite"
+              field={assist.field}
+              value={value}
+              mode={assist.mode}
+              gender={assist.gender}
+              maxLength={maxLength}
+              onApply={onChange}
+            />
+          </div>
+        ) : (
+          // Empty → gentle nudge toward the suggestion button beside the label.
+          <p className="mt-1 text-xs text-slate-400">{t('common', 'ai_help_hint')}</p>
+        )
       )}
     </div>
   )

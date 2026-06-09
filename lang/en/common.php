@@ -147,6 +147,13 @@ return [
     'ai_replace'      => 'Replace',
     'ai_append'       => 'Append',
     'ai_cancel'       => 'Cancel',
+    'ai_copy'         => 'Copy',
+    'ai_copied'       => 'Copied',
+    'ai_rewrite'      => 'Rewrite My Text',
+    'ai_rewrite_hint' => 'Want to make this more beautiful? Improve your text with AI.',
+    'ai_rewrite_title'=> 'Improved version',
+    'ai_rewrite_panel_hint' => 'Review it, then choose how to apply.',
+    'ai_unavailable'  => 'AI suggestion is temporarily unavailable. You can still write manually.',
 
     // ── Language ─────────────────────────────────────────────────────────────
     'language'      => 'Language',

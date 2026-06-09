@@ -318,3 +318,64 @@ export function getSuggestions(ctx: SuggestionContext): string[] {
 export async function fetchSuggestions(ctx: SuggestionContext): Promise<string[]> {
   return getSuggestions(ctx)
 }
+
+// ─── Rewrite / "make it better" ──────────────────────────────────────────────
+
+export interface RewriteContext extends SuggestionContext {
+  /** The user's current text to improve. */
+  text: string
+  /** Field max length, so improved text never exceeds the column/limit. */
+  maxLength?: number
+}
+
+/** Trim to maxLength on a word boundary (no mid-word cut). */
+function clampLen(s: string, max?: number): string {
+  if (!max || s.length <= max) return s
+  const cut = s.slice(0, max)
+  const sp = cut.lastIndexOf(' ')
+  return (sp > max * 0.6 ? cut.slice(0, sp) : cut).trim()
+}
+
+/** Light, non-destructive tidy of the user's own words (no new facts added). */
+function polish(text: string, lang: 'en' | 'bn'): string {
+  let s = text.replace(/\s+/g, ' ').trim()
+  if (!s) return s
+  if (lang === 'en') {
+    s = s.charAt(0).toUpperCase() + s.slice(1)
+    if (!/[.!?]$/.test(s)) s += '.'
+  } else if (!/[।.!?]$/.test(s)) {
+    s += '।'
+  }
+  return s
+}
+
+/**
+ * Offline "rewrite my text". Returns 1–3 improved, matrimonial-friendly versions
+ * of the user's text, adapted to mode + language and clamped to maxLength.
+ *
+ * - Real prose in the target language → leads with a lightly-polished version of
+ *   the user's OWN words (keeps meaning, just tidies it).
+ * - Short / placeholder / transliterated input → falls back to polished
+ *   field-appropriate templates (same bank as suggestions).
+ *
+ * Never throws; always returns at least one option (templates as a floor).
+ */
+export function rewriteText(ctx: RewriteContext): string[] {
+  const lang: 'en' | 'bn' = ctx.locale === 'bn' ? 'bn' : 'en'
+  const raw = (ctx.text ?? '').replace(/\s+/g, ' ').trim()
+  const out: string[] = []
+
+  // Only treat as "real prose worth polishing" when it's reasonably long AND
+  // written in the target script (avoids parroting "test" or Banglish back).
+  const inTargetScript = lang === 'bn' ? /[ঀ-৿]/.test(raw) : /[A-Za-z]/.test(raw)
+  if (raw.length >= 25 && /\s/.test(raw) && inTargetScript) {
+    out.push(polish(raw, lang))
+  }
+
+  for (const s of getSuggestions(ctx)) {
+    if (!out.includes(s)) out.push(s)
+    if (out.length >= 3) break
+  }
+
+  return out.map(s => clampLen(s, ctx.maxLength)).filter(s => s.length > 0)
+}
