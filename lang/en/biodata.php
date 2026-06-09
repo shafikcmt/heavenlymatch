@@ -321,7 +321,7 @@ return [
     // ── Contact / Guardian ────────────────────────────────────────────────────
     'guardian_mobile'       => 'Guardian Mobile Number',
     'guardian_relationship' => 'Relationship with Guardian',
-    'guardian_email'        => 'Guardian Email (Optional)',
+    'guardian_email'        => 'Guardian Email',
 
     // ── Photos ────────────────────────────────────────────────────────────────
     'photos_title'              => 'Profile Photos',
@@ -405,8 +405,11 @@ return [
     // ── Step 9: Contact & Privacy ─────────────────────────────────────────────
     'contact_intro'           => 'Add contact details for your guardian. These stay private and follow your privacy preference below.',
     'whatsapp_number'         => 'WhatsApp Number',
-    'whatsapp_hint'           => 'Bangladesh format: 01XXXXXXXXX or +8801XXXXXXXXX. Never shown publicly.',
-    'whatsapp_invalid'        => 'Please enter a valid Bangladeshi WhatsApp number.',
+    'whatsapp_hint'           => 'Never shown publicly. Select country code, then enter the number.',
+    'whatsapp_invalid'        => 'Please enter a valid Bangladeshi mobile number. Example: 018XXXXXXXX, or select +880 and enter 18XXXXXXXX.',
+    'phone_code_hint'         => 'Select country code first, then enter the mobile number.',
+    'phone_local_ph'          => 'Mobile number',
+    'phone_invalid'           => 'Please enter a valid mobile number. For Bangladesh: 018XXXXXXXX, or select +880 and enter 18XXXXXXXX.',
     'contact_privacy_section' => 'Contact Privacy',
     'contact_privacy'         => 'Who can see your contact details',
     'contact_privacy_private' => 'Private — only admin can see',

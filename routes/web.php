@@ -120,11 +120,13 @@ Route::middleware(['auth', 'verified.user'])->group(function () {
 
     // ── Biodata wizard (accessible before biodata is complete) ────────────────
     Route::prefix('biodata')->name('biodata.')->group(function () {
+        // Steps 1–10 (10 = photo + review). The old [1-9] constraint 404'd step 10,
+        // so Step 9 → "Save & Continue" landed on an unroutable page.
         Route::get('/wizard/{step?}', [BiodataWizardController::class, 'show'])
-            ->where('step', '[1-9]')
+            ->where('step', '[1-9]|10')
             ->name('wizard');
         Route::post('/wizard/{step}', [BiodataWizardController::class, 'save'])
-            ->where('step', '[1-9]')
+            ->where('step', '[1-9]|10')
             ->name('save');
     });
 

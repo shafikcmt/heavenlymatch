@@ -156,13 +156,14 @@ class BiodataWizardController extends Controller
         // guardian_mobile / guardian_whatsapp / whatsapp_number all share one rule.
         if ($step === 9) {
             foreach (['whatsapp_number', 'guardian_mobile', 'guardian_whatsapp'] as $phoneField) {
+                // Optional: an empty value never blocks the step.
                 if (empty($validated[$phoneField])) {
                     continue;
                 }
-                $normalized = $this->phone->normalizePhone($validated[$phoneField]);
+                $normalized = $this->normalizeBiodataPhone($validated[$phoneField]);
                 if ($normalized === null) {
                     throw ValidationException::withMessages([
-                        $phoneField => __('biodata.whatsapp_invalid'),
+                        $phoneField => __('biodata.phone_invalid'),
                     ]);
                 }
                 $validated[$phoneField] = $normalized;
@@ -259,6 +260,31 @@ class BiodataWizardController extends Controller
      *
      * @param  array<string,mixed>  $validated
      */
+    /**
+     * Normalise a biodata contact number. Bangladesh numbers are validated
+     * strictly (reuses the auth-grade BD normaliser); other country codes are
+     * accepted as generic E.164 (+ followed by 8–15 digits) so NRB guardians /
+     * contacts abroad can still be saved. Returns null when unusable.
+     */
+    private function normalizeBiodataPhone(string $value): ?string
+    {
+        $digits = preg_replace('/[^0-9]/', '', $value) ?? '';
+        if ($digits === '') {
+            return null;
+        }
+
+        // Looks Bangladeshi → strict BD validation/normalisation.
+        $looksBd = str_starts_with($digits, '880')
+            || str_starts_with($digits, '0')
+            || (strlen($digits) <= 11 && str_starts_with($digits, '1'));
+        if ($looksBd) {
+            return $this->phone->normalizePhone($value); // null if not a valid BD mobile
+        }
+
+        // International: accept a plausible E.164 national+country length.
+        return (strlen($digits) >= 8 && strlen($digits) <= 15) ? '+' . $digits : null;
+    }
+
     private function validateEducationConsistency(array $validated): void
     {
         $system  = $validated['education_medium'] ?? null;

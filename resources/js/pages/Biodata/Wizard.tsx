@@ -16,6 +16,7 @@ import {
   Search, Phone, ClipboardCheck, AlertTriangle,
 } from 'lucide-react'
 import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
+import PhoneNumberInput from '@/components/forms/PhoneNumberInput'
 import {
   levelsForSystem, recordLevelsFor, isRecordLevelValid,
   isHighestValidForSystem, nextDefaultLevel, rankOf, levelLabelKey, isEduSystem,
@@ -2399,12 +2400,12 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label={`${t('biodata', 'guardian_mobile')} (${t('common', 'optional')})`}
+                  <PhoneNumberInput
+                    label={t('biodata', 'guardian_mobile')}
+                    optional
                     value={data.guardian_mobile ?? ''}
-                    onChange={e => setData('guardian_mobile', e.target.value as never)}
+                    onChange={v => setData('guardian_mobile', v as never)}
                     error={errors.guardian_mobile}
-                    placeholder="+88017XXXXXXXX"
                   />
                   <SearchableSelect
                     label={`${t('biodata', 'guardian_relationship')} (${t('common', 'optional')})`}
@@ -2425,22 +2426,21 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.guardian_email}
                     placeholder="guardian@example.com"
                   />
-                  <Input
-                    label={`${t('biodata', 'guardian_whatsapp')} (${t('common', 'optional')})`}
+                  <PhoneNumberInput
+                    label={t('biodata', 'guardian_whatsapp')}
+                    optional
                     value={data.guardian_whatsapp ?? ''}
-                    onChange={e => setData('guardian_whatsapp', e.target.value as never)}
+                    onChange={v => setData('guardian_whatsapp', v as never)}
                     error={errors.guardian_whatsapp}
-                    placeholder="01XXXXXXXXX"
                   />
                 </div>
 
-                <Input
-                  label={`${t('biodata', 'whatsapp_number')} (${t('common', 'optional')})`}
+                <PhoneNumberInput
+                  label={t('biodata', 'whatsapp_number')}
+                  optional
                   value={data.whatsapp_number ?? ''}
-                  onChange={e => setData('whatsapp_number', e.target.value as never)}
+                  onChange={v => setData('whatsapp_number', v as never)}
                   error={errors.whatsapp_number}
-                  placeholder="01XXXXXXXXX"
-                  helperText={t('biodata', 'whatsapp_hint')}
                 />
 
                 <SectionLabel>{t('biodata', 'contact_privacy_section')}</SectionLabel>
