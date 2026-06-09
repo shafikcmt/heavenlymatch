@@ -445,10 +445,12 @@ class BiodataWizardController extends Controller
                 'occupation_category'   => ['nullable', 'in:business,service_govt,service_private,education,medical,engineering,agriculture,student,housewife,ngo,it,abroad_job,other'],
                 'profession_details'    => ['nullable', 'string', 'max:500'],
                 'monthly_income'        => ['nullable', 'integer', 'min:0'],
-                'profession_halal_status' => ['nullable', 'in:halal,not_sure,halal_alternative'],
-                // Income framing + privacy + career (Phase B).
-                'income_type'           => ['nullable', 'in:monthly,yearly,variable,private'],
-                'income_privacy'        => ['nullable', 'in:public,private,members_only'],
+                'profession_halal_status' => ['nullable', 'in:halal,not_sure,halal_alternative,prefer_not_say'],
+                // Income framing + privacy + career (Phase B). `yearly` kept for
+                // legacy rows; `business/freelance/daily` + `range` are the newer
+                // guided options surfaced in the wizard.
+                'income_type'           => ['nullable', 'in:monthly,yearly,variable,private,business,freelance,daily'],
+                'income_privacy'        => ['nullable', 'in:public,private,members_only,range'],
                 'workplace_type'        => ['nullable', 'string', 'max:100'],
                 'future_career_plan'    => ['nullable', 'string', 'max:500'],
             ],

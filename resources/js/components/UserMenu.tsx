@@ -46,7 +46,8 @@ export default function UserMenu({ inverted = false }: Props) {
     }
   }, [open])
 
-  const avatarSrc = `/images/avatar-${user.gender}.svg`
+  // Safe fallback: unknown/missing gender → male avatar (never a broken image).
+  const avatarSrc = `/images/avatar-${user.gender === 'female' ? 'female' : 'male'}.svg`
   const isPremium = user.membership_status === 'active'
   const isExpired = user.membership_status === 'expired'
 

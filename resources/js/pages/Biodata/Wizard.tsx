@@ -17,8 +17,12 @@ import {
 import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 import {
   levelsForSystem, recordLevelsFor, isRecordLevelValid,
-  isHighestValidForSystem, nextDefaultLevel,
+  isHighestValidForSystem, nextDefaultLevel, rankOf, levelLabelKey, isEduSystem,
 } from '@/lib/education'
+
+// SSC / O-Level / Dakhil / Sanawiyah / SSC-Vocational all sit at this rank.
+// Anything below it ("low qualification") needs no detailed education records.
+const SSC_EQUIVALENT_RANK = 4
 
 // ─── Sub-types ────────────────────────────────────────────────────────────────
 
@@ -762,6 +766,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     birth_month: biodata.birth_date ? String(Number(String(biodata.birth_date).slice(5, 7))) : '',
     birth_year:  biodata.birth_date ? String(biodata.birth_date).slice(0, 4) : '',
     contact_privacy: biodata.contact_privacy ?? 'private',
+    // Privacy-first default: income hidden from the public profile until changed.
+    income_privacy: biodata.income_privacy ?? 'private',
     allow_shortlist: biodata.allow_shortlist ?? true,
     allow_contact_request: biodata.allow_contact_request ?? true,
     // Declaration checkboxes always start unchecked — must be re-affirmed on submit.
@@ -824,21 +830,58 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
 
   // Localised option lists for the current system.
   const highestOpts = levelsForSystem(eduSystem).map(l => ({ value: l.value, label: t('biodata', l.labelKey) }))
+  // Detailed records are only kept for academic MILESTONES — SSC-equivalent and
+  // above, capped at the highest qualification. Sub-SSC levels (Class 5/8/JSC) are
+  // "low qualifications" and never appear as record options.
+  const milestoneLevels = recordLevelsFor(eduSystem, eduHighest).filter(l => l.rank >= SSC_EQUIVALENT_RANK)
   const recordLevelOpts = (currentValue: string) => {
     const used = eduRecords.map(r => r.level ?? '').filter(v => v && v !== currentValue)
-    return recordLevelsFor(eduSystem, eduHighest)
+    return milestoneLevels
       .filter(l => !used.includes(l.value))
       .map(l => ({ value: l.value, label: t('biodata', l.labelKey) }))
   }
   const allLevelsAdded =
     eduSystem !== '' && eduSystem !== 'other' &&
-    recordLevelsFor(eduSystem, eduHighest).length > 0 &&
-    recordLevelsFor(eduSystem, eduHighest).every(l => eduRecords.some(r => r.level === l.value))
+    milestoneLevels.length > 0 &&
+    milestoneLevels.every(l => eduRecords.some(r => r.level === l.value))
 
   // Records whose known level ranks above the chosen highest qualification.
   const eduInvalidIndexes = eduRecords
     .map((r, i) => (!isRecordLevelValid(eduSystem, eduHighest, r.level ?? '') ? i : -1))
     .filter(i => i >= 0)
+
+  // ── Conditional gating (system → highest qualification → records) ────────────
+  const hasSystem  = !!eduSystem
+  const hasHighest = !!eduHighest
+  // `other` system has no ladder → free-text records, no highest-qualification gate.
+  const isOtherSystem = eduSystem === 'other'
+  const highestRank = rankOf(eduSystem, eduHighest)
+  // Low qualification: a KNOWN level below the SSC-equivalent rank.
+  const isLowQualification =
+    isEduSystem(eduSystem) && !isOtherSystem && hasHighest &&
+    highestRank != null && highestRank < SSC_EQUIVALENT_RANK
+  // Show the detailed records UI only once we know the ceiling (highest selected,
+  // SSC+), or for the free-text `other` system.
+  const showDetailedRecords =
+    isOtherSystem || (isEduSystem(eduSystem) && hasHighest && !isLowQualification)
+  // A record counts as "detailed" if it carries any real schooling data (not just
+  // a free-text note) — used to honour data-safety when downgrading to low-qual.
+  const hasDetailedRecords = eduRecords.some(r =>
+    r.level || r.institute || r.subject || r.board_university || r.result_value || r.passing_year)
+
+  // Smart "Add …" button label from the next level we'd add.
+  const nextAddLevel = nextDefaultLevel(eduSystem, eduHighest, eduRecords.map(r => r.level ?? '').filter(Boolean))
+  const nextAddLabelKey = nextAddLevel ? levelLabelKey(eduSystem, nextAddLevel) : null
+  const addButtonLabel = nextAddLabelKey
+    ? t('biodata', 'edu_add_specific', { level: t('biodata', nextAddLabelKey) })
+    : t('biodata', 'edu_add_record')
+
+  // Single free-text note for low qualifications, stored as one note-only record
+  // (no level → never counted as a detailed record, never trips validation).
+  const lowQualNote = eduRecords.find(r => !r.level && r.note)?.note ?? ''
+  const setLowQualNote = (v: string) => {
+    setData('education_details', (v ? [normaliseEdu({ note: v, edu_type: deriveEduMethod(eduSystem) })] : []) as never)
+  }
 
   const handleSystemChange = (system: string) => {
     setData('education_method', deriveEduMethod(system) as never)
@@ -1080,13 +1123,16 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     { value: 'other',          label: t('biodata', 'edu_medium_other') },
   ]
   const incomeTypeOpts = [
-    { value: 'monthly',  label: t('biodata', 'income_type_monthly') },
-    { value: 'yearly',   label: t('biodata', 'income_type_yearly') },
-    { value: 'variable', label: t('biodata', 'income_type_variable') },
-    { value: 'private',  label: t('biodata', 'income_type_private') },
+    { value: 'monthly',   label: t('biodata', 'income_type_monthly') },
+    { value: 'business',  label: t('biodata', 'income_type_business') },
+    { value: 'freelance', label: t('biodata', 'income_type_freelance') },
+    { value: 'daily',     label: t('biodata', 'income_type_daily') },
+    { value: 'variable',  label: t('biodata', 'income_type_variable') },
+    { value: 'private',   label: t('biodata', 'income_type_private') },
   ]
   const incomePrivacyOpts = [
     { value: 'public',       label: t('biodata', 'income_privacy_public') },
+    { value: 'range',        label: t('biodata', 'income_privacy_range') },
     { value: 'members_only', label: t('biodata', 'income_privacy_members') },
     { value: 'private',      label: t('biodata', 'income_privacy_private') },
   ]
@@ -1094,6 +1140,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     { value: 'halal',             label: t('biodata', 'halal_status_halal') },
     { value: 'halal_alternative', label: t('biodata', 'halal_status_alternative') },
     { value: 'not_sure',          label: t('biodata', 'halal_status_not_sure') },
+    { value: 'prefer_not_say',    label: t('biodata', 'halal_status_prefer_not_say') },
   ]
   const biodataVisibilityOpts = [
     { value: 'public',              label: t('biodata', 'visibility_public') },
@@ -1596,7 +1643,11 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {/* ── Step 4: Education & Career ── */}
             {step === 4 && (
               <>
-                {/* Summary fields — Education System drives everything below */}
+                {/* ═══ EDUCATION ═══ */}
+                <SectionLabel>{t('biodata', 'section_education')}</SectionLabel>
+
+                {/* Education System drives everything below. Highest Qualification
+                    appears only for the laddered systems (not free-text `other`). */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SearchableSelect
                     label={t('biodata', 'education_system')}
@@ -1607,7 +1658,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     helperText={t('biodata', 'education_system_help')}
                     required
                   />
-                  {eduSystem && eduSystem !== 'other' && (
+                  {isEduSystem(eduSystem) && !isOtherSystem && (
                     <SearchableSelect
                       label={t('biodata', 'highest_qualification')}
                       value={data.highest_qualification ?? ''}
@@ -1627,58 +1678,115 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   </div>
                 )}
 
-                {/* Multiple education records */}
-                <div className="space-y-3">
-                  <SectionLabel>{t('biodata', 'education_records')}</SectionLabel>
-                  <p className="text-xs text-slate-400">{t('biodata', 'education_records_help')}</p>
-
-                  {!eduSystem && (
-                    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-6 text-center">
-                      <p className="text-sm text-slate-400">{t('biodata', 'edu_select_system_first')}</p>
-                    </div>
-                  )}
-
-                  {eduSystem && eduRecords.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-8 text-center">
-                      <p className="text-sm text-slate-400">{t('biodata', 'edu_no_records')}</p>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    {eduRecords.map((rec, idx) => (
-                      <EducationRecordCard
-                        key={idx}
-                        record={rec}
-                        index={idx}
-                        levelOptions={recordLevelOpts(rec.level ?? '')}
-                        levelLabel={t('biodata', 'edu_record_level')}
-                        allowFreeLevel={eduSystem === 'other' || !eduSystem}
-                        invalid={eduInvalidIndexes.includes(idx)}
-                        invalidMsg={t('biodata', 'edu_level_too_high')}
-                        onChange={r => updateEdu(idx, r)}
-                        onRemove={() => removeEdu(idx)}
-                      />
-                    ))}
+                {/* (a) No system chosen yet */}
+                {!hasSystem && (
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-6 text-center">
+                    <p className="text-sm text-slate-400">{t('biodata', 'edu_select_system_first')}</p>
                   </div>
+                )}
 
-                  {eduSystem && allLevelsAdded ? (
-                    <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-center text-xs text-slate-500">
-                      {t('biodata', 'edu_all_levels_added')}
-                    </p>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={addEdu}
-                      disabled={!eduSystem}
-                      className="flex items-center gap-2 w-full justify-center rounded-xl border-2 border-dashed border-primary-300 bg-primary-50 px-4 py-3 text-sm font-medium text-primary-600 hover:bg-primary-100 hover:border-primary-400 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Plus size={16} /> {t('biodata', 'edu_add_record')}
-                    </button>
-                  )}
-                </div>
+                {/* (b) Laddered system chosen but no highest qualification yet */}
+                {isEduSystem(eduSystem) && !isOtherSystem && !hasHighest && (
+                  <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    <GraduationCap size={16} className="mt-0.5 shrink-0" />
+                    <span>{t('biodata', 'edu_select_highest_first')}</span>
+                  </div>
+                )}
 
-                {/* Career */}
-                <SectionLabel>Career</SectionLabel>
+                {/* (c) Low qualification (below SSC-equivalent): no detailed records */}
+                {isLowQualification && (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <CheckCircle size={18} className="mt-0.5 shrink-0 text-emerald-500" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">{t('biodata', 'edu_low_qual_title')}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{t('biodata', 'edu_low_qual_desc')}</p>
+                      </div>
+                    </div>
+
+                    {hasDetailedRecords ? (
+                      <>
+                        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                          <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                          <span>{t('biodata', 'edu_low_qual_review')}</span>
+                        </div>
+                        <div className="space-y-3">
+                          {eduRecords.map((rec, idx) => (
+                            <EducationRecordCard
+                              key={idx}
+                              record={rec}
+                              index={idx}
+                              levelOptions={recordLevelOpts(rec.level ?? '')}
+                              levelLabel={t('biodata', 'edu_record_level')}
+                              allowFreeLevel={false}
+                              invalid={eduInvalidIndexes.includes(idx)}
+                              invalidMsg={t('biodata', 'edu_level_too_high')}
+                              onChange={r => updateEdu(idx, r)}
+                              onRemove={() => removeEdu(idx)}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <Input
+                        label={t('biodata', 'edu_low_qual_note_label')}
+                        value={lowQualNote}
+                        onChange={e => setLowQualNote(e.target.value)}
+                        placeholder={t('biodata', 'edu_low_qual_note_ph')}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* (d) Detailed education records (SSC+ or free-text `other`) */}
+                {showDetailedRecords && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-400">{t('biodata', 'education_records_help')}</p>
+
+                    {eduRecords.length === 0 && (
+                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-8 text-center">
+                        <p className="text-sm text-slate-400">{t('biodata', 'edu_no_records')}</p>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {eduRecords.map((rec, idx) => (
+                        <EducationRecordCard
+                          key={idx}
+                          record={rec}
+                          index={idx}
+                          levelOptions={recordLevelOpts(rec.level ?? '')}
+                          levelLabel={t('biodata', 'edu_record_level')}
+                          allowFreeLevel={isOtherSystem}
+                          invalid={eduInvalidIndexes.includes(idx)}
+                          invalidMsg={t('biodata', 'edu_level_too_high')}
+                          onChange={r => updateEdu(idx, r)}
+                          onRemove={() => removeEdu(idx)}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Add button only when an allowed level is still missing.
+                        Free-text `other` always allows adding more records. */}
+                    {!isOtherSystem && allLevelsAdded ? (
+                      <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-center text-xs text-slate-500">
+                        {t('biodata', 'edu_all_levels_added')}
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={addEdu}
+                        className="flex items-center gap-2 w-full justify-center rounded-xl border-2 border-dashed border-primary-300 bg-primary-50 px-4 py-3 text-sm font-medium text-primary-600 hover:bg-primary-100 hover:border-primary-400 transition-colors"
+                      >
+                        <Plus size={16} /> {isOtherSystem ? t('biodata', 'edu_add_record') : addButtonLabel}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* ═══ CAREER ═══ */}
+                <SectionLabel>{t('biodata', 'section_career')}</SectionLabel>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SearchableSelect
                     label={t('biodata', 'occupation_category')}
@@ -1695,25 +1803,42 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     error={errors.occupation}
                     allowFreeText
                     required
-                    placeholder="e.g. Software Engineer"
+                    placeholder={t('biodata', 'occupation_ph')}
                   />
                 </div>
 
+                <WizardTextarea
+                  label={t('biodata', 'profession_details')}
+                  value={(data.profession_details as string) ?? ''}
+                  onChange={v => setData('profession_details', v as never)}
+                  error={errors.profession_details}
+                  placeholder={t('biodata', 'profession_details_ph')}
+                  rows={3}
+                />
+
+                {/* Income — all optional, privacy-first defaults */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
-                    label={t('biodata', 'monthly_income')}
-                    type="number"
+                    label={`${t('biodata', 'monthly_income')} (${t('common', 'optional')})`}
+                    type="text"
+                    inputMode="numeric"
                     value={data.monthly_income !== '' && data.monthly_income !== undefined ? String(data.monthly_income) : ''}
-                    onChange={e => setData('monthly_income', (e.target.value ? parseInt(e.target.value, 10) : '') as never)}
+                    onChange={e => {
+                      const digits = e.target.value.replace(/[^\d]/g, '')
+                      setData('monthly_income', (digits ? parseInt(digits, 10) : '') as never)
+                    }}
+                    onWheel={e => (e.target as HTMLInputElement).blur()}
                     error={errors.monthly_income}
-                    placeholder="Monthly income in BDT (e.g. 50000)"
+                    placeholder={t('biodata', 'monthly_income_ph')}
+                    helperText={t('biodata', 'monthly_income_help')}
                   />
                   <SearchableSelect
-                    label={t('biodata', 'income_type')}
+                    label={`${t('biodata', 'income_type')} (${t('common', 'optional')})`}
                     value={data.income_type ?? ''}
                     onChange={v => setData('income_type', v as never)}
                     options={incomeTypeOpts}
                     error={errors.income_type}
+                    placeholder="— Select —"
                   />
                 </div>
 
@@ -1724,32 +1849,28 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                     onChange={v => setData('income_privacy', v as never)}
                     options={incomePrivacyOpts}
                     error={errors.income_privacy}
+                    helperText={t('biodata', 'income_privacy_help')}
                   />
                   <SearchableSelect
-                    label={t('biodata', 'profession_halal_status')}
+                    label={`${t('biodata', 'profession_halal_status')} (${t('common', 'optional')})`}
                     value={data.profession_halal_status ?? ''}
                     onChange={v => setData('profession_halal_status', v as never)}
                     options={halalStatusOpts}
                     error={errors.profession_halal_status}
+                    helperText={t('biodata', 'profession_halal_help')}
+                    placeholder="— Select —"
                   />
                 </div>
 
-                <Input
-                  label={`${t('biodata', 'workplace_type')} (${t('common', 'optional')})`}
-                  value={data.workplace_type ?? ''}
-                  onChange={e => setData('workplace_type', e.target.value as never)}
-                  error={errors.workplace_type}
-                  placeholder={t('biodata', 'workplace_type_ph')}
-                />
-
-                <WizardTextarea
-                  label={t('biodata', 'profession_details')}
-                  value={(data.profession_details as string) ?? ''}
-                  onChange={v => setData('profession_details', v as never)}
-                  error={errors.profession_details}
-                  placeholder="Brief description of your work, company, or studies..."
-                  rows={3}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={`${t('biodata', 'workplace_type')} (${t('common', 'optional')})`}
+                    value={data.workplace_type ?? ''}
+                    onChange={e => setData('workplace_type', e.target.value as never)}
+                    error={errors.workplace_type}
+                    placeholder={t('biodata', 'workplace_type_ph')}
+                  />
+                </div>
 
                 <WizardTextarea
                   label={`${t('biodata', 'future_career_plan')} (${t('common', 'optional')})`}

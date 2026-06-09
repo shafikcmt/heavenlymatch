@@ -58,4 +58,17 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Hide native number-input spinner arrows (Chrome/Safari/Edge + Firefox).
+     Numeric biodata fields use type="text" + inputMode="numeric", but this is a
+     safety net so no number input anywhere shows the up/down spinners. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
