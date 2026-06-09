@@ -138,6 +138,16 @@ return [
     'page'          => 'Page :current of :total',
     'load_more'     => 'Load more',
 
+    // ── AI writing assistant ──────────────────────────────────────────────────
+    'ai_suggest'      => 'AI Suggestion',
+    'ai_help_hint'    => 'Need help writing? Use AI suggestion and edit as you like.',
+    'ai_panel_title'  => 'Writing suggestions',
+    'ai_panel_hint'   => 'Pick one — you can edit it freely after inserting.',
+    'ai_use'          => 'Use this',
+    'ai_replace'      => 'Replace',
+    'ai_append'       => 'Append',
+    'ai_cancel'       => 'Cancel',
+
     // ── Language ─────────────────────────────────────────────────────────────
     'language'      => 'Language',
     'lang_en'       => 'English',

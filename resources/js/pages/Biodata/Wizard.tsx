@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { SearchableSelect } from '@/components/ui/SearchableSelect'
+import WritingAssistant from '@/components/ui/WritingAssistant'
 import { HeightSelect } from '@/components/ui/HeightSelect'
 import { WeightSelect } from '@/components/ui/WeightSelect'
 import { cn } from '@/lib/utils'
@@ -293,19 +294,33 @@ function WizardToggle({ value, label, onChange }: {
   )
 }
 
-function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, onChange, error }: {
+function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, onChange, error, assist }: {
   value: string; label: string; placeholder?: string
   rows?: number; maxLength?: number; onChange: (v: string) => void; error?: string
+  /** When set, shows a small AI writing-assistant button for this long-text field. */
+  assist?: { field: string; mode?: string | null; gender?: string | null }
 }) {
+  const { t } = useTranslation()
   return (
     <div>
-      <div className="flex items-center justify-between mb-1.5">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <label className="block text-sm font-medium text-slate-700">{label}</label>
-        {maxLength && (
-          <span className={cn('text-xs tabular-nums', value.length > maxLength * 0.9 ? 'text-amber-600' : 'text-slate-400')}>
-            {value.length}/{maxLength}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {maxLength && (
+            <span className={cn('text-xs tabular-nums', value.length > maxLength * 0.9 ? 'text-amber-600' : 'text-slate-400')}>
+              {value.length}/{maxLength}
+            </span>
+          )}
+          {assist && (
+            <WritingAssistant
+              field={assist.field}
+              value={value}
+              mode={assist.mode}
+              gender={assist.gender}
+              onApply={onChange}
+            />
+          )}
+        </div>
       </div>
       <textarea
         value={value}
@@ -316,6 +331,9 @@ function WizardTextarea({ value, label, placeholder = '', rows = 4, maxLength, o
         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none transition-colors"
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {assist && !error && (
+        <p className="mt-1 text-xs text-slate-400">{t('common', 'ai_help_hint')}</p>
+      )}
     </div>
   )
 }
@@ -1083,16 +1101,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     { value: 'disability',      label: t('biodata', 'health_disability') },
     { value: 'prefer_not_say',  label: t('biodata', 'health_prefer_not_say') },
   ]
-  const dietOpts = [
-    { value: 'halal_only',     label: t('biodata', 'diet_halal_only') },
-    { value: 'vegetarian',     label: t('biodata', 'diet_vegetarian') },
-    { value: 'no_restriction', label: t('biodata', 'diet_no_restriction') },
-  ]
-  const smokingOpts = [
-    { value: 'never',        label: t('biodata', 'smoking_never') },
-    { value: 'occasionally', label: t('biodata', 'smoking_occasionally') },
-    { value: 'regularly',    label: t('biodata', 'smoking_regularly') },
-  ]
+  // diet / smoking option lists removed — fields no longer shown in Step 5
+  // (DB columns and any saved values are intentionally preserved).
   const partnerMaritalOpts = [
     { value: 'never_married', label: t('biodata', 'never_married') },
     { value: 'divorced',      label: t('biodata', 'divorced') },
@@ -1510,6 +1520,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                             onChange={v => setData('purdah_details', v as never)}
                             error={errors.purdah_details}
                             placeholder={t('biodata', 'purdah_details_ph')}
+                            assist={{ field: 'religious', mode: user.mode, gender: user.gender }}
                             rows={2}
                             maxLength={500}
                           />
@@ -1814,6 +1825,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   error={errors.profession_details}
                   placeholder={t('biodata', 'profession_details_ph')}
                   rows={3}
+                  assist={{ field: 'profession_details', mode: user.mode, gender: user.gender }}
                 />
 
                 {/* Income — all optional, privacy-first defaults */}
@@ -1880,6 +1892,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'future_career_plan_ph')}
                   rows={2}
                   maxLength={500}
+                  assist={{ field: 'future_career_plan', mode: user.mode, gender: user.gender }}
                 />
               </>
             )}
@@ -2047,6 +2060,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   error={errors.family_details}
                   placeholder="Brief description of your family background..."
                   rows={3}
+                  assist={{ field: 'family_details', mode: user.mode, gender: user.gender }}
                 />
 
                 <WizardTextarea
@@ -2065,22 +2079,8 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {step === 5 && (
               <>
                 <SectionLabel>{t('biodata', 'section_lifestyle')}</SectionLabel>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchableSelect
-                    label={t('biodata', 'diet')}
-                    value={data.diet ?? ''}
-                    onChange={v => setData('diet', v as never)}
-                    options={dietOpts}
-                    error={errors.diet}
-                  />
-                  <SearchableSelect
-                    label={t('biodata', 'smoking')}
-                    value={data.smoking ?? ''}
-                    onChange={v => setData('smoking', v as never)}
-                    options={smokingOpts}
-                    error={errors.smoking}
-                  />
-                </div>
+                {/* Diet & Smoking removed from the form — columns kept in the DB so
+                    existing values are preserved and re-saved untouched. */}
                 <WizardTextarea
                   label={t('biodata', 'hobbies')}
                   value={(data.hobbies as string) ?? ''}
@@ -2088,6 +2088,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   error={errors.hobbies}
                   placeholder="Reading, cooking, traveling, gardening..."
                   rows={3}
+                  assist={{ field: 'hobbies', mode: user.mode, gender: user.gender }}
                 />
               </>
             )}
@@ -2114,6 +2115,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'why_getting_married_ph')}
                   rows={3}
                   maxLength={1000}
+                  assist={{ field: 'why_getting_married', mode: user.mode, gender: user.gender }}
                 />
                 <WizardTextarea
                   label={`${t('biodata', 'marriage_thoughts')} (${t('common', 'optional')})`}
@@ -2123,6 +2125,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'marriage_thoughts_ph')}
                   rows={3}
                   maxLength={1000}
+                  assist={{ field: 'marriage_thoughts', mode: user.mode, gender: user.gender }}
                 />
                 <Input
                   label={`${t('biodata', 'marriage_timeline')} (${t('common', 'optional')})`}
@@ -2625,6 +2628,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'partner_special_qualities_ph')}
                   rows={3}
                   maxLength={1000}
+                  assist={{ field: 'partner_special_qualities', mode: user.mode, gender: user.gender }}
                 />
 
                 <WizardTextarea
@@ -2635,6 +2639,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder={t('biodata', 'partner_deal_breakers_ph')}
                   rows={2}
                   maxLength={1000}
+                  assist={{ field: 'partner_deal_breakers', mode: user.mode, gender: user.gender }}
                 />
 
                 <WizardTextarea
@@ -2645,6 +2650,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   placeholder="Describe the qualities you're looking for in a life partner..."
                   rows={5}
                   maxLength={1000}
+                  assist={{ field: 'partner_expectations', mode: user.mode, gender: user.gender }}
                 />
               </>
             )}
