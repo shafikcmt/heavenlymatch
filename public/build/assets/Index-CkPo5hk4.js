@@ -1,1 +1,0 @@
-import{j as e,H as t}from"./app-DFIcl651.js";function s(){return e.jsxs(e.Fragment,{children:[e.jsx(t,{title:"Index"}),e.jsx("div",{className:"p-8 text-center text-slate-500",children:"Index — Coming soon"})]})}export{s as default};
