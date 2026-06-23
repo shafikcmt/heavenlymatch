@@ -422,6 +422,21 @@ return [
     'confirm_correct'           => 'I confirm that the information provided is correct and accurate.',
     'complete_required_first'   => 'Please complete all required fields before submitting your biodata.',
 
+    // ── Step 10: full biodata review / profile preview ────────────────────────
+    'review_intro'             => 'Please review your full biodata carefully before submitting.',
+    'review_preview_heading'   => 'Your Biodata Preview',
+    'review_not_provided'      => 'Not Provided',
+    'review_section_missing'   => 'Required info missing',
+    'review_nothing_added'     => 'Nothing added in this section yet.',
+    'review_age_suffix'        => 'yrs',
+    'review_present_address'   => 'Present Address',
+    'review_permanent_address' => 'Permanent Address',
+    'review_education_records' => 'Education Records',
+    'review_brothers'          => 'Brothers',
+    'review_sisters'           => 'Sisters',
+    'wizard_update'            => 'Update Biodata',
+    'wizard_submit'            => 'Submit Biodata',
+
     // ── Phase C: extended fields ──────────────────────────────────────────────
     // Step 1 — marital sub-status
     'marital_substatus'      => 'Detailed Status',

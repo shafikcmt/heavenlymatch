@@ -301,6 +301,7 @@ return [
 
     // ── Home — quick registration CTA ─────────────────────────────────────────
     'quick_reg_title'        => 'Find Your Perfect Match',
+    'quick_reg_section_title' => 'Register Free in Seconds',
     'quick_reg_subtitle'     => 'Create your profile and connect with verified Muslim families.',
     'quick_reg_for_label'    => 'Matrimony Profile For',
     'quick_reg_name'         => 'Your Name',

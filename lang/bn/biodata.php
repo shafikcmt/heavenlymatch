@@ -416,6 +416,21 @@ return [
     'confirm_correct'           => 'আমি নিশ্চিত করছি যে প্রদত্ত তথ্য সঠিক ও নির্ভুল।',
     'complete_required_first'   => 'বায়োডাটা জমা দেওয়ার আগে অনুগ্রহ করে সকল আবশ্যক ক্ষেত্র পূরণ করুন।',
 
+    // ── Step 10: full biodata review / profile preview ────────────────────────
+    'review_intro'             => 'জমা দেওয়ার আগে অনুগ্রহ করে আপনার সম্পূর্ণ বায়োডাটা মনোযোগ সহকারে পর্যালোচনা করুন।',
+    'review_preview_heading'   => 'আপনার বায়োডাটা প্রিভিউ',
+    'review_not_provided'      => 'দেওয়া হয়নি',
+    'review_section_missing'   => 'আবশ্যক তথ্য অনুপস্থিত',
+    'review_nothing_added'     => 'এই অংশে এখনও কিছু যোগ করা হয়নি।',
+    'review_age_suffix'        => 'বছর',
+    'review_present_address'   => 'বর্তমান ঠিকানা',
+    'review_permanent_address' => 'স্থায়ী ঠিকানা',
+    'review_education_records' => 'শিক্ষাগত রেকর্ড',
+    'review_brothers'          => 'ভাই',
+    'review_sisters'           => 'বোন',
+    'wizard_update'            => 'বায়োডাটা আপডেট করুন',
+    'wizard_submit'            => 'বায়োডাটা জমা দিন',
+
     'special_category' => 'বিশেষ বিভাগ',
     'partner_religion' => 'পাত্র/পাত্রীর ধর্ম',
     'partner_sect'     => 'মাযহাব পছন্দ',

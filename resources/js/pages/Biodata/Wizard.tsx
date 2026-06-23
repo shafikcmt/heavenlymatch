@@ -13,7 +13,7 @@ import { useTranslation } from '@/lib/i18n'
 import {
   CheckCircle, Save, Plus, Trash2, Camera, Upload, X, Star,
   User, MapPin, Moon, GraduationCap, HeartPulse, Users, HeartHandshake,
-  Search, Phone, ClipboardCheck, AlertTriangle,
+  Search, Phone, ClipboardCheck, AlertTriangle, Pencil,
 } from 'lucide-react'
 import { BangladeshAddressPicker } from '@/components/forms/BangladeshAddressPicker'
 import PhoneNumberInput from '@/components/forms/PhoneNumberInput'
@@ -67,6 +67,7 @@ interface BiodataData {
   about_me?: string
   profile_headline?: string
   mother_tongue?: string
+  nationality?: string
   division?: string
   district?: string
   upazila?: string
@@ -101,6 +102,7 @@ interface BiodataData {
   mahram_practice?: string
   islamic_books_read?: string
   deen_work_details?: string
+  favorite_scholars?: string
   social_media_usage?: string
   is_islamically_educated?: boolean
   wali_approval?: boolean
@@ -239,7 +241,7 @@ interface FieldControl {
 interface Props {
   step: number
   steps: Record<number, string>
-  biodata: BiodataData & { completeness_score?: number }
+  biodata: BiodataData & { completeness_score?: number; is_completed?: boolean; status?: string }
   user: { name: string; gender: string; mode: string }
   customFields?: CustomFieldDef[]
   fieldControl?: Record<string, FieldControl>
@@ -742,12 +744,388 @@ function AddressBlock({
   )
 }
 
+// ─── Step 10 review: full profile-style biodata preview ─────────────────────
+
+// Stored enum value → localisation key (biodata namespace). Values not mapped
+// fall back to a humanised version of the raw string, so no field ever breaks.
+const REVIEW_ENUM: Record<string, Record<string, string>> = {
+  marital_status:          { never_married: 'never_married', married: 'married', divorced: 'divorced', widowed: 'widowed' },
+  complexion:              { very_fair: 'very_fair', fair: 'fair', wheatish: 'wheatish', medium: 'medium', dark: 'dark' },
+  prayers_info:            { '5_times': 'prayers_5_times', '4_times': 'prayers_4_times', sometimes: 'prayers_sometimes', rarely: 'prayers_rarely', never: 'prayers_never' },
+  quran_recitation:        { fluent: 'quran_fluent', basic: 'quran_basic', learning: 'quran_learning', no: 'quran_no' },
+  visa_status:             { citizen: 'visa_citizen', permanent_resident: 'visa_permanent_resident', work_visa: 'visa_work_visa', student_visa: 'visa_student_visa' },
+  health_status:           { healthy: 'health_healthy', minor_condition: 'health_minor_condition', disability: 'health_disability', prefer_not_say: 'health_prefer_not_say' },
+  diet:                    { halal_only: 'diet_halal_only', vegetarian: 'diet_vegetarian', no_restriction: 'diet_no_restriction' },
+  smoking:                 { never: 'smoking_never', occasionally: 'smoking_occasionally', regularly: 'smoking_regularly' },
+  family_type:             { joint: 'family_joint', nuclear: 'family_nuclear', flexible: 'family_flexible' },
+  family_financial_status: { lower: 'finance_lower', lower_middle: 'finance_lower_middle', middle: 'finance_middle', upper_middle: 'finance_upper_middle', upper: 'finance_upper' },
+  home_ownership:          { own_house: 'home_own_house', rented: 'home_rented', family_house: 'home_family_house' },
+  occupation_category:     { business: 'occ_business', service_govt: 'occ_service_govt', service_private: 'occ_service_private', education: 'occ_education', medical: 'occ_medical', engineering: 'occ_engineering', it: 'occ_it', abroad_job: 'occ_abroad_job', student: 'occ_student', housewife: 'occ_housewife', agriculture: 'occ_agriculture', other: 'occ_other' },
+  income_type:             { monthly: 'income_type_monthly', yearly: 'income_type_yearly', variable: 'income_type_variable', private: 'income_type_private', business: 'income_type_business', freelance: 'income_type_freelance', daily: 'income_type_daily' },
+  education_medium:        { general: 'edu_medium_general', qawmi: 'edu_medium_qawmi', alia: 'edu_medium_alia', english_medium: 'edu_medium_english', vocational: 'edu_medium_vocational', other: 'edu_medium_other' },
+  contact_privacy:         { private: 'contact_privacy_private', request_only: 'contact_privacy_request', matches_only: 'contact_privacy_matches' },
+}
+
+const reviewHas = (v: unknown): boolean =>
+  v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && v.length === 0)
+
+const humanise = (v: string): string =>
+  v.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+// One label/value row. Hidden entirely unless it has a value OR is a missing
+// required field (then it surfaces a "Not Provided" amber hint).
+function ReviewRow({ label, value, required, full }: {
+  label: string; value: React.ReactNode; required?: boolean; full?: boolean
+}) {
+  const { t } = useTranslation()
+  const filled = reviewHas(value as unknown)
+  if (!filled && !required) return null
+  return (
+    <div className={cn('py-1.5', full && 'sm:col-span-2')}>
+      <dt className="text-xs font-medium text-slate-400">{label}</dt>
+      <dd className={cn('text-sm mt-0.5 break-words', filled ? 'text-slate-800' : 'text-amber-600 font-medium')}>
+        {filled ? value : t('biodata', 'review_not_provided')}
+      </dd>
+    </div>
+  )
+}
+
+// A collapsible-free section card: icon + title left, Edit button right.
+function ReviewSection({ icon: Icon, title, step, onEdit, missing, children }: {
+  icon: React.ElementType
+  title: string; step: number; onEdit: (s: number) => void; missing?: boolean
+  children: React.ReactNode
+}) {
+  const { t } = useTranslation()
+  return (
+    <div className={cn('rounded-2xl border bg-white shadow-sm overflow-hidden', missing ? 'border-amber-300' : 'border-slate-200')}>
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-slate-100 bg-slate-50/70">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="h-8 w-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+            <Icon size={16} />
+          </span>
+          <h3 className="text-sm font-bold text-slate-900 truncate">{title}</h3>
+          {missing && (
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full whitespace-nowrap">
+              <AlertTriangle size={11} /> {t('biodata', 'review_section_missing')}
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => onEdit(step)}
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-primary-600 hover:bg-primary-50 hover:border-primary-300 transition-colors shrink-0"
+        >
+          <Pencil size={12} /> {t('common', 'edit')}
+        </button>
+      </div>
+      <div className="p-4 sm:p-5">{children}</div>
+    </div>
+  )
+}
+
+// Wraps a set of ReviewRows; if every row is empty (and none required) it shows
+// a gentle placeholder instead of an empty grid. A row is "visible" when its
+// value is present or it is a missing-required field — mirrors ReviewRow.
+function ReviewBody({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation()
+  const arr = (Array.isArray(children) ? children.flat() : [children]) as React.ReactNode[]
+  const hasVisible = arr.some(c => {
+    if (!c || typeof c !== 'object') return false
+    const p = (c as React.ReactElement<{ value?: unknown; required?: boolean }>).props ?? {}
+    return reviewHas(p.value) || !!p.required
+  })
+  if (!hasVisible) {
+    return <p className="text-sm text-slate-400">{t('biodata', 'review_nothing_added')}</p>
+  }
+  return <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0">{children}</dl>
+}
+
+function BiodataReview({ data, user, onEdit }: {
+  data: BiodataData
+  user: { name: string; gender: string; mode: string }
+  onEdit: (step: number) => void
+}) {
+  const { t } = useTranslation()
+  const tl = (k: string) => t('biodata', k)
+
+  // Localised value for a known enum, else a humanised fallback.
+  const enumLabel = (field: string, value: unknown): string => {
+    const v = String(value ?? '')
+    const key = REVIEW_ENUM[field]?.[v]
+    if (key) {
+      const lbl = t('biodata', key)
+      if (lbl !== key) return lbl
+    }
+    return humanise(v)
+  }
+  const yesNo = (v: unknown): React.ReactNode =>
+    v === true ? t('common', 'yes') : v === false ? t('common', 'no') : undefined
+  const num = (v: unknown): string | undefined =>
+    reviewHas(v) ? Number(v).toLocaleString() : undefined
+
+  // Age from birth_date (Y-m-d).
+  const age = (() => {
+    if (!data.birth_date) return null
+    const d = new Date(String(data.birth_date))
+    if (isNaN(d.getTime())) return null
+    return Math.floor((Date.now() - d.getTime()) / 3.15576e10)
+  })()
+  const dobDisplay = data.birth_date
+    ? `${data.birth_date}${age != null ? ` · ${age} ${tl('review_age_suffix')}` : ''}`
+    : undefined
+
+  const isMuslim = !data.religion || String(data.religion).toLowerCase() === 'islam'
+  const isMale = user.gender === 'male'
+
+  // Highest qualification: system-scoped label, else qual_* fallback, else raw.
+  const qualLabel = (() => {
+    const val = data.highest_qualification
+    if (!reviewHas(val)) return undefined
+    const k = levelLabelKey(data.education_medium ?? '', String(val))
+    if (k) {
+      const lbl = t('biodata', k)
+      if (lbl !== k) return lbl
+    }
+    return humanise(String(val))
+  })()
+
+  // ── Per-section required gaps (mirrors each step's Save & Continue gate) ─────
+  const genMissing  = !reviewHas(data.marital_status) || !reviewHas(data.birth_date) ||
+                      !reviewHas(data.height_cm) || !reviewHas(data.weight_kg) || !reviewHas(data.complexion)
+  const locMissing  = !reviewHas(data.residing_country) ||
+                      !(reviewHas(data.current_district) || reviewHas(data.residing_city) || reviewHas(data.current_division))
+  const relMissing  = !reviewHas(data.religion) || (isMuslim && !reviewHas(data.prayers_info))
+  const eduMissing  = !reviewHas(data.highest_qualification) || !reviewHas(data.occupation)
+  const famMissing  = !reviewHas(data.father_profession) || !reviewHas(data.mother_profession) || !reviewHas(data.family_type)
+  const marMissing  = !reviewHas(data.residence_after_marriage)
+  const partMissing = !reviewHas(data.partner_age_min) || !reviewHas(data.partner_age_max) ||
+                      !reviewHas(data.partner_education) || !reviewHas(data.partner_division)
+  const conMissing  = !reviewHas(data.contact_privacy)
+
+  const anyMissing = genMissing || locMissing || relMissing || eduMissing ||
+                     famMissing || marMissing || partMissing || conMissing
+
+  // Education records worth showing (carry real schooling data).
+  const eduRecords = (data.education_details ?? []).filter(r =>
+    r.level || r.institute || r.subject || r.board_university || r.passing_year || r.result_value || r.note)
+  const eduRecordLabel = (level?: string) => {
+    if (!level) return tl('education_details')
+    const k = levelLabelKey(data.education_medium ?? '', level)
+    if (k) {
+      const lbl = t('biodata', k)
+      if (lbl !== k) return lbl
+    }
+    return humanise(level)
+  }
+
+  const brothers = (data.brothers_details ?? []).filter(s => s.position || s.profession || s.education || s.location || s.marital_status || s.note)
+  const sisters  = (data.sisters_details ?? []).filter(s => s.position || s.profession || s.education || s.location || s.marital_status || s.note)
+
+  const partnerDistricts = Array.isArray(data.partner_districts) ? data.partner_districts.filter(Boolean) : []
+
+  return (
+    <div className="space-y-4">
+      {/* Top review message */}
+      <div className="rounded-2xl bg-primary-50 border border-primary-100 px-4 py-3 flex items-start gap-2.5">
+        <ClipboardCheck size={18} className="text-primary-600 shrink-0 mt-0.5" />
+        <p className="text-sm text-primary-800">{tl('review_intro')}</p>
+      </div>
+
+      {/* Global missing-info banner */}
+      {anyMissing && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-2.5">
+          <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-800">{tl('complete_required_first')}</p>
+        </div>
+      )}
+
+      {/* 1 — Basic Information */}
+      <ReviewSection icon={User} title={t('biodata', 'step_labels.1')} step={1} onEdit={onEdit} missing={genMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('marital_status')} value={reviewHas(data.marital_status) ? enumLabel('marital_status', data.marital_status) : undefined} required />
+          <ReviewRow label={tl('marital_substatus')} value={data.marital_substatus} />
+          <ReviewRow label={tl('birth_date')} value={dobDisplay} required />
+          <ReviewRow label={tl('height')} value={reviewHas(data.height_cm) ? `${data.height_cm} cm` : undefined} required />
+          <ReviewRow label={tl('weight')} value={reviewHas(data.weight_kg) ? `${data.weight_kg} kg` : undefined} required />
+          <ReviewRow label={tl('complexion')} value={reviewHas(data.complexion) ? enumLabel('complexion', data.complexion) : undefined} required />
+          <ReviewRow label={tl('blood_group')} value={data.blood_group} />
+          <ReviewRow label={tl('health_status')} value={reviewHas(data.health_status) ? enumLabel('health_status', data.health_status) : undefined} />
+          <ReviewRow label={tl('health_details')} value={data.health_details} full />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 2 — Location */}
+      <ReviewSection icon={MapPin} title={t('biodata', 'step_labels.2')} step={2} onEdit={onEdit} missing={locMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('residing_country')} value={data.residing_country} required />
+          <ReviewRow label={tl('review_present_address')} value={[data.current_area, data.current_upazila, data.current_district, data.current_division, data.residing_city, data.present_address].filter(reviewHas).join(', ') || undefined} full />
+          <ReviewRow label={tl('permanent_address') + ' — ' + tl('residing_country')} value={data.permanent_country} />
+          <ReviewRow label={tl('review_permanent_address')} value={[data.village_area, data.upazila, data.district, data.division, data.permanent_address].filter(reviewHas).join(', ') || undefined} full />
+          <ReviewRow label={tl('grew_up_in')} value={data.grew_up_in} />
+          <ReviewRow label={tl('nationality')} value={data.nationality} />
+          <ReviewRow label={tl('is_nrb')} value={yesNo(data.is_nrb)} />
+          <ReviewRow label={tl('visa_status')} value={reviewHas(data.visa_status) ? enumLabel('visa_status', data.visa_status) : undefined} />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 3 — Religion & Practice */}
+      <ReviewSection icon={Moon} title={t('biodata', 'step_labels.3')} step={3} onEdit={onEdit} missing={relMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('religion')} value={data.religion} required />
+          <ReviewRow label={tl('sect')} value={data.sect} />
+          <ReviewRow label={tl('is_practicing')} value={yesNo(data.is_practicing)} />
+          <ReviewRow label={tl('prayers_info')} value={reviewHas(data.prayers_info) ? enumLabel('prayers_info', data.prayers_info) : undefined} required={isMuslim} />
+          <ReviewRow label={tl('quran_recitation')} value={reviewHas(data.quran_recitation) ? enumLabel('quran_recitation', data.quran_recitation) : undefined} />
+          <ReviewRow label={tl('clothing_style')} value={data.clothing_style} />
+          {isMale
+            ? <ReviewRow label={tl('beard_info')} value={data.beard_info} />
+            : <ReviewRow label={tl('hijab_info')} value={data.hijab_info} />}
+          <ReviewRow label={tl('sunni_scale')} value={reviewHas(data.sunni_scale) ? String(data.sunni_scale) : undefined} />
+          <ReviewRow label={tl('is_islamically_educated')} value={yesNo(data.is_islamically_educated)} />
+          <ReviewRow label={tl('wali_approval')} value={yesNo(data.wali_approval)} />
+          <ReviewRow label={tl('favorite_scholars')} value={data.favorite_scholars} full />
+          <ReviewRow label={tl('deen_work_details') ?? ''} value={data.deen_work_details} full />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 4 — Education & Career */}
+      <ReviewSection icon={GraduationCap} title={t('biodata', 'step_labels.4')} step={4} onEdit={onEdit} missing={eduMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('education_method')} value={reviewHas(data.education_medium) ? enumLabel('education_medium', data.education_medium) : undefined} />
+          <ReviewRow label={tl('highest_qualification')} value={qualLabel} required />
+          <ReviewRow label={tl('occupation')} value={data.occupation} required />
+          <ReviewRow label={tl('occupation_category')} value={reviewHas(data.occupation_category) ? enumLabel('occupation_category', data.occupation_category) : undefined} />
+          <ReviewRow label={tl('monthly_income')} value={num(data.monthly_income)} />
+          <ReviewRow label={tl('income_type') ?? ''} value={reviewHas(data.income_type) ? enumLabel('income_type', data.income_type) : undefined} />
+          <ReviewRow label={tl('profession_details')} value={data.profession_details} full />
+          <ReviewRow label={tl('future_career_plan') ?? ''} value={data.future_career_plan} full />
+        </ReviewBody>
+        {eduRecords.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{tl('review_education_records')}</p>
+            <div className="space-y-2">
+              {eduRecords.map((r, i) => (
+                <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5">
+                  <p className="text-sm font-semibold text-slate-800">{eduRecordLabel(r.level)}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {[r.subject, r.institute, r.board_university, r.passing_year,
+                      r.result_value ? `${r.result_type ?? ''} ${r.result_value}`.trim() : '']
+                      .filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </ReviewSection>
+
+      {/* 5 — Lifestyle */}
+      <ReviewSection icon={HeartPulse} title={t('biodata', 'step_labels.5')} step={5} onEdit={onEdit}>
+        <ReviewBody>
+          <ReviewRow label={tl('diet')} value={reviewHas(data.diet) ? enumLabel('diet', data.diet) : undefined} />
+          <ReviewRow label={tl('smoking')} value={reviewHas(data.smoking) ? enumLabel('smoking', data.smoking) : undefined} />
+          <ReviewRow label={tl('hobbies')} value={data.hobbies} full />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 6 — Family Background */}
+      <ReviewSection icon={Users} title={t('biodata', 'step_labels.6')} step={6} onEdit={onEdit} missing={famMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('father_name')} value={data.father_name} />
+          <ReviewRow label={tl('father_profession')} value={data.father_profession} required />
+          <ReviewRow label={tl('father_alive')} value={yesNo(data.father_alive)} />
+          <ReviewRow label={tl('mother_name')} value={data.mother_name} />
+          <ReviewRow label={tl('mother_profession')} value={data.mother_profession} required />
+          <ReviewRow label={tl('mother_alive')} value={yesNo(data.mother_alive)} />
+          <ReviewRow label={tl('brothers')} value={reviewHas(data.brothers) ? String(data.brothers) : undefined} />
+          <ReviewRow label={tl('sisters')} value={reviewHas(data.sisters) ? String(data.sisters) : undefined} />
+          <ReviewRow label={tl('family_type')} value={reviewHas(data.family_type) ? enumLabel('family_type', data.family_type) : undefined} required />
+          <ReviewRow label={tl('family_financial_status')} value={reviewHas(data.family_financial_status) ? enumLabel('family_financial_status', data.family_financial_status) : undefined} />
+          <ReviewRow label={tl('home_ownership')} value={reviewHas(data.home_ownership) ? enumLabel('home_ownership', data.home_ownership) : undefined} />
+          <ReviewRow label={tl('family_details')} value={data.family_details} full />
+        </ReviewBody>
+        {(brothers.length > 0 || sisters.length > 0) && (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[{ list: brothers, label: tl('review_brothers') }, { list: sisters, label: tl('review_sisters') }]
+              .filter(g => g.list.length > 0)
+              .map(g => (
+                <div key={g.label}>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{g.label}</p>
+                  <div className="space-y-2">
+                    {g.list.map((s, i) => (
+                      <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs text-slate-600">
+                        {[s.position ? humanise(s.position) : '', s.marital_status ? humanise(s.marital_status) : '',
+                          s.education, s.profession, s.location].filter(Boolean).join(' · ') || tl('review_not_provided')}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </ReviewSection>
+
+      {/* 7 — Marriage Preferences */}
+      <ReviewSection icon={HeartHandshake} title={t('biodata', 'step_labels.7')} step={7} onEdit={onEdit} missing={marMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('residence_after_marriage')} value={data.residence_after_marriage} required />
+          <ReviewRow label={tl('marriage_timeline')} value={data.marriage_timeline} />
+          <ReviewRow label={tl('post_marriage_plan')} value={data.post_marriage_plan} />
+          <ReviewRow label={tl('guardian_agree')} value={yesNo(data.guardian_agree)} />
+          {isMale && <ReviewRow label={tl('wife_in_veil')} value={yesNo(data.wife_in_veil)} />}
+          {isMale && <ReviewRow label={tl('wife_study_allowed')} value={yesNo(data.wife_study_allowed)} />}
+          {isMale && <ReviewRow label={tl('wife_job_allowed')} value={yesNo(data.wife_job_allowed)} />}
+          {!isMale && <ReviewRow label={tl('preferred_living')} value={data.preferred_living} />}
+          <ReviewRow label={tl('children_count')} value={reviewHas(data.children_count) ? String(data.children_count) : undefined} />
+          <ReviewRow label={tl('why_getting_married')} value={data.why_getting_married} full />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 8 — Partner Preferences */}
+      <ReviewSection icon={Search} title={t('biodata', 'step_labels.8')} step={8} onEdit={onEdit} missing={partMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('partner_age_range')} value={(reviewHas(data.partner_age_min) || reviewHas(data.partner_age_max)) ? `${data.partner_age_min || '—'} – ${data.partner_age_max || '—'}` : undefined} required />
+          <ReviewRow label={tl('partner_height_range')} value={(reviewHas(data.partner_height_cm_min) || reviewHas(data.partner_height_cm_max)) ? `${data.partner_height_cm_min || '—'} – ${data.partner_height_cm_max || '—'} cm` : undefined} />
+          <ReviewRow label={tl('partner_education')} value={data.partner_education} required />
+          <ReviewRow label={tl('partner_marital_status')} value={data.partner_marital_status} />
+          <ReviewRow label={tl('partner_complexion')} value={data.partner_complexion} />
+          <ReviewRow label={tl('partner_division')} value={data.partner_division} required />
+          <ReviewRow label={tl('partner_district')} value={data.partner_district} />
+          <ReviewRow label={tl('partner_districts')} value={partnerDistricts.length ? partnerDistricts.join(', ') : undefined} full />
+          <ReviewRow label={tl('partner_deen_practice')} value={data.partner_deen_practice} />
+          <ReviewRow label={tl('partner_economic_status')} value={data.partner_economic_status} />
+          <ReviewRow label={tl('partner_special_qualities')} value={data.partner_special_qualities} full />
+          <ReviewRow label={tl('partner_deal_breakers')} value={data.partner_deal_breakers} full />
+          <ReviewRow label={tl('partner_expectations')} value={data.partner_expectations} full />
+        </ReviewBody>
+      </ReviewSection>
+
+      {/* 9 — Contact & Privacy */}
+      <ReviewSection icon={Phone} title={t('biodata', 'step_labels.9')} step={9} onEdit={onEdit} missing={conMissing}>
+        <ReviewBody>
+          <ReviewRow label={tl('contact_person_name')} value={data.contact_person_name} />
+          <ReviewRow label={tl('guardian_name')} value={data.guardian_name} />
+          <ReviewRow label={tl('guardian_relationship')} value={data.guardian_relationship} />
+          <ReviewRow label={tl('guardian_mobile')} value={data.guardian_mobile} />
+          <ReviewRow label={tl('guardian_email')} value={data.guardian_email} />
+          <ReviewRow label={tl('guardian_whatsapp')} value={data.guardian_whatsapp} />
+          <ReviewRow label={tl('whatsapp_number')} value={data.whatsapp_number} />
+          <ReviewRow label={tl('contact_privacy')} value={reviewHas(data.contact_privacy) ? enumLabel('contact_privacy', data.contact_privacy) : undefined} required />
+        </ReviewBody>
+      </ReviewSection>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function BiodataWizard({ step, steps, biodata, user, customFields = [], fieldControl = {}, photos = [], photoUrls = [], maxPhotos = 6 }: Props) {
   const totalSteps = Object.keys(steps).length
   const { t } = useTranslation()
   const completenessScore = biodata.completeness_score ?? 0
+  // Already-submitted biodata → the final button reads "Update" instead of "Submit".
+  const alreadyCompleted = !!biodata.is_completed
 
   // ── Admin field-control overlay (built-in fields) ────────────────────────────
   // Safe fallbacks: a field absent from the map keeps its hardcoded behaviour.
@@ -1235,7 +1613,7 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
     <AppLayout>
       <Head title={t('biodata', 'wizard_title')} />
 
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
+      <div className="max-w-[772px] mx-auto px-4 py-6 sm:py-8">
 
         {/* Step-based progress (each step = 10%) */}
         <div className="mb-6">
@@ -2830,19 +3208,28 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
             {/* ── Step 10: Profile Photo & Review ── */}
             {step === 10 && (
               <div className="space-y-5">
-                {/* Header */}
-                <div className="text-center pb-1">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-primary-50 border border-primary-100 flex items-center justify-center mb-3">
-                    <Camera size={26} className="text-primary-500" />
+                {/* Full profile-style biodata preview with per-section Edit buttons */}
+                <BiodataReview
+                  data={data}
+                  user={user}
+                  onEdit={(s) => router.get(route('biodata.wizard', { step: s }))}
+                />
+
+                {/* Photos */}
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-slate-100 bg-slate-50/70">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="h-8 w-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center shrink-0">
+                        <Camera size={16} />
+                      </span>
+                      <h3 className="text-sm font-bold text-slate-900 truncate">{t('biodata', 'section_photos')}</h3>
+                    </div>
+                    <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full shrink-0">
+                      {t('biodata', 'step9_optional_badge')}
+                    </span>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">{t('biodata', 'step9_title')}</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-                    {t('biodata', 'step9_desc')}
-                  </p>
-                  <span className="inline-block mt-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                    {t('biodata', 'step9_optional_badge')}
-                  </span>
-                </div>
+                  <div className="p-4 sm:p-5 space-y-5">
+                    <p className="text-sm text-slate-500 leading-relaxed">{t('biodata', 'step9_desc')}</p>
 
                 {/* Existing photos grid */}
                 {photos.length > 0 && (
@@ -2932,9 +3319,11 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   </div>
                 )}
 
-                <p className="text-xs text-slate-400 text-center leading-relaxed">
-                  {t('biodata', 'step9_note')}
-                </p>
+                    <p className="text-xs text-slate-400 text-center leading-relaxed">
+                      {t('biodata', 'step9_note')}
+                    </p>
+                  </div>
+                </div>
 
                 {/* Declaration / commitment — all three required to submit */}
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
@@ -3018,9 +3407,21 @@ export default function BiodataWizard({ step, steps, biodata, user, customFields
                   ← {t('common', 'back')}
                 </Button>
               )}
+              {step === totalSteps && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="sm:w-auto sm:px-6"
+                  onClick={saveDraft}
+                  disabled={savingDraft || processing}
+                >
+                  <Save size={15} className="mr-1.5" />
+                  {savingDraft ? t('common', 'saving') : t('biodata', 'wizard_save_draft')}
+                </Button>
+              )}
               <Button type="submit" className="flex-1" size="lg" isLoading={processing}>
                 {step === totalSteps
-                  ? t('biodata', 'wizard_complete')
+                  ? (alreadyCompleted ? t('biodata', 'wizard_update') : t('biodata', 'wizard_complete'))
                   : `${t('biodata', 'wizard_next')} →`}
               </Button>
             </div>
